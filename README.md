@@ -109,6 +109,9 @@ The `graph deploy` CLI command will now...
 **NOTE:** For the MVP, the package can just be hosted on http://npmjs.com.
 
 # User Story: Application Developer
+
+Moving onto the [./dapp](./dapp) folder...
+
 ## Step 1: Consume Mutation Resolvers
 `npm i --save mutation-resolvers-package`
 

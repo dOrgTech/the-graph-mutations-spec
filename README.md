@@ -117,7 +117,7 @@ Moving onto the [./dapp](./dapp) folder...
 
 **NOTE:** In the future, the `--registry` flag could be added to download from a graph-node, or a graph-cli command could be added (see "Post MVP Goals" section below).
 
-## Step 2: Add Mutation Resolvers' To App
+## Step 2: Add Mutation Resolvers To App
 [`App.js`](./dapp/src/App.js)
 ```javascript
 import { resolvers, setWeb3Provider } from "mutation-resolvers-package"

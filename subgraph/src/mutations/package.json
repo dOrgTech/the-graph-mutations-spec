@@ -1,0 +1,10 @@
+{
+  "name": "example-mutations",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "./src/index.js",
+  "dependencies": {
+    "graphql-tag": "^2.10.1",
+    "web3": "^1.2.2"
+  }
+}

@@ -7,7 +7,7 @@ module.exports = gql`
         description: String!
         completed: Boolean!
     }
-    input TodoInput{
+    input CreateInput{
         asignee: String!
         description: String!
         completed: Boolean!
@@ -16,6 +16,7 @@ module.exports = gql`
         getTodos: [Todo]
     }
     type Mutation{
-        create(todoInput: TodoInput): Todo!
+        create(createInput: CreateInput): Todo!
+        complete(id: ID!): Todo!
     }
 `

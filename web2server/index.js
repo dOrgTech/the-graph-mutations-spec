@@ -1,33 +1,10 @@
 const {ApolloServer} = require('apollo-server');
-const gql = require('graphql-tag')
 const mongoose = require('mongoose');
 const {MONGODB}= require('./config');
 
-const Todo = require('./models/Todo');
+const typeDefs = require('./graphql/typeDefs');
 
-const typeDefs = gql`
-    type Todo{
-        id: ID!
-        asignee: String!
-        description: String!
-        completed: Boolean!
-    }
-    type Query{
-        getTodos: [Todo]
-    }
-`
-const resolvers = {
-    Query: {
-        async getTodos(){
-            try{
-                const todos = await Todo.find();
-                return todos;
-            }catch(err) {
-                throw new Error(err);
-            }
-        }
-    }
-}
+const resolvers = require('./graphql/resolvers');
 
 const server = new ApolloServer({
     typeDefs,

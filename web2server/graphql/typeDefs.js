@@ -17,6 +17,8 @@ module.exports = gql`
     }
     type Mutation{
         create(createInput: CreateInput): Todo!
-        complete(id: ID!): Todo!
+        setComplete(id: ID!): Todo!
+        setIncomplete(id: ID!): Todo!
+        delete(id: ID!): Todo!
     }
 `

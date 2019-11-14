@@ -24,12 +24,25 @@ module.exports = {
                 id: res._id
             }
         },
-        async complete(parent, {id}){
+        async setComplete(parent, {id}){
             const res = await Todo.findOneAndUpdate(id, {completed: true});
             return {
                 ...res._doc,
                 id: res._id
             }
+        },
+        async setIncomplete(parent, {id}){
+            const res = await Todo.findOneAndUpdate(id, {completed: false});
+            return {
+                ...res._doc,
+                id: res._id
+            }
+        },
+        async delete(parent, {id}){
+            const todo = await Todo.findById(id);
+            
+            await Todo.remove({_id:todo._id});
+            return todo
         }
 
     }

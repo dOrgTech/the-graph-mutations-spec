@@ -1,32 +1,28 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import { Button, Card, Image } from 'semantic-ui-react'
 
-const TodoCard = () => {
-    
-    const [completedTodo, completeTodo] = useState('');
+const TodoCard = ({ props: { id, asignee, description, completed } }) => {
 
-    return (
-    <Card>
+  const [completedTodo, completeTodo] = useState('');
+
+  return (
+    <Card fluid>
       <Card.Content>
-        <Image
-          floated='right'
-          size='mini'
-          src='https://react.semantic-ui.com/images/avatar/large/steve.jpg'
-        />
-        <Card.Header>Steve Sanders</Card.Header>
-        <Card.Meta>Friends of Elliot</Card.Meta>
+        <Card.Header># {id}</Card.Header>
+        <Card.Meta>Assigned to {asignee}</Card.Meta>
         <Card.Description>
-          Steve wants to add you to the group
+          {description}
         </Card.Description>
       </Card.Content>
       <Card.Content extra>
         <div className='ui two buttons'>
           <Button basic color='green'>
             Mark as completed
-          </Button>
+            </Button>
         </div>
       </Card.Content>
     </Card>
-)}
+  )
+}
 
 export default TodoCard

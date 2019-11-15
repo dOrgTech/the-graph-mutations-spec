@@ -5,6 +5,7 @@ import { useMutation } from '@apollo/react-hooks';
 import { CREATE_TODO } from '../graphql/mutations';
 import { GET_TODOS_QUERY } from '../graphql/queries';
 import { useForm } from '../util/hooks/form.hook';
+import { generateId } from '../util/IdGenerator';
 
 function Create() {
 
@@ -14,11 +15,19 @@ function Create() {
     });
 
     const [create] = useMutation(CREATE_TODO, {
+        optimisticResponse: {
+            create: {
+                ...values,
+                completed: false,
+                id: generateId(),
+                __typename: "Todo"
+            }
+        },
         update(proxy, result) {
             const data = cloneDeep(proxy.readQuery({
                 query: GET_TODOS_QUERY,
             }, true));
-            
+
             data.getTodos = [...data.getTodos, result.data.create]
             proxy.writeQuery({query: GET_TODOS_QUERY, data});
 

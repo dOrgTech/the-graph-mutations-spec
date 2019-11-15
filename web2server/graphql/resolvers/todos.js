@@ -14,6 +14,8 @@ module.exports = {
     Mutation: {
         async create(parent, { createInput: { asignee, description }}) {
             console.log("asignee, description")
+            await sleep(10000);
+            throw new Error();
             const newTodo = new Todo({
                 asignee,
                 description,
@@ -26,6 +28,8 @@ module.exports = {
             }
         },
         async setComplete(parent, {id}){
+            await sleep(10000);
+            throw new Error();
             const res = await Todo.findByIdAndUpdate(id, {completed: true}, {new: true});
             return {
                 ...res._doc,
@@ -33,6 +37,8 @@ module.exports = {
             }
         },
         async setIncomplete(parent, {id}){
+            await sleep(10000);
+            throw new Error();
             const res = await Todo.findByIdAndUpdate(id, {completed: false}, {new: true});
             return {
                 ...res._doc,
@@ -40,11 +46,16 @@ module.exports = {
             }
         },
         async delete(parent, {id}){
+            await sleep(10000);
+            throw new Error();
             const todo = await Todo.findById(id);
-            
             await Todo.deleteOne({_id:todo._id});
             return todo
         }
 
     }
 }
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }

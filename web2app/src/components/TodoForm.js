@@ -14,6 +14,11 @@ function Create() {
         description: ''
     });
 
+    const resetForm = ()=>{
+        values.asignee = '';
+        values.description = '';
+    }
+
     const [create] = useMutation(CREATE_TODO, {
         optimisticResponse: {
             create: {
@@ -31,8 +36,7 @@ function Create() {
             data.getTodos = [...data.getTodos, result.data.create]
             proxy.writeQuery({query: GET_TODOS_QUERY, data});
 
-            values.asignee = '';
-            values.description = '';
+            resetForm();
         },
         variables: values
     })

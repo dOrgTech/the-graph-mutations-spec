@@ -50,7 +50,7 @@ const CompleteButton = ({ props: { id } }) => {
         <Button color='green' onClick={setIncomplete}>
             Completed!
             </Button>
-    ) : (
+        ) : (
             <Button basic color='green' onClick={setComplete}>
                 Mark as completed
             </Button>

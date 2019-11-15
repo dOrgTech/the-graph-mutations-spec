@@ -12,11 +12,12 @@ module.exports = {
         }
     },
     Mutation: {
-        async create(parent, { createInput: { asignee, description, completed }}) {
+        async create(parent, { createInput: { asignee, description }}) {
+            console.log("asignee, description")
             const newTodo = new Todo({
                 asignee,
                 description,
-                completed
+                completed: false
             })
             const res = await newTodo.save();
             return {
@@ -25,14 +26,14 @@ module.exports = {
             }
         },
         async setComplete(parent, {id}){
-            const res = await Todo.findOneAndUpdate(id, {completed: true});
+            const res = await Todo.findByIdAndUpdate(id, {completed: true}, {new: true});
             return {
                 ...res._doc,
                 id: res._id
             }
         },
         async setIncomplete(parent, {id}){
-            const res = await Todo.findOneAndUpdate(id, {completed: false});
+            const res = await Todo.findByIdAndUpdate(id, {completed: false}, {new: true});
             return {
                 ...res._doc,
                 id: res._id
@@ -41,7 +42,7 @@ module.exports = {
         async delete(parent, {id}){
             const todo = await Todo.findById(id);
             
-            await Todo.remove({_id:todo._id});
+            await Todo.deleteOne({_id:todo._id});
             return todo
         }
 

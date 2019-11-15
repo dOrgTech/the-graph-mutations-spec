@@ -10,7 +10,6 @@ module.exports = gql`
     input CreateInput{
         asignee: String!
         description: String!
-        completed: Boolean!
     }
     type Query{
         getTodos: [Todo]

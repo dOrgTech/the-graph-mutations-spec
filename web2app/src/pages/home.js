@@ -8,19 +8,20 @@ import { GET_TODOS_QUERY } from '../graphql/queries';
 function Home() {
     const { data: { getTodos: todos } = {} } = useQuery(GET_TODOS_QUERY);
     return (
-        <div>
-            <Grid columns={3}>
-                <Grid.Row style={{marginTop:20}}>
+        <div style={{ marginTop: 20 }}>
+            <h1>TODO APP</h1>
+            <Grid columns={2}>
+                <Grid.Column style={{ marginBottom: 20 }}>
+                    <TodoForm></TodoForm>
+                </Grid.Column>
+                <Grid.Row style={{ marginTop: 20 }}>
                     {
                         todos && todos.map(todo => (
-                            <Grid.Column key={todo.id} style={{marginBottom:20}}>
+                            <Grid.Column key={todo.id} style={{ marginBottom: 20 }}>
                                 <TodoCard todo={todo}></TodoCard>
                             </Grid.Column>
                         ))
                     }
-                    <Grid.Column style={{marginBottom:20}}>
-                        <TodoForm></TodoForm>
-                    </Grid.Column>
                 </Grid.Row>
             </Grid>
         </div>

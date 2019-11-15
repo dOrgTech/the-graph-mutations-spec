@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from 'semantic-ui-react';
 import { useMutation } from '@apollo/react-hooks';
 import { SET_COMPLETE, SET_INCOMPLETE } from '../graphql/mutations';
+import {notify} from 'react-notify-toast';
 
 const CompleteButton = ({ props: { id } }) => {
 
@@ -23,6 +24,11 @@ const CompleteButton = ({ props: { id } }) => {
         },
         onError(error) {
             setCompleted(false);
+            notify.show(
+                "An unexpected error ocurred while updating ToDo",
+                "error",
+                4000
+            )
         },
         variables: { id }
     })
@@ -42,6 +48,11 @@ const CompleteButton = ({ props: { id } }) => {
         },
         onError(error) {
             setCompleted(true);
+            notify.show(
+                "An unexpected error ocurred while updating ToDo",
+                "error",
+                4000
+            )
         },
         variables: { id }
     });

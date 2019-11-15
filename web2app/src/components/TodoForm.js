@@ -6,6 +6,7 @@ import { CREATE_TODO } from '../graphql/mutations';
 import { GET_TODOS_QUERY } from '../graphql/queries';
 import { useForm } from '../util/hooks/form.hook';
 import { generateId } from '../util/IdGenerator';
+import {notify} from 'react-notify-toast';
 
 function Create() {
 
@@ -37,6 +38,13 @@ function Create() {
             proxy.writeQuery({query: GET_TODOS_QUERY, data});
 
             resetForm();
+        },
+        onError(error){
+            notify.show(
+                "An unexpected error ocurred while creating ToDo",
+                "error",
+                4000
+            )
         },
         variables: values
     })

@@ -5,6 +5,7 @@ import { Button } from 'semantic-ui-react'
 import { useMutation } from '@apollo/react-hooks';
 import { DELETE } from '../graphql/mutations';
 import { GET_TODOS_QUERY } from '../graphql/queries';
+import {notify} from 'react-notify-toast';
 
 const DeleteButton = ({ props }) => {
 
@@ -25,6 +26,13 @@ const DeleteButton = ({ props }) => {
 
             data.getTodos = data.getTodos.filter((todo) => { return todo.id !== props });
             proxy.writeQuery({ query: GET_TODOS_QUERY, data });
+        },
+        onError(error){
+            notify.show(
+                "An unexpected error ocurred while deleting ToDo",
+                "error",
+                4000
+            )
         },
         variables: { id: props }
     })

@@ -1,9 +1,9 @@
-type GravatarOptions {
+input GravatarOptions {
   displayName: String!
   imageUrl: String!
 }
 
-type Mutations {
+type Mutation {
   createGravatar(
     options: GravatarOptions!
   ): Gravatar

@@ -2,18 +2,7 @@ specVersion: 0.0.1
 repository: https://npmjs.com
 mutations:
   schema:
-    file: ./src/mutations/schema.graphql
+    file: ./schema.graphql
   resolvers:
     kind: javascript
-    file: ./src/mutations/dist/index.js
-
-// don't handle
-npm publish + npm install
-
-// do handle
-verify the module
-upload to IPFS
-query subgraph & mutations IPFS hashes
-
-// sugar
-publish for already deployed subgraphs
+    file: ./dist/index.js

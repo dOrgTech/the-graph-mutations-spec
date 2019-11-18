@@ -44,7 +44,6 @@ const GRAVATARS_QUERY = gql`
   }
 `
 
-// TODO: how does the GravatarOptions type get here? Does it? Does it get treated as an "any"?
 const CREATE_GRAVATAR = gql`
   mutation createGravatar($options: GravatarOptions) {
     createGravatar(options: $options) {

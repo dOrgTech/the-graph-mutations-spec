@@ -5,7 +5,7 @@ import * as protocol from "./protocol"
 // TODO: local store + optimistic updates
 
 export const resolvers = {
-  Mutations: {
+  Mutation: {
     async createGravatar(_root, args, context) {
       await protocol.createGravatar(...args);
       return await queryUserGravatar(context.client)

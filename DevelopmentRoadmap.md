@@ -11,6 +11,6 @@ TODO:
 - update tests with all new output + errors for effected commands
 
 
-
-# To Change
-- Use `input` instead of `type` for input types
+# Misc
+- upload to IPFS
+- publish for already deployed subgraphs

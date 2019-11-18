@@ -3,8 +3,20 @@
   "version": "0.1.0",
   "license": "MIT",
   "main": "./src/index.js",
+  "scripts": {
+    "build": "webpack"
+  },
   "dependencies": {
     "graphql-tag": "^2.10.1",
-    "web3": "^1.2.2"
+    "web3": "^1.2.2",
+    "ipfs-http-client": "^39.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.2",
+    "babel-loader": "^8.0.6",
+    "babel-preset-env": "^1.7.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
   }
 }

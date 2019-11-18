@@ -168,6 +168,7 @@ class App extends Component {
             variables={{
               options: { displayName: "...", imageUrl: "..." }
             }}
+            // TODO: local store + optimistic updates
           >
             {(postMutation) => (
               <button onClick={postMutation}>

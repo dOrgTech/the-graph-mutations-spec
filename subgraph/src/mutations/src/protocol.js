@@ -1,11 +1,11 @@
 import web3 from "./web3"
 
-const Gravity = require("../../abis/Gravity");
+const Gravity = require("../../../abis/Gravity");
 let gravitySC = null;
 
 function getGravityContract() {
   if (!gravitySC) {
-    const { address } = require("../../build/address.json");
+    const { address } = require("../../../build/address.json");
     gravitySC = new web3.eth.Contract(Gravity.abi, address)
   }
 

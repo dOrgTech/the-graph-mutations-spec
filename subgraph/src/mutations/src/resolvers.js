@@ -2,8 +2,6 @@ import gql from "graphql-tag"
 import web3 from "./web3"
 import * as protocol from "./protocol"
 
-// TODO: local store + optimistic updates
-
 export const resolvers = {
   Mutation: {
     async createGravatar(_root, args, context) {

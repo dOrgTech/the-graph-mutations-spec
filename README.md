@@ -9,7 +9,7 @@ Original source available here:
 
 Starting in the [./subgraph](./subgraph) folder...
 
-## Step 1: Mutation Schema & Manifest
+## Step 1: Mutation Schema & Manifest Files
 
 [`mutations/schema.graphql`](./subgraph/src/mutations/schema.graphql)
 ```graphql
@@ -38,7 +38,7 @@ type Mutation {
 [`mutations.yaml`](./subgraph/mutations/mutations.yaml)
 ```yaml
 specVersion: 0.0.1
-repository: https://npmjs.com/package/example-mutations
+repository: https://npmjs.com/package/gravatar-mutations
 mutations:
   schema:
     file: ./schema.graphql
@@ -48,16 +48,22 @@ mutations:
 ```
 
 ### Decisions Made
-**Define Mutations In GraphQL:** In our last call, the idea of defining the mutations in the manifest file was brought up. I saw this as very limiting, as it removes the ability to define additional datatypes that can be used as argument or return values within the mutation's function signature. Additionally, keeping everything in GraphQL promotes consistency and predictability for how types will be bound to the resolver's implementation language, since that standard is already defined for us by GraphQL tooling. Lastly, this also allows you to use subgraph entity types within your mutation definitions.
+**Define Mutations In GraphQL:**  
+Keeping everything in GraphQL...
+* Promotes consistency and predictability for how types will be bound to the resolver's implementation language, since this standard is already defined for us by existing GraphQL tooling.
+* Allows you to both define new data types (for example `input GravatarOptions`) and use existing entity types (for example `Gravatar`) within your mutation definitions.
 
-**Define Mutations In a Separate GraphQL & YAML File:** The following thoughts played a role in this decision...
+**Define Mutations In a Separate GraphQL & YAML File:**  
+The following thoughts played a role in this decision...
 * In order to promote the decoupling of codebases (subgraph mappings & mutations), defining the mutations in separate GraphQL & YAML files is desired.
-* Helps keep write-specific schema data types separate from the main schema of the subgraph's entity store. To illustrate this, see "GravatarOptions" in the example above.
-* Having a separate manifest yaml file could allow developers to publish mutations for pre-existing subgraphs, without modifying the root manifest file and bumping the version number.
+* Helps keep write-specific data types separate from the main schema of the subgraph's entity store. To illustrate this, see "GravatarOptions" in the example above. We'd like to keep these types out of the main schema file.
+* Ideally developers could publish mutations for pre-existing subgraphs, without having to modify the root manifest.
 
-**Multiple `kind`s of Mutation Resolvers:** In the future, we may want to support resolvers that are compiled to WASM.  
+**Multiple `kind`s of Mutation Resolvers:**  
+In the future, we may want to support resolvers that are compiled to WASM.  
 
-**Server-Side == Client-Side Resolvers:** Originally, I had "`kind: browser/javascript`", but realized that (1) Apollo GraphQL resolvers have the same signature client-side as they do server-side, and (2) implementing server-side resolvers within graph-node could (and should) be done in a way that doesn't require any code changes from the mutation developer (see "Post MVP Goals" section below).
+**Server-Side == Client-Side Resolvers:**  
+Originally, I had "`kind: browser/javascript`", but realized that (1) Apollo GraphQL resolvers have the same signature client-side as they do server-side, and (2) implementing server-side resolvers within graph-node could (and should) be done in a way that doesn't require any code changes from the mutation developer (see "Post MVP Goals" section below).
 
 ## Step 2: Add Mutations To Subgraph Manifest
 
@@ -73,20 +79,11 @@ dataSources:
   - ...
 ```
 
-## Step 3: Develop The Resolvers' JavaScript Module
-$$$$$$$$$$$$$$$
-The requirements for the [JavaScript Module](./subgraph/src/mutations/package.json) are:
-1. Include a root module within the [package.json](./subgraph/src/mutations/package.json)  
-  `"main": "./path/to/index.js"`
-2. The [root module](./subgraph/src/mutations/src/index.js) exports a `resolvers` object, which defines all mutations (see example below).  
-3. The [root module](./subgraph/src/mutations/src/index.js) exports a `setWeb3Provider(provider)` method, which is assumed to set the Web3 Provider for the resolvers to use.  
-$$$$$$$$$$$$$$$
-$$$$$$$$$$$$$$$
-**ES5 Compliant JS:** The javascript `file` that's referenced will be a ES5 compatible, monolithic module. ES5 is to ensure it works in a wide range of browsers, and the server's javascript environment. Monolithic file is to ensure the developer doesn't expect any post publishing build steps like `npm i`. If developers would like to also supply their users an option to download from a 3rd party repository like npmjs.com or github.com, they can include that link in the `repository` section of the manifest. This is useful if they'd like to give developers an un-minimized version of the source for debugging or auditing.
+## Step 3: Implement The Mutations Resolvers (Javascript)
 
 [`index.js`](./subgraph/src/mutations/src/index.js)
 ```js
-export const resolvers = {
+const resolvers = {
   Mutation: {
     async createGravatar(_root, args, context) {
       ...
@@ -100,7 +97,30 @@ export const resolvers = {
   }
 }
 
+const requiredContext = {
+  ethereum: (provider) => {
+    // setWeb3Provider(provider)
+  },
+  ipfs: (provider) => {
+    // setIPFSProvider(provider)
+  }
+}
+
+export default {
+  resolvers,
+  requiredContext
+}
 ```
+
+The requirements for the [JavaScript Module](./subgraph/src/mutations/package.json) are:
+1. Include a root module within the [package.json](./subgraph/src/mutations/package.json)  
+  `"main": "./path/to/index.js"`
+2. The [root module](./subgraph/src/mutations/src/index.js) exports a `resolvers` object, which defines all mutations (see example below).  
+3. The [root module](./subgraph/src/mutations/src/index.js) exports a `setWeb3Provider(provider)` method, which is assumed to set the Web3 Provider for the resolvers to use.  
+
+**ES5 Compliant JS:** The javascript `file` that's referenced will be a ES5 compatible, monolithic module. ES5 is to ensure it works in a wide range of browsers, and the server's javascript environment. Monolithic file is to ensure the developer doesn't expect any post publishing build steps like `npm i`. If developers would like to also supply their users an option to download from a 3rd party repository like npmjs.com or github.com, they can include that link in the `repository` section of the manifest. This is useful if they'd like to give developers an un-minimized version of the source for debugging or auditing.
+
+https://github.com/dollarshaveclub/es-check
 
 ### Decisions Made
 **Require A "Set Web3 Provider" Function:** The state of client-side Web3 wallets is always changing, and I do not think we should leave it up to the mutation developer to be able to future proof their implementations. In order to remedy this, a simple setter is a good compromise in my opinion. This also helps in the server-side mutations implementation path (see "Post MVP Goals" section below). The setter function as it exists now is a singleton pattern, and I'd like to find a way to have it be instance based to support multiple providers, the same way `ApolloClient` is an instance based approach.

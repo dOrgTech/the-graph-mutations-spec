@@ -12,7 +12,7 @@ function Home() {
             <h1>TODO APP</h1>
             <Grid columns={2}>
                 <Grid.Column style={{ marginBottom: 20 }}>
-                    <TodoForm></TodoForm>
+                    <TodoForm />
                 </Grid.Column>
                 <Grid.Row style={{ marginTop: 20 }}>
                     {

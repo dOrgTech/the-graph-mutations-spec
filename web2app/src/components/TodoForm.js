@@ -41,7 +41,7 @@ function Create() {
         },
         onError(error){
             notify.show(
-                "An unexpected error ocurred while creating ToDo",
+                `${error.message}`,
                 "error",
                 4000
             )

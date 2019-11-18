@@ -9,3 +9,8 @@ TODO:
 - update manifest-schema.graphql with the new fields that're being added to the subgraph manifest file
 - update validation/schema.js and validation/manifest.js
 - update tests with all new output + errors for effected commands
+
+
+
+# To Change
+- Use `input` instead of `type` for input types

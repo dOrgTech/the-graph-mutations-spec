@@ -13,9 +13,8 @@ module.exports = {
     },
     Mutation: {
         async create(parent, { createInput: { asignee, description }}) {
-            console.log("asignee, description")
             await sleep(10000);
-            throw new Error();
+            throw new Error("testing");
             const newTodo = new Todo({
                 asignee,
                 description,
@@ -58,4 +57,4 @@ module.exports = {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+}

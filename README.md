@@ -50,7 +50,7 @@ mutations:
 ### Decisions Made
 **Define Mutations In GraphQL:** In our last call, the idea of defining the mutations in the manifest file was brought up. I saw this as very limiting, as it removes the ability to define additional datatypes that can be used as argument or return values within the mutation's function signature. Additionally, keeping everything in GraphQL promotes consistency and predictability for how types will be bound to the resolver's implementation language, since that standard is already defined for us by GraphQL tooling. Lastly, this also allows you to use subgraph entity types within your mutation definitions.
 
-**Define Mutations In a Separate GraphQL & YAML File:** The following thoughts played a role in this decision:
+**Define Mutations In a Separate GraphQL & YAML File:** The following thoughts played a role in this decision...
 * In order to promote the decoupling of codebases (subgraph mappings & mutations), defining the mutations in separate GraphQL & YAML files is desired.
 * Helps keep write-specific schema data types separate from the main schema of the subgraph's entity store. To illustrate this, see "GravatarOptions" in the example above.
 * Having a separate manifest yaml file could allow developers to publish mutations for pre-existing subgraphs, without modifying the root manifest file and bumping the version number.
@@ -73,9 +73,9 @@ dataSources:
   - ...
 ```
 
-## Step 3: Develop The Resolvers' JavaScript Package
+## Step 3: Develop The Resolvers' JavaScript Module
 $$$$$$$$$$$$$$$
-The requirements for the [JavaScript Package](./subgraph/src/mutations/package.json) are:
+The requirements for the [JavaScript Module](./subgraph/src/mutations/package.json) are:
 1. Include a root module within the [package.json](./subgraph/src/mutations/package.json)  
   `"main": "./path/to/index.js"`
 2. The [root module](./subgraph/src/mutations/src/index.js) exports a `resolvers` object, which defines all mutations (see example below).  
@@ -87,7 +87,7 @@ $$$$$$$$$$$$$$$
 [`index.js`](./subgraph/src/mutations/src/index.js)
 ```js
 export const resolvers = {
-  Mutations: {
+  Mutation: {
     async createGravatar(_root, args, context) {
       ...
     },
@@ -100,9 +100,6 @@ export const resolvers = {
   }
 }
 
-export function setWeb3Provider(provider) {
-  ...
-}
 ```
 
 ### Decisions Made

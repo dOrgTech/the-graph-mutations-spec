@@ -14,3 +14,4 @@ TODO:
 # Misc
 - upload to IPFS
 - publish for already deployed subgraphs
+- verify default export value from mutations module (resolvers [Mutation, all functions], requiredContext [all supported contexts (how?), all functions])

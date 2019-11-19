@@ -1,9 +1,7 @@
 // npmjs.com/package/@graphprotocol/mutation-resolvers
 
-enum Contexts {
-  Ethereum,
-  IPFS,
-  Cosmos
+interface RequiredContext {
+  ethereum: (provider: any) => any
 }
 
 class Resolvers {

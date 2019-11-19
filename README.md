@@ -66,7 +66,7 @@ In the future, we may want to support resolvers that are compiled to WASM.
 Originally, I had "`kind: browser/javascript`", but realized that (1) Apollo GraphQL resolvers have the same signature client-side as they do server-side, and (2) implementing server-side resolvers within graph-node could (and should) be done in a way that doesn't require any code changes from the mutation developer (see "Post MVP Goals" section below).
 
 **Resolvers' `file` Is ES5 Compatible & Bundled:**  
-The `resolvers`' `file` property must point to an ES5 compatible javascript module that has been bundled so that there are no external files required by the module at run-time. Transpiling, bundling, and ES5 verification can be done using: [babel](https://www.npmjs.com/package/@babel/cli), [webpack](https://www.npmjs.com/package/webpack), and [es-check](https://www.npmjs.com/package/es-check). The [example project](./subgraph/src/mutations/package.json) demonstrates this build & verification process. The graph-cli will also run this ES5 verification.
+The `resolvers`' `file` property must point to an ES5 compatible javascript module that has been bundled so that there are no external files required by the module at run-time. Transpiling, bundling, and ES5 verification can be done using: [babel](https://www.npmjs.com/package/@babel/cli), [webpack](https://www.npmjs.com/package/webpack), and [es-check](https://www.npmjs.com/package/es-check). The [example project](./subgraph/src/mutations/package.json) demonstrates this build & verification process. The graph-cli will also run this ES5 verification. If developers would like to also supply their users an option to download from a 3rd party repository like npmjs.com or github.com, they can include that link in the `repository` section of the manifest. This is useful if they'd like to give developers an un-minimized version of the source for debugging or auditing.
 
 ## Step 2: Add Mutations To Subgraph Manifest
 
@@ -117,44 +117,39 @@ export default {
 }
 ```
 
-The requirements for the resolver's [JavaScript module](./subgraph/src/mutations/package.json) are:
-1. Include a root module within the [package.json](./subgraph/src/mutations/package.json)  
-  `"main": "./path/to/index.js"`
-2. The [root module](./subgraph/src/mutations/src/index.js) exports a `resolvers` object, which defines all mutations (see example below).  
-3. The [root module](./subgraph/src/mutations/src/index.js) exports a `setWeb3Provider(provider)` method, which is assumed to set the Web3 Provider for the resolvers to use.  
-
-**ES5 Compliant JS:** The javascript `file` that's referenced will be a ES5 compatible, monolithic module. ES5 is to ensure it works in a wide range of browsers, and the server's javascript environment. Monolithic file is to ensure the developer doesn't expect any post publishing build steps like `npm i`. If developers would like to also supply their users an option to download from a 3rd party repository like npmjs.com or github.com, they can include that link in the `repository` section of the manifest. This is useful if they'd like to give developers an un-minimized version of the source for debugging or auditing.
-
-**Require A "Set Web3 Provider" Function:** The state of client-side Web3 wallets is always changing, and I do not think we should leave it up to the mutation developer to be able to future proof their implementations. In order to remedy this, a simple setter is a good compromise in my opinion. This also helps in the server-side mutations implementation path (see "Post MVP Goals" section below). The setter function as it exists now is a singleton pattern, and I'd like to find a way to have it be instance based to support multiple providers, the same way `ApolloClient` is an instance based approach.
+The requirements for the resolver's [JavaScript module](./subgraph/src/mutations/dist/index.js) are:
+1. Default exports an object with properties `resolvers` and `requiredContext`.
+2. `resolvers` has property `Mutations` which includes all of the schema's mutations.
+3. `requiredContext`'s properties are all functions, and their names are all supported by The Graph.
+4. Module is ES5 compliant. We can verify this using [es-check](https://www.npmjs.com/package/es-check).
+5. Module is bundled with no external dependencies. There is no way to detect this as Javascript is dynamically interpreted, it will just have to be written in red text in the docs.
 
 ## Step 4: Build & Publish Subgraph
 
 The `graph build` CLI command will now...
-1. Parse the `mutations` section of [the manifest](./subgraph/subgraph.yaml)
-2. Resolve, parse, and validate the [mutation GraphQL definitions](./subgraph/src/mutations/mutations.graphql) from the `mutations.file` property
-3. Resolve, load, and validate the [resolvers' implementation](./subgraph/src/mutations/package.json) from the `mutations.resolvers` property, ensuring all required exports are present (resolvers object & setWeb3Provider function)
+1. Parse the [`mutations.file`](./subgraph/subgraph.yaml) section of [the subgraph's manifest](./subgraph/subgraph.yaml), resolve and pase [the mutation's manifest](./subgraph/src/mutations/mutations.yaml).
+2. Resolve, parses, and validates the [mutation GraphQL definitions](./subgraph/src/mutations/schema.graphql) from the [`mutations.schema.file`](./subgraph/src/mutations/mutations.yaml) property.
+3. Resolve, load, and validate the [resolvers' implementation](./subgraph/src/mutations/dist/index.js) from the [`mutations.resolvers.file`](./subgraph/src/mutations/mutations.yaml) property, ensuring all required exports are present and valid. See require listed above.
 
 The `graph deploy` CLI command will now...
 1. Add mutations schema to the graph-node for introspection purposes (see "Post MVP Goals" section).
-2. Upload the resolvers' package to the graph-node, allowing users to download the package directly from the graph-node and not an external package repository (see "Post MVP Goals" section).
-
-**NOTE:** For the MVP, the package can just be hosted on http://npmjs.com.
+2. Upload the resolvers' module to IPFS.
 
 # User Story: Application Developer
 
 Moving onto the [./dapp](./dapp) folder...
 
-## Step 1: Consume Mutation Resolvers
-`npm i --save mutation-resolvers-package`
+## Step 1: Download Mutation Resolvers
+The resolver's module could be installed via a 3rd party repository, for instance npmjs.com. This site would be listed in the `mutations.yaml` file's `repository` property:  
+`npm i --save gravatar-mutations`
 
-**NOTE:** In the future, the `--registry` flag could be added to download from a graph-node, or a graph-cli command could be added (see "Post MVP Goals" section below).
+Alternatively, the user could download the module via IPFS where it has been uploaded. First they would query a graph-node to get the manifest for the subgraph, and then get the IPFS hash from there. We will provide a graph-cli command that does this for developers:  
+`graph mutations fetch gravatar-mutations ./dest`
 
 ## Step 2: Add Mutation Resolvers To App
 [`App.js`](./dapp/src/App.js)
 ```javascript
-import { resolvers, setWeb3Provider } from "mutation-resolvers-package"
-
-setWeb3Provider("...")
+import { resolvers, requiredContext } from "gravatar-mutations"
 
 const client = new ApolloClient({
   ...
@@ -200,13 +195,6 @@ Ensure that the full schema + mutations can be queried from the graph-node's Gra
 
 ## *The Graph* Explorer Support (Dynamic Loading)
 As a short term solution, The Graph Explorer can (if I'm not mistaken) dynamically load and use Mutation Resolver packages by making use dynamic module importing. In the future, "Server Side Execution" is in my opinion the "real" solution to this problem. See section below.
-
-## Graph-Node Package Hosting
-Host the Mutation Resolver package from the graph-node, so users no longer have to rely on a 3rd party package repository. Once hosted, users can consume through the `npm` CLI like so:  
-`npm i --save mutation-resolvers-package --registry http://graph-node`  
-
-Or a `graph` CLI command could be added:  
-`graph mutations install mutation-resolvers-package`  
 
 ## Optimistic Updates
 TODO: more research needed  

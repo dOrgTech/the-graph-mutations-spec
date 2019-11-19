@@ -1,32 +1,25 @@
-import web3 from "./web3"
-
 const Gravity = require("../../../abis/Gravity");
-let gravitySC = null;
+const { address } = require("../../../build/address.json");
 
-function getGravityContract() {
-  if (!gravitySC) {
-    const { address } = require("../../../build/address.json");
-    gravitySC = new web3.eth.Contract(Gravity.abi, address)
-  }
-
-  return gravitySC;
+function getGravityContract(web3) {
+  return new web3.eth.Contract(Gravity.abi, address);
 }
 
-async function createGravatar(options) {
-  const gravity = getGravityContract();
+async function createGravatar(web3, options) {
+  const gravity = getGravityContract(web3);
   return await gravity.methods.createGravatar(
     options.displayName, options.imageUrl
   ).send({ from: web3.eth.defaultAccount });
 }
 
-async function updateGravatarName(displayName) {
-  const gravity = getGravityContract();
+async function updateGravatarName(web3, displayName) {
+  const gravity = getGravityContract(web3);
   return await gravity.methods.updateGravatarName(displayName)
     .send({ from: web3.eth.defaultAccount });
 }
 
-async function updateGravatarImage(imageUrl) {
-  const gravity = getGravityContract();
+async function updateGravatarImage(web3, imageUrl) {
+  const gravity = getGravityContract(web3);
   return await gravity.methods.updateGravatarImage(imageUrl)
     .send({ from: web3.eth.defaultAccount });
 }

@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Button,
 } from '@material-ui/core'
-import { resolvers, setWeb3Provider } from 'example-mutations'
+import { resolvers, setWeb3Provider } from 'gravatar-mutations'
 import './App.css'
 import Header from './components/Header'
 import Error from './components/Error'

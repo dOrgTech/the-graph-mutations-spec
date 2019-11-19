@@ -1,11 +1,11 @@
-import { setWeb3Provider } from "./web3"
-import { setIPFSProvider } from "./ipfs"
+import Web3 from "web3"
+import IPFSClient from "ipfs-http-client"
 
 export const requiredContext = {
   ethereum: (provider) => {
-    setWeb3Provider(provider)
+    return new Web3(provider)
   },
   ipfs: (provider) => {
-    setIPFSProvider(provider)
+    return IPFSClient(provider)
   }
 }

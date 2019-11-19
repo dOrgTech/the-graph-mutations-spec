@@ -65,6 +65,9 @@ In the future, we may want to support resolvers that are compiled to WASM.
 **Server-Side == Client-Side Resolvers:**  
 Originally, I had "`kind: browser/javascript`", but realized that (1) Apollo GraphQL resolvers have the same signature client-side as they do server-side, and (2) implementing server-side resolvers within graph-node could (and should) be done in a way that doesn't require any code changes from the mutation developer (see "Post MVP Goals" section below).
 
+**Resolvers' `file` Is ES5 Compatible & Bundled:**  
+The `resolvers`' `file` property must point to an ES5 compatible javascript module that has been bundled so that there are no external files required by the module at run-time. Transpiling, bundling, and ES5 verification can be done using: [babel](https://www.npmjs.com/package/@babel/cli), [webpack](https://www.npmjs.com/package/webpack), and [es-check](https://www.npmjs.com/package/es-check). The [example project](./subgraph/src/mutations/package.json) demonstrates this build & verification process. The graph-cli will also run this ES5 verification.
+
 ## Step 2: Add Mutations To Subgraph Manifest
 
 [`subgraph.yaml`](./subgraph/subgraph.yaml)
@@ -86,6 +89,8 @@ dataSources:
 const resolvers = {
   Mutation: {
     async createGravatar(_root, args, context) {
+      // context.thegraph.ethereum
+      // context.thegraph.ipfs
       ...
     },
     async updateGravatarName(_root, args, context) {
@@ -99,10 +104,10 @@ const resolvers = {
 
 const requiredContext = {
   ethereum: (provider) => {
-    // setWeb3Provider(provider)
+    return new Web3(provider)
   },
   ipfs: (provider) => {
-    // setIPFSProvider(provider)
+    return new IPFS(provider)
   }
 }
 
@@ -112,7 +117,7 @@ export default {
 }
 ```
 
-The requirements for the [JavaScript Module](./subgraph/src/mutations/package.json) are:
+The requirements for the resolver's [JavaScript module](./subgraph/src/mutations/package.json) are:
 1. Include a root module within the [package.json](./subgraph/src/mutations/package.json)  
   `"main": "./path/to/index.js"`
 2. The [root module](./subgraph/src/mutations/src/index.js) exports a `resolvers` object, which defines all mutations (see example below).  
@@ -120,12 +125,9 @@ The requirements for the [JavaScript Module](./subgraph/src/mutations/package.js
 
 **ES5 Compliant JS:** The javascript `file` that's referenced will be a ES5 compatible, monolithic module. ES5 is to ensure it works in a wide range of browsers, and the server's javascript environment. Monolithic file is to ensure the developer doesn't expect any post publishing build steps like `npm i`. If developers would like to also supply their users an option to download from a 3rd party repository like npmjs.com or github.com, they can include that link in the `repository` section of the manifest. This is useful if they'd like to give developers an un-minimized version of the source for debugging or auditing.
 
-https://github.com/dollarshaveclub/es-check
-
-### Decisions Made
 **Require A "Set Web3 Provider" Function:** The state of client-side Web3 wallets is always changing, and I do not think we should leave it up to the mutation developer to be able to future proof their implementations. In order to remedy this, a simple setter is a good compromise in my opinion. This also helps in the server-side mutations implementation path (see "Post MVP Goals" section below). The setter function as it exists now is a singleton pattern, and I'd like to find a way to have it be instance based to support multiple providers, the same way `ApolloClient` is an instance based approach.
 
-## Step 5: Build & Publish Subgraph
+## Step 4: Build & Publish Subgraph
 
 The `graph build` CLI command will now...
 1. Parse the `mutations` section of [the manifest](./subgraph/subgraph.yaml)

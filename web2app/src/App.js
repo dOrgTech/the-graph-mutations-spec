@@ -5,7 +5,7 @@ import Notifications from 'react-notify-toast';
 
 import Home from './pages/home';
 
-import {Container} from 'semantic-ui-react';
+import { Container } from 'semantic-ui-react';
 
 import 'semantic-ui-css/semantic.min.css';
 import './App.css';
@@ -15,7 +15,7 @@ function App() {
     <Router>
       <Notifications />
       <Container>
-        <Route exact path='/' component={Home}/>
+        <Route exact path='/' component={Home} />
       </Container>
     </Router>
   );

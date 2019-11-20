@@ -4,12 +4,14 @@ export const CREATE_TODO = gql`
     mutation create(
         $asignee: String!
         $description: String!
+        $requestId: ID!
     ) {
         create(
             createInput: {
                 asignee: $asignee
                 description: $description
-            }
+            },
+            requestId: $requestId
         ){
             id
             asignee

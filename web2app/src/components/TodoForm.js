@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cloneDeep from 'lodash/cloneDeep';
-import { Button, Form, Card } from 'semantic-ui-react';
-import { useMutation } from '@apollo/react-hooks';
+import { Button, Form, Card, Progress } from 'semantic-ui-react';
+import { useSubscription } from '@apollo/react-hooks';
 import { CREATE_TODO } from '../graphql/mutations';
 import { GET_TODOS_QUERY } from '../graphql/queries';
+import { NEW_TODO_SUBSCRIPTION } from '../graphql/subscriptions';
 import { useForm } from '../util/hooks/form.hook';
-import { generateId } from '../util/IdGenerator';
-import {notify} from 'react-notify-toast';
+import { notify } from 'react-notify-toast';
+import { useCustomMutation } from '../graphql/hooks';
 
 function Create() {
 
@@ -15,31 +16,26 @@ function Create() {
         description: ''
     });
 
-    const resetForm = ()=>{
+    const resetForm = () => {
         values.asignee = '';
         values.description = '';
     }
 
-    const [create] = useMutation(CREATE_TODO, {
-        optimisticResponse: {
-            create: {
-                ...values,
-                completed: false,
-                id: generateId(),
-                __typename: "Todo"
-            }
-        },
+    const [requestId, setRequestId] = useState(0);
+
+    const { create, requestId: mutationId, loading: { loading } } = useCustomMutation({
+        mutation: CREATE_TODO,
         update(proxy, result) {
             const data = cloneDeep(proxy.readQuery({
                 query: GET_TODOS_QUERY,
             }, true));
 
             data.getTodos = [...data.getTodos, result.data.create]
-            proxy.writeQuery({query: GET_TODOS_QUERY, data});
+            proxy.writeQuery({ query: GET_TODOS_QUERY, data });
 
             resetForm();
         },
-        onError(error){
+        onError(error) {
             notify.show(
                 "An unexpected error ocurred while creating ToDo",
                 "error",
@@ -49,7 +45,15 @@ function Create() {
         variables: values
     })
 
-    function createTodo() { create() }
+    const { data: { progress } = {} } = useSubscription(
+        NEW_TODO_SUBSCRIPTION,
+        { variables: { requestId } }
+    );
+
+    function createTodo() {
+        create();
+        setRequestId(mutationId);
+    }
 
     return (
         <div>
@@ -71,12 +75,19 @@ function Create() {
                             value={values.description}
                             onChange={onChange}
                         />
-                        <Button type="submit" primary>
+                        <Button type="submit" primary disabled={loading}>
                             Create
                 </Button>
                     </Form>
                 </Card.Content>
             </Card>
+
+            {loading ?
+                (<div>
+                    <p>Executing transaction... </p>
+                    <Progress percent={progress} indicating />
+                </div>)
+                : ''}
 
         </div>
     )

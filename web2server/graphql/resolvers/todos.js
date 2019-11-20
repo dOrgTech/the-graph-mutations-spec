@@ -1,4 +1,6 @@
 const Todo = require('../../models/Todo');
+const {withFilter} = require('apollo-server');
+const {NEW_TODO} = require("../events/constants");
 
 module.exports = {
     Query: {
@@ -12,50 +14,56 @@ module.exports = {
         }
     },
     Mutation: {
-        async create(parent, { createInput: { asignee, description }}) {
-            console.log("asignee, description")
-            await sleep(10000);
-            throw new Error();
+        async create(_, { createInput: { asignee, description }, requestId: id }, {pubsub}, info ) {
             const newTodo = new Todo({
                 asignee,
                 description,
                 completed: false
             })
+            await sleep(3000);
+            pubsub.publish(NEW_TODO, {progress: 33, requestId: id});
+            await sleep(3000);
+            pubsub.publish(NEW_TODO, {progress: 66, requestId: id});
+            await sleep(10000)
+            pubsub.publish(NEW_TODO, {progress: 100, requestId: id});
             const res = await newTodo.save();
             return {
                 ...res._doc,
                 id: res._id
             }
         },
-        async setComplete(parent, {id}){
+        async setComplete(_, { id }) {
             await sleep(10000);
-            throw new Error();
-            const res = await Todo.findByIdAndUpdate(id, {completed: true}, {new: true});
+            const res = await Todo.findByIdAndUpdate(id, { completed: true }, { new: true });
             return {
                 ...res._doc,
                 id: res._id
             }
         },
-        async setIncomplete(parent, {id}){
+        async setIncomplete(_, { id }) {
             await sleep(10000);
-            throw new Error();
-            const res = await Todo.findByIdAndUpdate(id, {completed: false}, {new: true});
+            const res = await Todo.findByIdAndUpdate(id, { completed: false }, { new: true });
             return {
                 ...res._doc,
                 id: res._id
             }
         },
-        async delete(parent, {id}){
-            await sleep(10000);
-            throw new Error();
+        async delete(_, { id }) {
             const todo = await Todo.findById(id);
-            await Todo.deleteOne({_id:todo._id});
+            await Todo.deleteOne({ _id: todo._id });
             return todo
         }
-
+    },
+    Subscription: {
+        progress: {
+            subscribe: withFilter(
+                (_, __, {pubsub}) => pubsub.asyncIterator(NEW_TODO),
+                (payload, args) => payload.requestId === args.requestId
+            )
+        }
     }
 }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+}

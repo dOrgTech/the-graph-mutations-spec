@@ -15,9 +15,12 @@ module.exports = gql`
         getTodos: [Todo]
     }
     type Mutation{
-        create(createInput: CreateInput): Todo!
-        setComplete(id: ID!): Todo!
-        setIncomplete(id: ID!): Todo!
-        delete(id: ID!): Todo!
+        create(createInput: CreateInput, requestId: ID): Todo!
+        setComplete(id: ID!, requestId: ID): Todo!
+        setIncomplete(id: ID!, requestId: ID): Todo!
+        delete(id: ID!, requestId: ID): Todo!
+    }
+    type Subscription {
+        progress(requestId: ID!): Float!
     }
 `

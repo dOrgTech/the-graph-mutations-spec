@@ -6,5 +6,8 @@ module.exports = {
     },
     Mutation: {
         ...todosResolvers.Mutation
+    },
+    Subscription:{
+        ...todosResolvers.Subscription
     }
 }

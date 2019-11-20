@@ -140,7 +140,7 @@ The `graph deploy` CLI command will now...
 
 Moving onto the [./dapp](./dapp) folder...
 
-## Step 1: Download Mutation Resolvers
+## Step 1: Download Mutations Module
 The resolver's module could be installed via a 3rd party repository, for instance npmjs.com. This site would be listed in the `mutations.yaml` file's `repository` property:  
 `npm i --save gravatar-mutations`
 
@@ -150,13 +150,35 @@ Alternatively, the user could download the module via IPFS where it has been upl
 ## Step 2: Add Mutation Resolvers To App
 [`App.js`](./dapp/src/App.js)
 ```javascript
-import { resolvers, requiredContext } from "gravatar-mutations"
+import gravatarMutations from "gravatar-mutations"
+import { initMutations } from "@graphprotocol/mutations-ts"
 
+// 1
+const mutations = initMutations(
+  gravatarMutations,
+  // 2
+  {
+    ethereum: process.env.WEB3_PROVIDER,
+    ipfs: process.env.IPFS_PROVIDER
+  }
+)
+
+// 3
 const client = new ApolloClient({
   ...
-  resolvers
+  resolvers: mutations.resolvers, // a
+  context: mutations.context      // b
 })
 ```
+
+1. Initialize the mutations.
+2. Provide values that'll be passed to the `requiredContext` initializers.
+3. Create the GraphQL client with the initialized mutation resolvers & context.
+
+### Initialized Mutations?
+The `mutations.resolvers` object used here is a wrapped version of the original `gravatarMutations.resolvers` object. These wrapping functions validate that the `context` being given to the underlying resolver has all of the properties present in the `requiredContext`.  
+
+The `mutations.context` object used here has been initialized using the options passed into `initMutations` in step 2. These options are given to the `requiredContext` methods, and the return result is stored in the context within a property named `thegraph`. At anytime the dApp developer can call `mutations.initContext({ ethereum: "...", ipfs: "..." })` to reset the values used.
 
 ## Step 3: Execute Mutations
 
@@ -198,8 +220,7 @@ Ensure that the full schema + mutations can be queried from the graph-node's Gra
 As a short term solution, The Graph Explorer can (if I'm not mistaken) dynamically load and use Mutation Resolver packages by making use dynamic module importing. In the future, "Server Side Execution" is in my opinion the "real" solution to this problem. See section below.
 
 ## Optimistic Updates
-TODO: more research needed  
-In short, we'd like to support optimistic updates that are aware of failed resolver execution (ex: transaction failures), and store finality.  
+Optimistic updates can be achieved just like normal (see example [here](https://www.apollographql.com/docs/react/performance/optimistic-ui/)). The big thing that must be kept in mind is that the `id` of the entity the mutation will be returning must be known ahead of time. In order to see optimistic responses + rolling back after errors, run this repo's `web2app` project where we've created a simple TODO app to demonstrate this.
 
 ## Graph CLI Updates
 `graph mutations codegen` will codegen types from the schema for the mutation resolvers to use (TypeScript, etc).  
@@ -216,7 +237,3 @@ Running the mutation resolvers server side, on the graph-node, is beneficial for
 2. graph-node forwards request to VM  
 3. Resolvers execute in the container  
 4. A custom Web3 provider is used in the resolvers, which routes signature requests out of the VM, to the graph-node, to the client, and then back the other way once a signature is given.
-
-# Implementation Path
-TODO: more research needed  
-For the initial MVP, I think everything can be accomplished by just modifying the `graph-cli` codebase if I'm not mistaken. Details to come once this specification is validated...

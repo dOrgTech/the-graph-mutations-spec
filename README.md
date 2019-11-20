@@ -216,9 +216,6 @@ Celebrate!
 ## GraphQL Schema Introspection Endpoint
 Ensure that the full schema + mutations can be queried from the graph-node's GraphQL endpoint, enabling full schema introspection.
 
-## *The Graph* Explorer Support (Dynamic Loading)
-As a short term solution, The Graph Explorer can (if I'm not mistaken) dynamically load and use Mutation Resolver packages by making use dynamic module importing. In the future, "Server Side Execution" is in my opinion the "real" solution to this problem. See section below.
-
 ## Optimistic Updates
 Optimistic updates can be achieved just like normal (see example [here](https://www.apollographql.com/docs/react/performance/optimistic-ui/)). The big thing that must be kept in mind is that the `id` of the entity the mutation will be returning must be known ahead of time. In order to see optimistic responses + rolling back after errors, run this repo's `web2app` project where we've created a simple TODO app to demonstrate this.
 
@@ -237,3 +234,6 @@ Running the mutation resolvers server side, on the graph-node, is beneficial for
 2. graph-node forwards request to VM  
 3. Resolvers execute in the container  
 4. A custom Web3 provider is used in the resolvers, which routes signature requests out of the VM, to the graph-node, to the client, and then back the other way once a signature is given.
+
+## *The Graph* Explorer Support
+Utilizing Server Side resolver execution, we can now support mutations within The Graph Explorer.

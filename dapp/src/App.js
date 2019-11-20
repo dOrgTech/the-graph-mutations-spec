@@ -11,27 +11,41 @@ import {
   DialogTitle,
   Button,
 } from '@material-ui/core'
-import { resolvers, setWeb3Provider } from 'gravatar-mutations'
 import './App.css'
 import Header from './components/Header'
 import Error from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
+import gravatarMutations from 'gravatar-mutations'
+import { initMutations } from '@graphprotocol/mutations-ts'
+
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
 }
 
-// TODO: this is a singleton pattern, and should really
-// be instance based...
-setWeb3Provider(window.ethereum)
-window.ethereum.enable()
+const mutations = initMutations(
+  gravatarMutations,
+  {
+    ethereum: window.ethereum,
+    ipfs: process.env.IPFS_ENDPOINT
+  }
+)
 
 const client = new ApolloClient({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   cache: new InMemoryCache(),
-  resolvers
+  resolvers: mutations.resolvers,
+  context: mutations.context // context.thegraph.ethereum & ipfs
 })
+
+// mutations.resolvers -
+//   wrapped resolver functions where we verify
+//   that the requiredContext is contained in the context.
+// mutations.context -
+//   the context that's been initialized using the options
+//   passed into initMutations. At anytime the developer
+//   can call `mutations.initContext({ ethereum: ..., ipfs: ... })`
 
 const GRAVATARS_QUERY = gql`
   query gravatars($where: Gravatar_filter!, $orderBy: Gravatar_orderBy!) {
@@ -77,109 +91,118 @@ const UPDATE_GRAVATAR_IMAGE = gql`
   }
 `
 
-class App extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      withImage: false,
-      withName: false,
-      orderBy: 'displayName',
-      showHelpDialog: false,
+const App = () => {
+
+  const [withImage, setWithImage] = useState(false)
+  const [withName, setWithName] = useState(false)
+  const [orderBy, setOrderBy] = useState('displayName')
+  const [showHelpDialog, setShowHelpDialog] = useState(false)
+
+  const [createGravatar] = useMutation(CREATE_GRAVATAR, {
+    optimisticResponse: {
+      createGravatar: {
+        __typename: "Gravatar",
+        // ID must be deterministic in order to use optimistic updates
+        id: undefined,
+        owner: window.ethereum.defaultAccount.address.toLowerCase(),
+        displayName: "...",
+        imageUrl: "..."
+      }
+    },
+    update(proxy, result) {
+      const data = cloneDeep(proxy.readQuery({
+        query: GRAVATARS_QUERY
+      }, true))
+
+      data.gravatars.push(result.data.createGravatar)
+
+      proxy.writeQuery({query: GRAVATARS_QUERY, data})
+    },
+    onError(error) {
+      // our optimistic update will be reverted here
+    },
+    variables: {
+      options: {
+        displayName: "...",
+        imageUrl: "..."
+      }
     }
+  })
+
+  const toggleHelpDialog = () => {
+    setShowHelpDialog(!showHelpDialog)
   }
 
-  toggleHelpDialog = () => {
-    this.setState(state => ({ ...state, showHelpDialog: !state.showHelpDialog }))
-  }
-
-  gotoQuickStartGuide = () => {
+  const gotoQuickStartGuide = () => {
     window.location.href = 'https://thegraph.com/docs/quick-start'
   }
 
-  render() {
-    const { withImage, withName, orderBy, showHelpDialog } = this.state
-
-    return (
-      <ApolloProvider client={client}>
-        <div className="App">
-          <Grid container direction="column">
-            <Header onHelp={this.toggleHelpDialog} />
-            <Filter
-              orderBy={orderBy}
-              withImage={withImage}
-              withName={withName}
-              onOrderBy={field => this.setState(state => ({ ...state, orderBy: field }))}
-              onToggleWithImage={() =>
-                this.setState(state => ({ ...state, withImage: !state.withImage }))
-              }
-              onToggleWithName={() =>
-                this.setState(state => ({ ...state, withName: !state.withName }))
-              }
-            />
-            <Grid item>
-              <Grid container>
-                <Query
-                  query={GRAVATARS_QUERY}
-                  variables={{
-                    where: {
-                      ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
-                      ...(withName ? { displayName_not: '' } : {}),
-                    },
-                    orderBy: orderBy,
-                  }}
-                >
-                  {({ data, error, loading }) => {
-                    return loading ? (
-                      <LinearProgress variant="query" style={{ width: '100%' }} />
-                    ) : error ? (
-                      <Error error={error} />
-                    ) : (
-                      <Gravatars gravatars={data.gravatars} />
-                    )
-                  }}
-                </Query>
-              </Grid>
+  return (
+    <ApolloProvider client={client}>
+      <div className="App">
+        <Grid container direction="column">
+          <Header onHelp={toggleHelpDialog} />
+          <Filter
+            orderBy={orderBy}
+            withImage={withImage}
+            withName={withName}
+            onOrderBy={field => setOrderBy(field)}
+            onToggleWithImage={() => setWithImage(!withImage)}
+            onToggleWithName={() => setWithName(!state.withName)}
+          />
+          <Grid item>
+            <Grid container>
+              <Query
+                query={GRAVATARS_QUERY}
+                variables={{
+                  where: {
+                    ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+                    ...(withName ? { displayName_not: '' } : {}),
+                  },
+                  orderBy: orderBy,
+                }}
+              >
+                {({ data, error, loading }) => {
+                  return loading ? (
+                    <LinearProgress variant="query" style={{ width: '100%' }} />
+                  ) : error ? (
+                    <Error error={error} />
+                  ) : (
+                    <Gravatars gravatars={data.gravatars} />
+                  )
+                }}
+              </Query>
             </Grid>
           </Grid>
-          <Dialog
-            fullScreen={false}
-            open={showHelpDialog}
-            onClose={this.toggleHelpDialog}
-            aria-labelledby="help-dialog"
-          >
-            <DialogTitle id="help-dialog">{'Show Quick Guide?'}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                We have prepared a quick guide for you to get started with The Graph at
-                this hackathon. Shall we take you there now?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.toggleHelpDialog} color="primary">
-                Nah, I'm good
-              </Button>
-              <Button onClick={this.gotoQuickStartGuide} color="primary" autoFocus>
-                Yes, pease
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <Mutation
-            mutation={CREATE_GRAVATAR}
-            variables={{
-              options: { displayName: "...", imageUrl: "..." }
-            }}
-            // TODO: local store + optimistic updates
-          >
-            {(postMutation) => (
-              <button onClick={postMutation}>
-                Create Gravatar
-              </button>
-            )}
-          </Mutation>
-        </div>
-      </ApolloProvider>
-    )
-  }
+        </Grid>
+        <Dialog
+          fullScreen={false}
+          open={showHelpDialog}
+          onClose={toggleHelpDialog}
+          aria-labelledby="help-dialog"
+        >
+          <DialogTitle id="help-dialog">{'Show Quick Guide?'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              We have prepared a quick guide for you to get started with The Graph at
+              this hackathon. Shall we take you there now?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={toggleHelpDialog} color="primary">
+              Nah, I'm good
+            </Button>
+            <Button onClick={gotoQuickStartGuide} color="primary" autoFocus>
+              Yes, pease
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <button onClick={createGravatar}>
+          Create Gravatar
+        </button>
+      </div>
+    </ApolloProvider>
+  )
 }
 
 export default App

@@ -27,6 +27,7 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
 const mutations = initMutations(
   gravatarMutations,
   {
+    thegraph: process.env.REACT_APP_GRAPHQL_ENDPOINT,
     ethereum: window.ethereum,
     ipfs: process.env.IPFS_ENDPOINT
   }
@@ -35,17 +36,16 @@ const mutations = initMutations(
 const client = new ApolloClient({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   cache: new InMemoryCache(),
-  resolvers: mutations.resolvers,
-  context: mutations.context // context.thegraph.ethereum & ipfs
+  resolvers: mutations.resolvers
 })
 
 // mutations.resolvers -
-//   wrapped resolver functions where we verify
-//   that the requiredContext is contained in the context.
-// mutations.context -
-//   the context that's been initialized using the options
-//   passed into initMutations. At anytime the developer
-//   can call `mutations.initContext({ ethereum: ..., ipfs: ... })`
+//   wrapped version of the original `gravatarMutations.resolvers`
+//   object. These wrapping functions inject a `context` property
+//   named `thegraph` with all of the fields added by the
+//   `requiredContext` generator functions. Additionally the datasource
+//   addresses have been fetched from the graph-node and are available
+//   like so `context.thegraph.datasources.${name}`.
 
 const GRAVATARS_QUERY = gql`
   query gravatars($where: Gravatar_filter!, $orderBy: Gravatar_orderBy!) {

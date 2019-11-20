@@ -10,8 +10,18 @@ TODO:
 - update validation/schema.js and validation/manifest.js
 - update tests with all new output + errors for effected commands
 
+build
+- combine & parse the mutation's schema.graphql
+- parse mutations.yaml
+- parse subgraph.yaml
+- open & validate resolvers module
+deploy
+- upload js module to ipfs + add to subgraph.yaml
+- upload schema for introspection
 
-# Misc
-- upload to IPFS
-- publish for already deployed subgraphs
-- verify default export value from mutations module (resolvers [Mutation, all functions], requiredContext [all supported contexts (how?), all functions])
+@graphprotocol/mutations-ts
+- initMutations
+  - create context with initial values that're provided
+  - verify all of required context is initialized
+  - add datasource addresses to context (requires graph-node connection)
+  - wrap resolvers in a function that checks context to make sure it's there

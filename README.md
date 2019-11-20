@@ -157,8 +157,9 @@ import { initMutations } from "@graphprotocol/mutations-ts"
 // 1
 const mutations = initMutations(
   gravatarMutations,
-  // 2
+  // 2 - used to init our context
   {
+    graphnode: process.env.GRAPH_NODE,
     ethereum: process.env.WEB3_PROVIDER,
     ipfs: process.env.IPFS_PROVIDER
   }
@@ -166,9 +167,9 @@ const mutations = initMutations(
 
 // 3
 const client = new ApolloClient({
-  ...
+  uri: process.env.GRAPH_NODE,
+  cache: new InMemoryCache(),
   resolvers: mutations.resolvers, // a
-  context: mutations.context      // b
 })
 ```
 
@@ -177,9 +178,7 @@ const client = new ApolloClient({
 3. Create the GraphQL client with the initialized mutation resolvers & context.
 
 ### Initialized Mutations?
-The `mutations.resolvers` object used here is a wrapped version of the original `gravatarMutations.resolvers` object. These wrapping functions validate that the `context` being given to the underlying resolver has all of the properties present in the `requiredContext`.  
-
-The `mutations.context` object used here has been initialized using the options passed into `initMutations` in step 2. These options are given to the `requiredContext` methods, and the return result is stored in the context within a property named `thegraph`. At anytime the dApp developer can call `mutations.initContext({ ethereum: "...", ipfs: "..." })` to reset the values used.
+The `mutations.resolvers` created by this function are a wrapped version of the original `gravatarMutations.resolvers` object. These wrapping functions inject a `context` property named `thegraph` with all of the fields added by the `requiredContext` generator functions. Additionally the datasource addresses have been fetched from the graph-node and are available like so `context.thegraph.datasources.${name}`.
 
 ## Step 3: Execute Mutations
 

@@ -4,15 +4,18 @@ import * as protocol from "./protocol"
 export const resolvers = {
   Mutation: {
     async createGravatar(_root, args, context) {
-      await protocol.createGravatar(context.thegraph.web3, ...args);
+      const { web3, datasources } = context.thegraph
+      await protocol.createGravatar(web3, datasources.Gravity, ...args);
       return await queryUserGravatar(context.client)
     },
     async updateGravatarName(_root, args, context) {
-      await protocol.updateGravatarName(context.thegraph.web3, ...args)
+      const { web3, datasources } = context.thegraph
+      await protocol.updateGravatarName(web3, datasources.Gravity, ...args)
       return await queryUserGravatar(context.client)
     },
     async updateGravatarImage(_root, args, context) {
-      await protocol.updateGravatarImage(context.thegraph.web3, ...args)
+      const { web3, datasources } = context.thegraph
+      await protocol.updateGravatarImage(web3, datasources.Gravity, ...args)
       return await queryUserGravatar(context.client)
     }
   }

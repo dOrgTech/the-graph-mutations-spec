@@ -1,5 +1,4 @@
-// npmjs.com/package/@graphprotocol/mutation-resolvers
-
+// TODO
 interface RequiredContext {
   ethereum: (provider: any) => any
 }

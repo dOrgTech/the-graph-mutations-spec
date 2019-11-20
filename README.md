@@ -91,6 +91,7 @@ const resolvers = {
     async createGravatar(_root, args, context) {
       // context.thegraph.ethereum
       // context.thegraph.ipfs
+      // context.thegraph.datasources.${name} -> address
       ...
     },
     async updateGravatarName(_root, args, context) {

@@ -1,21 +1,21 @@
 import gql from "graphql-tag"
-import web3 from "./web3"
 import * as protocol from "./protocol"
 
-// TODO: local store + optimistic updates
-
 export const resolvers = {
-  Mutations: {
+  Mutation: {
     async createGravatar(_root, args, context) {
-      await protocol.createGravatar(...args);
+      const { web3, datasources } = context.thegraph
+      await protocol.createGravatar(web3, datasources.Gravity, ...args);
       return await queryUserGravatar(context.client)
     },
     async updateGravatarName(_root, args, context) {
-      await protocol.updateGravatarName(...args)
+      const { web3, datasources } = context.thegraph
+      await protocol.updateGravatarName(web3, datasources.Gravity, ...args)
       return await queryUserGravatar(context.client)
     },
     async updateGravatarImage(_root, args, context) {
-      await protocol.updateGravatarImage(...args)
+      const { web3, datasources } = context.thegraph
+      await protocol.updateGravatarImage(web3, datasources.Gravity, ...args)
       return await queryUserGravatar(context.client)
     }
   }

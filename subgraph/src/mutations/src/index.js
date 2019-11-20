@@ -1,4 +1,8 @@
+import { resolvers } from "./resolvers"
+import { requiredContext } from "./requiredContext"
 
 export * from "./protocol"
-export { setWeb3Provider } from "./web3"
-export { resolvers } from "./resolvers"
+export default {
+  resolvers,
+  requiredContext
+}

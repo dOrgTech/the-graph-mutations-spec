@@ -9,16 +9,16 @@ Original source available here:
 
 Starting in the [./subgraph](./subgraph) folder...
 
-## Step 1: Define Mutations
+## Step 1: Mutation Schema & Manifest Files
 
-[`mutations.graphql`](./subgraph/src/mutations/mutations.graphql)
+[`mutations/schema.graphql`](./subgraph/src/mutations/schema.graphql)
 ```graphql
-type GravatarOptions {
+input GravatarOptions {
   displayName: String!
   imageUrl: String!
 }
 
-type Mutations {
+type Mutation {
   createGravatar(
     options: GravatarOptions!
   ): Gravatar
@@ -33,12 +33,40 @@ type Mutations {
 }
 ```
 
-**NOTE:** GraphQL types from the subgraph's [schema.graphql](./subgraph/schema.graphql) file can be used within this file.
+**NOTE:** GraphQL types from the subgraph's [schema.graphql](./subgraph/schema.graphql) are automatically included in this file.
+
+[`mutations.yaml`](./subgraph/mutations/mutations.yaml)
+```yaml
+specVersion: 0.0.1
+repository: https://npmjs.com/package/gravatar-mutations
+mutations:
+  schema:
+    file: ./schema.graphql
+  resolvers:
+    kind: javascript
+    file: ./dist/index.js
+```
 
 ### Decisions Made
-**Define Mutations In GraphQL:** In our last call, the idea of defining the mutations in the manifest file was brought up. I saw this as very limiting, as it removes the ability to define additional datatypes that can be used as argument or return values within the mutation's function signature. Additionally, keeping everything in GraphQL promotes consistency and predictability for how types will be bound to the resolver's implementation language, since that standard is already defined for us by GraphQL tooling. Lastly, this also allows you to use subgraph entity types within your mutation definitions.
+**Define Mutations In GraphQL:**  
+Keeping everything in GraphQL...
+* Promotes consistency and predictability for how types will be bound to the resolver's implementation language, since this standard is already defined for us by existing GraphQL tooling.
+* Allows you to both define new data types (for example `input GravatarOptions`) and use existing entity types (for example `Gravatar`) within your mutation definitions.
 
-**Define Mutations In a Seperate GraphQL File:** In order to promote the decoupling of codebases (subgraph mappings & mutations), defining the mutations in a seperate GraphQL file is desired. An added benefit is that this helps keep write-specific data types seperate from the main schema of the entity store. To illustrate this, see "GravatarOptions" in the example above. Further decoupling could be done through having a completely deperate .yaml file for the mutations project. ***This might be ideal*** as it would potentially allow publishing mutations for pre-existing subgraphs without bumping the version (and changing the endpoint). If a seperate .yaml file isn't introduced, it leads to a weird circular dependency graph `subgraph mappings <=> mutations`, ideally it'd be unidirectional `subgraph mappings <= mutations`.
+**Define Mutations In a Separate GraphQL & YAML File:**  
+The following thoughts played a role in this decision...
+* In order to promote the decoupling of codebases (subgraph mappings & mutations), defining the mutations in separate GraphQL & YAML files is desired.
+* Helps keep write-specific data types separate from the main schema of the subgraph's entity store. To illustrate this, see "GravatarOptions" in the example above. We'd like to keep these types out of the main schema file.
+* Ideally developers could publish mutations for pre-existing subgraphs, without having to modify the root manifest.
+
+**Multiple `kind`s of Mutation Resolvers:**  
+In the future, we may want to support resolvers that are compiled to WASM.  
+
+**Server-Side == Client-Side Resolvers:**  
+Originally, I had "`kind: browser/javascript`", but realized that (1) Apollo GraphQL resolvers have the same signature client-side as they do server-side, and (2) implementing server-side resolvers within graph-node could (and should) be done in a way that doesn't require any code changes from the mutation developer (see "Post MVP Goals" section below).
+
+**Resolvers' `file` Is ES5 Compatible & Bundled:**  
+The `resolvers`' `file` property must point to an ES5 compatible javascript module that has been bundled so that there are no external files required by the module at run-time. Transpiling, bundling, and ES5 verification can be done using: [babel](https://www.npmjs.com/package/@babel/cli), [webpack](https://www.npmjs.com/package/webpack), and [es-check](https://www.npmjs.com/package/es-check). The [example project](./subgraph/src/mutations/package.json) demonstrates this build & verification process. The graph-cli will also run this ES5 verification. If developers would like to also supply their users an option to download from a 3rd party repository like npmjs.com or github.com, they can include that link in the `repository` section of the manifest. This is useful if they'd like to give developers an un-minimized version of the source for debugging or auditing.
 
 ## Step 2: Add Mutations To Subgraph Manifest
 
@@ -49,33 +77,21 @@ specVersion: 0.0.3
 schema:
   file: ./schema.graphql
 mutations:
-  file: ./mutations/mutations.graphql
-  resolvers:
-    kind: javascript
-    package: ./mutations/package.json
+  file: ./mutations/mutations.yaml
+dataSources:
+  - ...
 ```
 
-### Decisions Made
-**Multiple Kinds of Mutation Resolvers:** In the future, we may want to support resolvers written in AssemblyScript (WASM).  
-
-**Server-Side == Client-Side Resolvers:** Originally, I had "`kind: browser/javascript`", but realized that (1) Apollo GraphQL resolvers have the same signature client-side as they do server-side, and (2) implementing server-side resolvers within graph-node could (and should) be done in a way that doesn't require any code changes from the mutation developer (see "Post MVP Goals" section below).
-
-### Open Questions
-* Rename `javascript` to `nodejs` in the `kind:` property?
-
-## Step 3: Create The Resolvers' JavaScript Package
-The requirements for the [JavaScript Package](./subgraph/src/mutations/package.json) are:
-1. Include a root module within the [package.json](./subgraph/src/mutations/package.json)  
-  `"main": "./path/to/index.js"`
-2. The [root module](./subgraph/src/mutations/src/index.js) exports a `resolvers` object, which defines all mutations (see example below).  
-3. The [root module](./subgraph/src/mutations/src/index.js) exports a `setWeb3Provider(provider)` method, which is assumed to set the Web3 Provider for the resolvers to use.  
-**NOTE:** the resolvers could choose to infer the Web3 provider for the user if none is set, but the option to explicitely set one is necessary in my opinion (see "Decisions Made" section below).
+## Step 3: Implement The Mutations Resolvers (Javascript)
 
 [`index.js`](./subgraph/src/mutations/src/index.js)
 ```js
-export const resolvers = {
-  Mutations: {
+const resolvers = {
+  Mutation: {
     async createGravatar(_root, args, context) {
+      // context.thegraph.ethereum
+      // context.thegraph.ipfs
+      // context.thegraph.datasources.${name} -> address
       ...
     },
     async updateGravatarName(_root, args, context) {
@@ -87,48 +103,82 @@ export const resolvers = {
   }
 }
 
-export function setWeb3Provider(provider) {
-  ...
+const requiredContext = {
+  ethereum: (provider) => {
+    // these are added to the context.thegraph object
+    return new Web3(provider)
+  },
+  ipfs: (provider) => {
+    return new IPFS(provider)
+  }
+}
+
+export default {
+  resolvers,
+  requiredContext
 }
 ```
 
-### Decisions Made
-**Require A "Set Web3 Provider" Function:** The state of client-side Web3 wallets is always changing, and I do not think we should leave it up to the mutation developer to be able to future proof their implementations. In order to remidy this, a simple setter is a good compromise in my opinion. This also helps in the server-side mutations implementation path (see "Post MVP Goals" section below). The setter function as it exists now is a singleton pattern, and I'd like to find a way to have it be instance based to support multiple providers, the same way `ApolloClient` is an instance based approach.
+The requirements for the resolver's [JavaScript module](./subgraph/src/mutations/dist/index.js) are:
+1. Default exports an object with properties `resolvers` and `requiredContext`.
+2. `resolvers` has property `Mutations` which includes all of the schema's mutations.
+3. `requiredContext`'s properties are all functions, and their names are all supported by The Graph.
+4. Module is ES5 compliant. We can verify this using [es-check](https://www.npmjs.com/package/es-check).
+5. Module is bundled with no external dependencies. There is no way to detect this as Javascript is dynamically interpreted, it will just have to be written in bold red text in the docs.
 
 ## Step 4: Build & Publish Subgraph
 
 The `graph build` CLI command will now...
-1. Parse the `mutations` section of [the manifest](./subgraph/subgraph.yaml)
-2. Resolve, parse, and validate the [mutation GraphQL definitions](./subgraph/src/mutations/mutations.graphql) from the `mutations.file` property
-3. Resolve, load, and validate the [resolvers' implementation](./subgraph/src/mutations/package.json) from the `mutations.resolvers` property, ensuring all required exports are present (resolvers object & setWeb3Provider function)
+1. Parse the [`mutations.file`](./subgraph/subgraph.yaml) section of [the subgraph's manifest](./subgraph/subgraph.yaml), resolve and pase [the mutation's manifest](./subgraph/src/mutations/mutations.yaml).
+2. Resolve, parses, and validates the [mutation GraphQL definitions](./subgraph/src/mutations/schema.graphql) from the [`mutations.schema.file`](./subgraph/src/mutations/mutations.yaml) property.
+3. Resolve, load, and validate the [resolvers' implementation](./subgraph/src/mutations/dist/index.js) from the [`mutations.resolvers.file`](./subgraph/src/mutations/mutations.yaml) property, ensuring all required exports are present and valid. See require listed above.
 
 The `graph deploy` CLI command will now...
 1. Add mutations schema to the graph-node for introspection purposes (see "Post MVP Goals" section).
-2. Upload the resolvers' package to the graph-node, allowing users to download the package directly from the graph-node and not an external package repository (see "Post MVP Goals" section).
-
-**NOTE:** For the MVP, the package can just be hosted on http://npmjs.com.
+2. Upload the resolvers' module to IPFS.
 
 # User Story: Application Developer
 
 Moving onto the [./dapp](./dapp) folder...
 
-## Step 1: Consume Mutation Resolvers
-`npm i --save mutation-resolvers-package`
+## Step 1: Download Mutations Module
+The resolver's module could be installed via a 3rd party repository, for instance npmjs.com. This site would be listed in the `mutations.yaml` file's `repository` property:  
+`npm i --save gravatar-mutations`
 
-**NOTE:** In the future, the `--registry` flag could be added to download from a graph-node, or a graph-cli command could be added (see "Post MVP Goals" section below).
+Alternatively, the user could download the module via IPFS where it has been uploaded. First they would query a graph-node to get the manifest for the subgraph, and then get the IPFS hash from there. We will provide a graph-cli command that does this for developers:  
+`graph mutations fetch gravatar-mutations ./dest`
 
 ## Step 2: Add Mutation Resolvers To App
 [`App.js`](./dapp/src/App.js)
 ```javascript
-import { resolvers, setWeb3Provider } from "mutation-resolvers-package"
+import gravatarMutations from "gravatar-mutations"
+import { initMutations } from "@graphprotocol/mutations-ts"
 
-setWeb3Provider("...")
+// 1
+const mutations = initMutations(
+  gravatarMutations,
+  // 2 - used to init our context
+  {
+    graphnode: process.env.GRAPH_NODE,
+    ethereum: process.env.WEB3_PROVIDER,
+    ipfs: process.env.IPFS_PROVIDER
+  }
+)
 
+// 3
 const client = new ApolloClient({
-  ...
-  resolvers
+  uri: process.env.GRAPH_NODE,
+  cache: new InMemoryCache(),
+  resolvers: mutations.resolvers, // a
 })
 ```
+
+1. Initialize the mutations.
+2. Provide values that'll be passed to the `requiredContext` initializers.
+3. Create the GraphQL client with the initialized mutation resolvers & context.
+
+### Initialized Mutations?
+The `mutations.resolvers` created by this function are a wrapped version of the original `gravatarMutations.resolvers` object. These wrapping functions inject a `context` property named `thegraph` with all of the fields added by the `requiredContext` generator functions. Additionally the datasource addresses have been fetched from the graph-node and are available like so `context.thegraph.datasources.${name}`.
 
 ## Step 3: Execute Mutations
 
@@ -166,19 +216,8 @@ Celebrate!
 ## GraphQL Schema Introspection Endpoint
 Ensure that the full schema + mutations can be queried from the graph-node's GraphQL endpoint, enabling full schema introspection.
 
-## *The Graph* Explorer Support (Dynamic Loading)
-As a short term solution, The Graph Explorer can (if I'm not mistaken) dynamically load and use Mutation Resolver packages by making use dynamic module importing. In the future, "Server Side Execution" is in my opinion the "real" solution to this problem. See section below.
-
-## Graph-Node Package Hosting
-Host the Mutation Resolver package from the graph-node, so users no longer have to rely on a 3rd party package repository. Once hosted, users can consume through the `npm` CLI like so:  
-`npm i --save mutation-resolvers-package --registry http://graph-node`  
-
-Or a `graph` CLI command could be added:  
-`graph mutations install mutation-resolvers-package`  
-
 ## Optimistic Updates
-TODO: more research needed  
-In short, we'd like to support optimistic updates that are aware of failed resolver execution (ex: transaction failures), and store finality.  
+Optimistic updates can be achieved just like normal (see example [here](https://www.apollographql.com/docs/react/performance/optimistic-ui/)). The big thing that must be kept in mind is that the `id` of the entity the mutation will be returning must be known ahead of time. In order to see optimistic responses + rolling back after errors, run this repo's `web2app` project where we've created a simple TODO app to demonstrate this.
 
 ## Graph CLI Updates
 `graph mutations codegen` will codegen types from the schema for the mutation resolvers to use (TypeScript, etc).  
@@ -196,6 +235,5 @@ Running the mutation resolvers server side, on the graph-node, is beneficial for
 3. Resolvers execute in the container  
 4. A custom Web3 provider is used in the resolvers, which routes signature requests out of the VM, to the graph-node, to the client, and then back the other way once a signature is given.
 
-# Implementation Path
-TODO: more research needed  
-For the initial MVP, I think everything can be accomplished by just modifying the `graph-cli` codebase if I'm not mistaken. Details to come once this specification is validated...
+## *The Graph* Explorer Support
+Utilizing Server Side resolver execution, we can now support mutations within The Graph Explorer.

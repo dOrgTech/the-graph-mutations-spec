@@ -1,18 +1,20 @@
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useSubscription } from '@apollo/react-hooks';
 import { generateId } from '../util/IdGenerator';
+import {useState} from 'react';
 
-export const useCustomMutation = ({
+export const useMutationAndSubscribe = (mutation, subscription, {
     onCompleted,
     update,
     optimisticResponse,
     onError,
-    variables,
-    mutation
+    variables
 }) => {
+
+    const [mutationId, setMutationId] = useState(0);
 
     const requestId = generateId();
 
-    const [create, loading] = useMutation(mutation, {
+    const [executeMutation, loading] = useMutation(mutation, {
         optimisticResponse,
         onCompleted,
         update,
@@ -20,6 +22,14 @@ export const useCustomMutation = ({
         variables: {...variables, requestId}
     })
 
-    return {create, requestId, loading};
+    const { data: { progress } = {} } = useSubscription(
+        subscription,
+        { variables: { requestId: mutationId } }
+      );
+
+    return {executeMutation: ()=>{
+        setMutationId(requestId)
+        executeMutation();
+    }, loading, progress}
 }
 

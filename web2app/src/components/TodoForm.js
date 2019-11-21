@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import cloneDeep from 'lodash/cloneDeep';
 import { Button, Form, Card, Progress } from 'semantic-ui-react';
-import { useSubscription } from '@apollo/react-hooks';
 import { CREATE_TODO } from '../graphql/mutations';
 import { GET_TODOS_QUERY } from '../graphql/queries';
 import { NEW_TODO_SUBSCRIPTION } from '../graphql/subscriptions';
 import { useForm } from '../util/hooks/form.hook';
 import { notify } from 'react-notify-toast';
-import { useCustomMutation } from '../graphql/hooks';
+import { useMutationAndSubscribe } from '../graphql/hooks';
 
 function Create() {
 
@@ -21,10 +20,7 @@ function Create() {
         values.description = '';
     }
 
-    const [requestId, setRequestId] = useState(0);
-
-    const { create, requestId: mutationId, loading: { loading } } = useCustomMutation({
-        mutation: CREATE_TODO,
+    const {executeMutation, loading: {loading}, progress} = useMutationAndSubscribe(CREATE_TODO, NEW_TODO_SUBSCRIPTION, {
         update(proxy, result) {
             const data = cloneDeep(proxy.readQuery({
                 query: GET_TODOS_QUERY,
@@ -45,14 +41,8 @@ function Create() {
         variables: values
     })
 
-    const { data: { progress } = {} } = useSubscription(
-        NEW_TODO_SUBSCRIPTION,
-        { variables: { requestId } }
-    );
-
     function createTodo() {
-        create();
-        setRequestId(mutationId);
+        executeMutation();
     }
 
     return (
@@ -82,12 +72,12 @@ function Create() {
                 </Card.Content>
             </Card>
 
-            {loading ?
+            {loading?
                 (<div>
                     <p>Executing transaction... </p>
                     <Progress percent={progress} indicating />
-                </div>)
-                : ''}
+                </div>) : ''
+                }
 
         </div>
     )

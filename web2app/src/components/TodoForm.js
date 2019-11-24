@@ -1,27 +1,23 @@
-import React from 'react';
-import cloneDeep from 'lodash/cloneDeep';
+import React, { useState } from 'react';
 import { Button, Form, Card, Progress } from 'semantic-ui-react';
 import { CREATE_TODO } from '../graphql/mutations';
-import { GET_TODOS_QUERY } from '../graphql/queries';
-import { NEW_TODO_SUBSCRIPTION } from '../graphql/subscriptions';
 import { useForm } from '../util/hooks/form.hook';
 import { notify } from 'react-notify-toast';
 import { useMutationAndSubscribe } from '../graphql/hooks';
-import { useMutation } from '@apollo/react-hooks';
 
 function Create() {
+
+    const [subscriptionData, setSubscriptionData] = useState(0)
 
     const { onChange, onSubmit, values } = useForm(createTodo, {
         asignee: '',
         description: ''
     });
 
-    const resetForm = () => {
-        values.asignee = '';
-        values.description = '';
-    }
-
-    const [executeMutation] = useMutation(CREATE_TODO, {
+    const [executeMutation, {loading}] = useMutationAndSubscribe(
+        CREATE_TODO, 
+        setSubscriptionData,
+    {
         onError(error) {
             console.log(error)
             notify.show(
@@ -30,7 +26,7 @@ function Create() {
                 4000
             )
         },
-        variables: {...values, requestId: '87'}
+        variables: { ...values}
     })
 
     function createTodo() {
@@ -63,7 +59,11 @@ function Create() {
                     </Form>
                 </Card.Content>
             </Card>
-
+            {loading? 
+            <Progress indicating percent={subscriptionData}>
+                <p>Executing transaction</p>
+            </Progress> 
+            : ''}
         </div>
     )
 }

@@ -1,8 +1,18 @@
-import { useMutation, useSubscription } from '@apollo/react-hooks';
+import {useEffect, useState} from 'react';
+import { useMutation } from '@apollo/react-hooks';
 import { generateId } from '../util/IdGenerator';
-import {useState} from 'react';
+import { BehaviorSubject } from 'rxjs';
 
-export const useMutationAndSubscribe = (mutation, subscription, {
+const useObservable = (observable, setter, id) => {
+    useEffect(() => {
+        let subscription = observable.subscribe(result => {
+            setter(result[id])
+        })
+        return () => subscription.unsubscribe();
+    }, [observable, setter, id])
+}
+
+export const useMutationAndSubscribe = (mutation, setter, {
     onCompleted,
     update,
     optimisticResponse,
@@ -10,26 +20,27 @@ export const useMutationAndSubscribe = (mutation, subscription, {
     variables
 }) => {
 
-    const [mutationId, setMutationId] = useState(0);
-
     const requestId = generateId();
+
+    const [mutationId, setMutationId] = useState(0)
+
+    const [observable] = useState(new BehaviorSubject(''))
 
     const [executeMutation, loading] = useMutation(mutation, {
         optimisticResponse,
         onCompleted,
         update,
+        context: {observable},
         onError,
+        observable,
         variables: {...variables, requestId}
     })
 
-    const { data: { progress } = {} } = useSubscription(
-        subscription,
-        { variables: { requestId: mutationId } }
-      );
+    useObservable(observable, setter, mutationId);
 
-    return {executeMutation: ()=>{
+    return [()=>{
         setMutationId(requestId)
         executeMutation();
-    }, loading, progress}
+    }, loading]
 }
 

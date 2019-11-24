@@ -1,13 +1,13 @@
 import gql from 'graphql-tag';
 
 export const GET_TODOS_QUERY = gql`
-{
-    getTodos{
-        id 
-        description 
-        asignee 
-        completed
+query GetTodos {
+        getTodos @client {
+            id
+            asignee
+            completed
+            description
+        }
     }
-}
 
 `

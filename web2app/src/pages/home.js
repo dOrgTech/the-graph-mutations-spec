@@ -7,6 +7,7 @@ import { GET_TODOS_QUERY } from '../graphql/queries';
 
 function Home() {
     const { data: { getTodos: todos } = {} } = useQuery(GET_TODOS_QUERY);
+    console.log(todos)
     return (
         <div style={{ marginTop: 20 }}>
             <h1>TODO APP</h1>

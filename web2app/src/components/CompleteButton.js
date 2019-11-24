@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from 'semantic-ui-react';
 import { useMutation } from '@apollo/react-hooks';
-import { SET_COMPLETE, SET_INCOMPLETE } from '../graphql/mutations';
-import {notify} from 'react-notify-toast';
+import { SET_COMPLETE } from '../graphql/mutations';
+import { notify } from 'react-notify-toast';
 
 const CompleteButton = ({ props: { id } }) => {
 
@@ -15,15 +15,15 @@ const CompleteButton = ({ props: { id } }) => {
                 id,
                 asignee: '',
                 description: '',
-                completed: '',
+                completed: true,
                 __typename: ''
             }
         },
-        update(proxy, result) {
-            setCompleted(true);
+        update(proxy, { data }) {
+            setCompleted(data.setComplete.completed)
         },
         onError(error) {
-            setCompleted(false);
+            setCompleted(!completed);
             notify.show(
                 "An unexpected error ocurred while updating ToDo",
                 "error",
@@ -33,40 +33,13 @@ const CompleteButton = ({ props: { id } }) => {
         variables: { id }
     })
 
-    const [setIncomplete] = useMutation(SET_INCOMPLETE, {
-        optimisticResponse: {
-            setIncomplete: {
-                id,
-                asignee: '',
-                description: '',
-                completed: '',
-                __typename: ''
-            }
-        },
-        update(proxy, result) {
-            setCompleted(false);
-        },
-        onError(error) {
-            setCompleted(true);
-            notify.show(
-                "An unexpected error ocurred while updating ToDo",
-                "error",
-                4000
-            )
-        },
-        variables: { id }
-    });
-
     const completeButton = completed ? (
-        <Button color='green' onClick={setIncomplete}>
+        <Button color='green' onClick={setComplete}>
             Completed!
             </Button>
-        ) : (
-            <Button basic color='green' onClick={setComplete}>
-                Mark as completed
-            </Button>
-        )
-
+    ) : (<Button basic color='green' onClick={setComplete}>
+        Set Complete
+        </Button>)
 
     return completeButton;
 }

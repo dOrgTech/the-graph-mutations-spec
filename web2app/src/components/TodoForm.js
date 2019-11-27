@@ -7,27 +7,24 @@ import { useMutationAndSubscribe } from '../graphql/hooks';
 
 function Create() {
 
-    const [subscriptionData, setSubscriptionData] = useState(0)
-
     const { onChange, onSubmit, values } = useForm(createTodo, {
         asignee: '',
         description: ''
     });
 
-    const [executeMutation, {loading}] = useMutationAndSubscribe(
-        CREATE_TODO, 
-        setSubscriptionData,
-    {
-        onError(error) {
-            console.log(error)
-            notify.show(
-                "An unexpected error ocurred while creating ToDo",
-                "error",
-                4000
-            )
-        },
-        variables: { ...values}
-    })
+    const [executeMutation, { loading }, subscriptionData] = useMutationAndSubscribe(
+        CREATE_TODO,
+        {
+            onError(error) {
+                console.log(error)
+                notify.show(
+                    "An unexpected error ocurred while creating ToDo",
+                    "error",
+                    4000
+                )
+            },
+            variables: { ...values }
+        })
 
     function createTodo() {
         executeMutation();
@@ -59,11 +56,11 @@ function Create() {
                     </Form>
                 </Card.Content>
             </Card>
-            {loading? 
-            <Progress indicating percent={subscriptionData}>
-                <p>Executing transaction</p>
-            </Progress> 
-            : ''}
+            {loading ?
+                <Progress indicating percent={subscriptionData}>
+                    <p>Executing transaction</p>
+                </Progress>
+                : ''}
         </div>
     )
 }

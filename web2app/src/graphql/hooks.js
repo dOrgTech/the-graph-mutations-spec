@@ -12,7 +12,7 @@ const useObservable = (observable, setter, id) => {
     }, [observable, setter, id])
 }
 
-export const useMutationAndSubscribe = (mutation, setter, {
+export const useMutationAndSubscribe = (mutation, {
     onCompleted,
     update,
     optimisticResponse,
@@ -24,6 +24,8 @@ export const useMutationAndSubscribe = (mutation, setter, {
 
     const [mutationId, setMutationId] = useState(0)
 
+    const [subscriptionData, setSubscriptionData] = useState({})
+
     const [observable] = useState(new BehaviorSubject(''))
 
     const [executeMutation, loading] = useMutation(mutation, {
@@ -32,15 +34,14 @@ export const useMutationAndSubscribe = (mutation, setter, {
         update,
         context: {observable},
         onError,
-        observable,
         variables: {...variables, requestId}
     })
 
-    useObservable(observable, setter, mutationId);
+    useObservable(observable, setSubscriptionData, mutationId);
 
     return [()=>{
         setMutationId(requestId)
         executeMutation();
-    }, loading]
+    }, loading, subscriptionData]
 }
 

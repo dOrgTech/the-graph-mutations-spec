@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react';
 import { useMutation } from '@apollo/react-hooks';
-import { generateId } from '../util/IdGenerator';
 import { BehaviorSubject } from 'rxjs';
 import MutationState from '../class/MutationState.class';
 

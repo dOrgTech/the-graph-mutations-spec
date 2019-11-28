@@ -33,7 +33,7 @@ export const useMutationAndSubscribe = (mutation, {
         optimisticResponse,
         onCompleted,
         update,
-        context: {observable, mutationState: new MutationState()},
+        context: {mutationState: new MutationState(observable)},
         onError,
         variables: {...variables, requestId}
     })

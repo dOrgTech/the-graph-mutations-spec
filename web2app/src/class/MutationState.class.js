@@ -1,6 +1,7 @@
 export default class MutationState {
-    constructor(){
+    constructor(observable){
         this.transactions = [];
+        this.observable = observable
     }
 
     get pendingTransactions(){
@@ -21,5 +22,9 @@ export default class MutationState {
 
     findByHash(hash){
         return this.transactions.find((transaction)=> transaction.hash === hash)
+    }
+
+    publish(){
+        this.observable.next(this)
     }
 }

@@ -20,24 +20,24 @@ cache.writeData({
 const client = new ApolloClient({
     resolvers: {
         Mutation: {
-            create: async (_, { createInput: { asignee, description }, requestId }, {cache, observable, mutationState}) => {
+            create: async (_, { createInput: { asignee, description }, requestId }, {cache, mutationState}) => {
                 mutationState.addTransaction(new Transaction("86453"));
                 mutationState.findByHash("86453").progress = 33;
                 console.log(mutationState.findByHash("86453").progress)
                 await sleep(2000);
-                observable.next(mutationState)
+                mutationState.publish()
                 const previous = cache.readQuery({ query: GET_TODOS_QUERY })
                 const newTodo = { id: generateId(), completed: false, description, asignee, __typename: 'Todo' }
                 mutationState.findByHash("86453").progress = 66;
                 console.log(mutationState.findByHash("86453").progress)
                 await sleep(2000);
-                observable.next(mutationState)
+                mutationState.publish()
                 const data = { getTodos: [...previous.getTodos, newTodo] };
                 cache.writeQuery({ query: GET_TODOS_QUERY, data });
                 await sleep(2000);
                 mutationState.findByHash("86453").progress = 100;
                 console.log(mutationState.findByHash("86453").progress)
-                observable.next(mutationState)
+                mutationState.publish()
                 return newTodo;
             },
             delete: async (_, { id }, { cache }) => {

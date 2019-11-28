@@ -1,4 +1,6 @@
-export default class Transaction{
+import ITransaction from "../interface/ITransaction.interface";
+
+export default class Transaction implements ITransaction{
     readonly hash: string;
     private _progress: number;
     private _completed: boolean;

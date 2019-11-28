@@ -1,7 +1,14 @@
 import Transaction from './Transaction.class';
+import { BehaviorSubject } from 'rxjs';
+import IMutationState from '../interface/IMutationState.interface';
 
-export default class MutationState{
+export default class MutationState implements IMutationState{
     private _transactions: Transaction[];
+    private _observable: BehaviorSubject<MutationState>;
+
+    constructor(observable: BehaviorSubject<MutationState>){
+        this._observable = observable;
+    }
 
     get transactions(){
         return this._transactions;
@@ -21,5 +28,9 @@ export default class MutationState{
 
     public addTransaction(transaction: Transaction){
         this._transactions.push(transaction);
+    }
+
+    public publish(){
+        this._observable.next(this);
     }
 }

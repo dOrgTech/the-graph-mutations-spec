@@ -4,13 +4,13 @@ import { generateId } from '../util/IdGenerator';
 import { BehaviorSubject } from 'rxjs';
 import MutationState from '../class/MutationState.class';
 
-const useObservable = (observable, setter, id) => {
+const useObservable = (observable, setter) => {
     useEffect(() => {
         let subscription = observable.subscribe(result => {
             if(result) setter(result.findByHash("86453").progress)
         })
         return () => subscription.unsubscribe();
-    }, [observable, setter, id])
+    }, [observable, setter])
 }
 
 export const useMutationAndSubscribe = (mutation, {
@@ -20,10 +20,6 @@ export const useMutationAndSubscribe = (mutation, {
     onError,
     variables
 }) => {
-
-    const requestId = generateId();
-
-    const [mutationId, setMutationId] = useState(0)
 
     const [subscriptionData, setSubscriptionData] = useState({})
 
@@ -35,13 +31,12 @@ export const useMutationAndSubscribe = (mutation, {
         update,
         context: {mutationState: new MutationState(observable)},
         onError,
-        variables: {...variables, requestId}
+        variables: {...variables}
     })
 
-    useObservable(observable, setSubscriptionData, mutationId);
+    useObservable(observable, setSubscriptionData);
 
     return [()=>{
-        setMutationId(requestId)
         executeMutation();
     }, loading, subscriptionData]
 }

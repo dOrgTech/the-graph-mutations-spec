@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button, Form, Card, Progress } from 'semantic-ui-react';
 import { CREATE_TODO } from '../graphql/mutations';
 import { useForm } from '../util/hooks/form.hook';

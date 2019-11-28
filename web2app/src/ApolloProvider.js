@@ -8,6 +8,7 @@ import sleep from './util/sleep';
 import {typeDefs} from './graphql/typeDefs';
 import {GET_TODOS_QUERY} from './graphql/queries';
 import {completeTodo} from './graphql/fragments';
+import Transaction from './class/Transaction.class';
 
 const cache = new InMemoryCache();
 cache.writeData({
@@ -19,17 +20,24 @@ cache.writeData({
 const client = new ApolloClient({
     resolvers: {
         Mutation: {
-            create: async (_, { createInput: { asignee, description }, requestId }, {cache, observable}) => {
+            create: async (_, { createInput: { asignee, description }, requestId }, {cache, observable, mutationState}) => {
+                mutationState.addTransaction(new Transaction("86453"));
+                mutationState.findByHash("86453").progress = 33;
+                console.log(mutationState.findByHash("86453").progress)
                 await sleep(2000);
-                observable.next({[requestId]: 33})
+                observable.next(mutationState)
                 const previous = cache.readQuery({ query: GET_TODOS_QUERY })
                 const newTodo = { id: generateId(), completed: false, description, asignee, __typename: 'Todo' }
+                mutationState.findByHash("86453").progress = 66;
+                console.log(mutationState.findByHash("86453").progress)
                 await sleep(2000);
-                observable.next({[requestId]: 66})
+                observable.next(mutationState)
                 const data = { getTodos: [...previous.getTodos, newTodo] };
                 cache.writeQuery({ query: GET_TODOS_QUERY, data });
                 await sleep(2000);
-                observable.next({[requestId]: 100})
+                mutationState.findByHash("86453").progress = 100;
+                console.log(mutationState.findByHash("86453").progress)
+                observable.next(mutationState)
                 return newTodo;
             },
             delete: async (_, { id }, { cache }) => {

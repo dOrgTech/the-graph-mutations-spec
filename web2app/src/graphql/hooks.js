@@ -2,11 +2,12 @@ import {useEffect, useState} from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { generateId } from '../util/IdGenerator';
 import { BehaviorSubject } from 'rxjs';
+import MutationState from '../class/MutationState.class';
 
 const useObservable = (observable, setter, id) => {
     useEffect(() => {
         let subscription = observable.subscribe(result => {
-            setter(result[id])
+            if(result) setter(result.findByHash("86453").progress)
         })
         return () => subscription.unsubscribe();
     }, [observable, setter, id])
@@ -32,7 +33,7 @@ export const useMutationAndSubscribe = (mutation, {
         optimisticResponse,
         onCompleted,
         update,
-        context: {observable},
+        context: {observable, mutationState: new MutationState()},
         onError,
         variables: {...variables, requestId}
     })

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import ApolloClient, { gql, InMemoryCache } from 'apollo-boost'
 import { useQuery } from '@apollo/react-hooks';
-import { ApolloProvider, Query } from 'react-apollo'
+import { ApolloProvider } from 'react-apollo'
 import {
   Grid,
   LinearProgress,
@@ -15,7 +15,7 @@ import {
 import { resolvers, setWeb3Provider } from 'example-mutations'
 import './App.css'
 import Header from './components/Header'
-import Error from './components/Error'
+import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 import useMutationAndSubscribe from './hooks/useMutationAndSubscribe';
@@ -142,7 +142,7 @@ function App() {
               {loading ? (
                 <LinearProgress variant="query" style={{ width: '100%' }} />
               ) : error ? (
-                <Error error={error} />
+                <CustomError error={error} />
               ) : (
                     <Gravatars gravatars={data.gravatars} />
                   )

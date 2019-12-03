@@ -10,8 +10,14 @@ export const resolvers = {
       const state = context.thegraph.mutationState as MutationState
       await protocol.createGravatar(options);
 
+      // TODO: make this an open subscription, don't require
+      // .publish(), have listener callback be called every
+      // time something is edited
       // state.addTransaction(new Transaction('0x00000'));
       // state.publish();
+
+      // TODO: what does this really look like in the application
+      // to the user
 
       return await queryUserGravatar(context.client)
     },

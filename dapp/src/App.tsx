@@ -98,6 +98,7 @@ function App() {
   }
   const { withImage, withName, orderBy, showHelpDialog } = state
 
+  // TODO: have "status?" object be returned from execute mutation
   const { executeMutation, loadingMutation, subscriptionData } = useMutationAndSubscribe(
     CREATE_GRAVATAR,
     {

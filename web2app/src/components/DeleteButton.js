@@ -38,7 +38,7 @@ const DeleteButton = ({ props }) => {
     })
 
     return (
-        <Button color='red' onClick={deleteTodo}>X</Button>
+        <Button color='red' onClick={deleteTodo}>Delete (Optimistic)</Button>
     );
 }
 

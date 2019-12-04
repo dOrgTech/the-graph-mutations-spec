@@ -6,13 +6,13 @@ export const CREATE_TODO = gql`
         $description: String!
         $requestId: ID!
     ) {
-        create(
+        create (
             createInput: {
                 asignee: $asignee
                 description: $description
             },
             requestId: $requestId
-        ){
+        )@client{
             id
             asignee
             description
@@ -25,20 +25,7 @@ export const SET_COMPLETE = gql`
     mutation setComplete(
         $id: ID!
     ) {
-        setComplete(id:$id){
-            id
-            asignee
-            description
-            completed
-        }
-    }
-`;
-
-export const SET_INCOMPLETE = gql`
-    mutation setIncomplete(
-        $id: ID!
-    ) {
-        setIncomplete(id:$id){
+        setComplete(id:$id) @client{
             id
             asignee
             description
@@ -51,7 +38,7 @@ export const DELETE = gql`
     mutation delete(
         $id: ID!
     ) {
-        delete(id:$id){
+        delete(id:$id) @client{
             id
             asignee
             description

@@ -1,9 +1,6 @@
 import React from 'react';
-import cloneDeep from 'lodash/cloneDeep';
 import { Button, Form, Card, Progress } from 'semantic-ui-react';
 import { CREATE_TODO } from '../graphql/mutations';
-import { GET_TODOS_QUERY } from '../graphql/queries';
-import { NEW_TODO_SUBSCRIPTION } from '../graphql/subscriptions';
 import { useForm } from '../util/hooks/form.hook';
 import { notify } from 'react-notify-toast';
 import { useMutationAndSubscribe } from '../graphql/hooks';
@@ -15,31 +12,19 @@ function Create() {
         description: ''
     });
 
-    const resetForm = () => {
-        values.asignee = '';
-        values.description = '';
-    }
-
-    const {executeMutation, loading: {loading}, progress} = useMutationAndSubscribe(CREATE_TODO, NEW_TODO_SUBSCRIPTION, {
-        update(proxy, result) {
-            const data = cloneDeep(proxy.readQuery({
-                query: GET_TODOS_QUERY,
-            }, true));
-
-            data.getTodos = [...data.getTodos, result.data.create]
-            proxy.writeQuery({ query: GET_TODOS_QUERY, data });
-
-            resetForm();
-        },
-        onError(error) {
-            notify.show(
-                "An unexpected error ocurred while creating ToDo",
-                "error",
-                4000
-            )
-        },
-        variables: values
-    })
+    const [executeMutation, { loading }, subscriptionData] = useMutationAndSubscribe(
+        CREATE_TODO,
+        {
+            onError(error) {
+                console.log(error)
+                notify.show(
+                    "An unexpected error ocurred while creating ToDo",
+                    "error",
+                    4000
+                )
+            },
+            variables: { ...values }
+        })
 
     function createTodo() {
         executeMutation();
@@ -65,20 +50,17 @@ function Create() {
                             value={values.description}
                             onChange={onChange}
                         />
-                        <Button type="submit" primary disabled={loading}>
+                        <Button type="submit" primary>
                             Create
                 </Button>
                     </Form>
                 </Card.Content>
             </Card>
-
-            {loading?
-                (<div>
-                    <p>Executing transaction... </p>
-                    <Progress percent={progress} indicating />
-                </div>) : ''
-                }
-
+            {loading ?
+                <Progress indicating percent={subscriptionData}>
+                    <p>Executing transaction</p>
+                </Progress>
+                : ''}
         </div>
     )
 }

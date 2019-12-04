@@ -1,0 +1,9 @@
+{
+  "name": "@graphmutations/mutations-react",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@graphmutations/mutations-ts": "1.0.0"
+  }
+}

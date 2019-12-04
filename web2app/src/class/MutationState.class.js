@@ -1,4 +1,6 @@
+
 export default class MutationState {
+    
     constructor(observable){
         this.transactions = [];
         this.observable = observable
@@ -16,8 +18,13 @@ export default class MutationState {
         return this.transactions.filter((transaction)=> transaction.completed)
     }
 
-    addTransaction(transaction){
-        this.transactions.push(transaction);
+    addTransaction(hash){
+        this.transactions.push({hash, completed: false, progress: 0});
+    }
+
+    updateTxProgress(hash, value){
+        let transaction = this.transactions.find((tx)=> tx.hash === hash);
+        transaction.progress = value;
     }
 
     findByHash(hash){

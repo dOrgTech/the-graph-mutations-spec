@@ -6,6 +6,7 @@ export default interface IMutationState{
     getPendingTransactions(): ITransaction[];
     getCompletedTransactions(): ITransaction[];
     findByHash(hash: string): ITransaction;
-    addTransaction(transaction: ITransaction): void
-    publish(): void
+    addTransaction(hash: string): void
+    updateTxProgress(hash: string, value: number): void
+    updateTxCompleted(hash: string, value: boolean): void
 }

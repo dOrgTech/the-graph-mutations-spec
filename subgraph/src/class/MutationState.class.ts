@@ -1,9 +1,10 @@
-import Transaction from './Transaction.class';
+import ITransaction from '../interface/ITransaction.interface';
 import { BehaviorSubject } from 'rxjs';
 import IMutationState from '../interface/IMutationState.interface';
+import cloneDeep from 'lodash/cloneDeep';
 
 export default class MutationState implements IMutationState{
-    private _transactions: Transaction[];
+    private _transactions: ITransaction[];
     private _observable: BehaviorSubject<MutationState>;
 
     constructor(observable: BehaviorSubject<MutationState>){
@@ -11,26 +12,44 @@ export default class MutationState implements IMutationState{
     }
 
     get transactions(){
-        return this._transactions;
+        return cloneDeep(this._transactions);
     }
 
     public getPendingTransactions(){
-        return this._transactions.filter((transaction) => !transaction.completed )
+        return cloneDeep(this._transactions.filter((transaction) => !transaction.completed ));
     }
 
     public getCompletedTransactions(){
-        return this._transactions.filter((transaction) => transaction.completed )
+        return cloneDeep(this._transactions.filter((transaction) => transaction.completed ));
     }
 
     public findByHash(hash: string){
-        return this._transactions.find((transaction) => transaction.hash === hash)
+        return cloneDeep(this.getByHash(hash));
     }
 
-    public addTransaction(transaction: Transaction){
-        this._transactions.push(transaction);
+    public addTransaction(hash: string){
+        this._transactions.push({hash, completed: false, progress: 0});
+        this.publish();
     }
 
-    public publish(){
+    public updateTxProgress(hash: string, value: number){
+        let transaction = this.getByHash(hash);
+        transaction.progress = value;
+        if(transaction.progress === 100) transaction.completed = true;
+        this.publish();
+    }
+
+    public updateTxCompleted(hash: string, value: boolean){
+        let transaction = this.getByHash(hash);
+        transaction.completed = value;
+        this.publish();
+    }
+
+    private publish(){
         this._observable.next(this);
+    }
+
+    private getByHash(hash: string){
+        return this._transactions.find((transaction) => transaction.hash === hash)
     }
 }

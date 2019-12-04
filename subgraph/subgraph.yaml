@@ -4,10 +4,7 @@ repository: https://github.com/graphprotocol/example-subgraph
 schema:
   file: ./schema.graphql
 mutations:
-  file: ./src/mutations/mutations.graphql
-  resolvers:
-    kind: javascript
-    package: ./src/mutations/package.json
+  file: ./src/mutations/mutations.yaml
 dataSources:
   - kind: ethereum/contract
     name: Gravity

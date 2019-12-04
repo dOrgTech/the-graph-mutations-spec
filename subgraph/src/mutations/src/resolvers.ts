@@ -1,7 +1,6 @@
 import gql from "graphql-tag"
 import web3 from "./web3"
 import * as protocol from "./protocol"
-import Transaction from "../../class/Transaction.class";
 import MutationState from "../../class/MutationState.class";
 
 export const resolvers = {
@@ -10,11 +9,8 @@ export const resolvers = {
       const state = context.thegraph.mutationState as MutationState
       await protocol.createGravatar(options);
 
-      // TODO: make this an open subscription, don't require
-      // .publish(), have listener callback be called every
-      // time something is edited
-      // state.addTransaction(new Transaction('0x00000'));
-      // state.publish();
+      // state.addTransaction('0x00000');
+      // state.updateTxProgress('0x00000', 35)
 
       // TODO: what does this really look like in the application
       // to the user

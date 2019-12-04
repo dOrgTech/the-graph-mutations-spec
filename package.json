@@ -1,15 +1,9 @@
 {
-    "name": "graphmutations",
-    "private": true,
-    "workspaces": [
-        "packages/*",
-        "examples/*"
-    ],
-    "devDependencies": {
-        "lerna": "^3.19.0"
-    },
-    "scripts": {
-        "postinstall": "npx lerna bootstrap",
-        "start-web2app": "cd examples cd web2app npm start"
-    }
+  "scripts": {
+    "postinstall": "npx lerna bootstrap",
+    "start-web2app": "cd examples cd web2app npm start"
+  },
+  "devDependencies": {
+    "lerna": "^3.19.0"
+  }
 }

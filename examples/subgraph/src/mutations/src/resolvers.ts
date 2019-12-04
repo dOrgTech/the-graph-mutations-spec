@@ -1,7 +1,7 @@
 import gql from "graphql-tag"
 import web3 from "./web3"
 import * as protocol from "./protocol"
-import MutationState from "../../class/MutationState.class";
+import {MutationState} from "@graphmutations/mutations-ts";
 
 export const resolvers = {
   Mutations: {

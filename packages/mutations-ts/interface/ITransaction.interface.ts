@@ -1,4 +1,4 @@
-export default interface ITransaction{
+export interface ITransaction {
     hash: string;
     progress: number;
     completed: boolean;

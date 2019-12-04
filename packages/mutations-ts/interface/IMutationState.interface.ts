@@ -1,8 +1,8 @@
-import ITransaction from './ITransaction.interface';
+import { ITransaction } from './ITransaction.interface';
 
-export default interface IMutationState{
+export default interface IMutationState {
     transactions: ITransaction[];
-    
+
     getPendingTransactions(): ITransaction[];
     getCompletedTransactions(): ITransaction[];
     findByHash(hash: string): ITransaction;

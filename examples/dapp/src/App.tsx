@@ -18,7 +18,7 @@ import Header from './components/Header'
 import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
-import useMutationAndSubscribe from './hooks/useMutationAndSubscribe';
+import {useMutationAndSubscribe} from '@graphmutations/mutations-react';
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')

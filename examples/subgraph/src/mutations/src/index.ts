@@ -77,7 +77,7 @@ const resolvers = {
 }
 
 const config = {
-  ethereum: (provider: string) => {
+  ethereum: (provider: any) => {
     return new Web3(provider)
   },
   ipfs: (provider: string) => {

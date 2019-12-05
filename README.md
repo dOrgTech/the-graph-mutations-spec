@@ -107,7 +107,7 @@ const resolvers = {
 }
 
 const config = {
-  ethereum: (provider: string) => {
+  ethereum: (provider: any) => {
     // these are added to the context.thegraph.config object
     return new Web3(provider)
   },
@@ -131,7 +131,7 @@ export default {
 The requirements for the resolver's [JavaScript module](./subgraph/src/mutations/dist/index.js) are:
 1. Default exports an object with properties `resolvers` and `config`.
 2. `resolvers` has property `Mutations` which includes all of the schema's mutations.
-3. `config`'s "leaf" properties are all functions that take a string.
+3. `config`'s "leaf" properties are all functions.
 4. Module is ES5 compliant. We can verify this using [es-check](https://www.npmjs.com/package/es-check).
 5. Module is bundled with no external dependencies. There is no way to detect this as Javascript is dynamically interpreted, and dependencies can be resolved at run-time. This will just have to be written in bold red text in the docs.
 

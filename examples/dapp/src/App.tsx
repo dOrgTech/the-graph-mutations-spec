@@ -1,7 +1,11 @@
-import React, { useState } from 'react'
-import ApolloClient, { gql, InMemoryCache } from 'apollo-boost'
-import { useQuery } from '@apollo/react-hooks';
+import React, { useState } from 'react';
+import ApolloClient from 'apollo-client';
+import { split } from 'apollo-link';
+import { gql, InMemoryCache } from 'apollo-boost';
+import { createHttpLink } from 'apollo-link-http';
+import { getMainDefinition } from 'apollo-utilities';
 import { ApolloProvider } from 'react-apollo'
+import { useQuery } from '@apollo/react-hooks';
 import {
   Grid,
   LinearProgress,
@@ -18,7 +22,7 @@ import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
-import { resolvers, requiredContext } from 'example-mutations'
+import gravatarMutations from 'gravatar-mutations'
 import { createMutations } from '@graphprotocol/mutations-ts'
 import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
 
@@ -26,15 +30,54 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
 }
 
+const queryLink = createHttpLink({ uri: process.env.REACT_APP_GRAPHQL_ENDPOINT });
+const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
+const mutationLink = createMutations({
+  mutations: gravatarMutations,
+  queryLink: queryLink,
+  metadataLink: metadataLink,
+  config: {
+    ethereum: async () => {
+      const { ethereum } = (window as any);
+
+      if (!ethereum) {
+        throw Error("Please install metamask");
+      }
+
+      await ethereum.enable();
+      return ethereum;
+    },
+    ipfs: process.env.IPFS_PROVIDER
+  }
+  // TODO: use apollo-link-context under the hood
+  // TODO: support functions for these getters
+  // TODO: note that they'll be called each time
+  // TODO: document the concept of config getters, setters, and the fact that "createMutations" acts as the glue
+});
+
+const link = split(
+  ({ query }) => {
+    const { kind, operation } = getMainDefinition(query);
+    return kind === "OperationDefinition" && operation === "mutation"
+  },
+  mutationLink,
+  queryLink
+);
+
+const client = new ApolloClient({
+  link,
+  cache: new InMemoryCache()
+})
+
 // TODO
 /*
-new QueryEngine([
+createQueryEngine([
   {
     id: "subgraphid",
     mutations: gravatarMutations,
-    providers: {
-      ethereum: window.ethereum,
-      ipfs: process.env.IPFS_ENDPOINT
+    config: {
+      ethereum: process.env.ETHEREUM_PROVIDER,
+      ipfs: process.env.IPFS_PROVIDER
     }
   },
   {
@@ -43,41 +86,7 @@ new QueryEngine([
 ])
 */
 
-// TODO
-const queryLink = new HttpLink()
-const mutations = createMutations(
-  {
-    mutations: gravatarMutations,
-    subgraph: "name" | "id",
-    queryNode: queryLink,
-    providers: {
-      ethereum: window.ethereum,
-      ipfs: process.env.IPFS_ENDPOINT
-    }
-  }
-)
-
-// TODO: datsources come from the metadata graph-node
-// query-link needs to be able to query a specific subgraph
-// for now, can add property "metadataLink" property
-
-// TODO: update demo with logging, schedule call with Jannis, is server side execution athing?
-// TODO: update spec with query engine things
-
-const client = new ApolloClient({
-  uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
-  cache: new InMemoryCache(),
-  resolvers: mutations.resolvers,
-  // TODO: no wrapped function
-  defaultOptions: {
-    mutate: {
-      context: {
-        
-      }
-    }
-  }
-})
-
+// TODO: remove this from the documentation
 // mutations.resolvers -
 //   wrapped version of the original `gravatarMutations.resolvers`
 //   object. These wrapping functions inject a `context` property

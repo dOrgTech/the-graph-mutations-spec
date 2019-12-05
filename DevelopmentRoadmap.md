@@ -24,15 +24,16 @@ The spec is already there.
 
 ### `graph build`  
 Logic: 
-- combine & parse the mutation's schema.graphql
-- parse mutations.yaml
-- parse subgraph.yaml
-- open & validate resolvers module
+- [ ] combine & parse the mutation's schema.graphql
+- [x] validate mutations.yaml
+- [x] validate subgraph.yaml
+- [ ] open & validate resolvers module
 
 Relevant Code:
-- update manifest-schema.graphql with the new fields that're being added to the subgraph manifest file
-- update validation/schema.js and validation/manifest.js
-- update tests with all new output + errors for effected commands
+- [x] update manifest-schema.graphql with the new fields that're being added to the subgraph manifest file
+- [x] update validation/manifest.js
+- [ ] update validation/schema.js
+- [ ] update tests with all new output + errors for effected commands
 
 # 2. graph-node Support
 ## Deliverables

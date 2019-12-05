@@ -84,14 +84,17 @@ dataSources:
 
 ## Step 3: Implement The Mutations Resolvers (Javascript)
 
-[`index.js`](./subgraph/src/mutations/src/index.js)
+[`index.js`](./subgraph/src/mutations/src/index.ts)
 ```js
 const resolvers = {
   Mutation: {
     async createGravatar(_root, args, context) {
-      // context.thegraph.ethereum
-      // context.thegraph.ipfs
+      // TODO: move this into its own section after user stories called "Extra Functionality"
+      //       and document the interface of `context.thegraph`
+      // context.thegraph.config.ethereum
+      // context.thegraph.config.ipfs
       // context.thegraph.datasources.${name} -> address
+      // context.thegraph.mutationState.addTransaction(txHash)
       ...
     },
     async updateGravatarName(_root, args, context) {
@@ -103,28 +106,34 @@ const resolvers = {
   }
 }
 
-const requiredContext = {
-  ethereum: (provider) => {
-    // these are added to the context.thegraph object
+const config = {
+  ethereum: (provider: string) => {
+    // these are added to the context.thegraph.config object
     return new Web3(provider)
   },
-  ipfs: (provider) => {
+  ipfs: (provider: string) => {
     return new IPFS(provider)
+  },
+  // TODO: move this to "Extra Functionality" section
+  // Example of a custom configuration property
+  property: {
+    // Property setters can be nested
+    a: (value: string) => { }
   }
 }
 
 export default {
   resolvers,
-  requiredContext
+  config
 }
 ```
 
 The requirements for the resolver's [JavaScript module](./subgraph/src/mutations/dist/index.js) are:
-1. Default exports an object with properties `resolvers` and `requiredContext`.
+1. Default exports an object with properties `resolvers` and `config`.
 2. `resolvers` has property `Mutations` which includes all of the schema's mutations.
-3. `requiredContext`'s properties are all functions, and their names are all supported by The Graph.
+3. `config`'s "leaf" properties are all functions that take a string.
 4. Module is ES5 compliant. We can verify this using [es-check](https://www.npmjs.com/package/es-check).
-5. Module is bundled with no external dependencies. There is no way to detect this as Javascript is dynamically interpreted, it will just have to be written in bold red text in the docs.
+5. Module is bundled with no external dependencies. There is no way to detect this as Javascript is dynamically interpreted, and dependencies can be resolved at run-time. This will just have to be written in bold red text in the docs.
 
 ## Step 4: Build & Publish Subgraph
 

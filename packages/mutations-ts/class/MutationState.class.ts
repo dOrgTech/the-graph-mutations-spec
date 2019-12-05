@@ -3,6 +3,14 @@ import { BehaviorSubject } from 'rxjs';
 import IMutationState from '../interface/IMutationState.interface';
 import cloneDeep from 'lodash/cloneDeep';
 
+// TODO:
+// - addTransaction(txHash: string, msg: string)
+// - addError(error: Error)
+// - setData("key", { data })
+// - getTransactions
+// - getErrors
+// - getData
+
 export class MutationState implements IMutationState {
     private _transactions: ITransaction[];
     private _observable: BehaviorSubject<MutationState>;

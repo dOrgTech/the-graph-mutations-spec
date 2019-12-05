@@ -12,28 +12,79 @@ import {
   DialogTitle,
   Button,
 } from '@material-ui/core'
-import { resolvers, setWeb3Provider } from 'example-mutations'
 import './App.css'
 import Header from './components/Header'
 import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
-import {useMutationAndSubscribe} from '@graphmutations/mutations-react';
+
+import { resolvers, requiredContext } from 'example-mutations'
+import { createMutations } from '@graphprotocol/mutations-ts'
+import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
 }
 
-// TODO: this is a singleton pattern, and should really
-// be instance based...
-setWeb3Provider(window.ethereum)
-window.ethereum.enable()
+// TODO
+/*
+new QueryEngine([
+  {
+    id: "subgraphid",
+    mutations: gravatarMutations,
+    providers: {
+      ethereum: window.ethereum,
+      ipfs: process.env.IPFS_ENDPOINT
+    }
+  },
+  {
+    ...
+  }
+])
+*/
+
+// TODO
+const queryLink = new HttpLink()
+const mutations = createMutations(
+  {
+    mutations: gravatarMutations,
+    subgraph: "name" | "id",
+    queryNode: queryLink,
+    providers: {
+      ethereum: window.ethereum,
+      ipfs: process.env.IPFS_ENDPOINT
+    }
+  }
+)
+
+// TODO: datsources come from the metadata graph-node
+// query-link needs to be able to query a specific subgraph
+// for now, can add property "metadataLink" property
+
+// TODO: update demo with logging, schedule call with Jannis, is server side execution athing?
+// TODO: update spec with query engine things
 
 const client = new ApolloClient({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   cache: new InMemoryCache(),
-  resolvers
+  resolvers: mutations.resolvers,
+  // TODO: no wrapped function
+  defaultOptions: {
+    mutate: {
+      context: {
+        
+      }
+    }
+  }
 })
+
+// mutations.resolvers -
+//   wrapped version of the original `gravatarMutations.resolvers`
+//   object. These wrapping functions inject a `context` property
+//   named `thegraph` with all of the fields added by the
+//   `requiredContext` generator functions. Additionally the datasource
+//   addresses have been fetched from the graph-node and are available
+//   like so `context.thegraph.datasources.${name}`.
 
 const GRAVATARS_QUERY = gql`
   query gravatars($where: Gravatar_filter!, $orderBy: Gravatar_orderBy!) {

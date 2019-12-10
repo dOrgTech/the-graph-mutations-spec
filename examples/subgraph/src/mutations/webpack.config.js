@@ -10,8 +10,12 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [
-              "@babel/preset-env",
-              "@babel/preset-typescript"
+              ["@babel/preset-env", {
+                targets: {
+                  node: "6.10"
+                }
+              }],
+              "@babel/preset-typescript",
             ]
           }
         }

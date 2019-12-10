@@ -4,6 +4,7 @@
     "noImplicitAny": true,
     "module": "es6",
     "target": "es5",
+    "lib": ["ES6", "ScriptHost"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true
   }

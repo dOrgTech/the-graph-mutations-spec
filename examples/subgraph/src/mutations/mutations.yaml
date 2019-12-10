@@ -1,8 +1,7 @@
 specVersion: 0.0.1
 repository: https://npmjs.com/package/gravatar-mutations
-mutations:
-  schema:
-    file: ./schema.graphql
-  resolvers:
-    kind: javascript
-    file: ./dist/index.js
+schema:
+  file: ./schema.graphql
+resolvers:
+  kind: javascript
+  file: ./dist/index.js

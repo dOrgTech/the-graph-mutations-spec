@@ -1,7 +1,10 @@
 const path = require("path");
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: "./src/index.ts",
+  target: 'node',
+  externals: [nodeExternals()],
   module: {
     rules: [
       {
@@ -10,11 +13,7 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [
-              ["@babel/preset-env", {
-                targets: {
-                  node: "6.10"
-                }
-              }],
+              "@babel/preset-env",
               "@babel/preset-typescript",
             ]
           }
@@ -23,10 +22,12 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['*', '.js','.ts'],
+    extensions: ['*', '.js', '.ts'],
   },
   output: {
+    library: 'Resolvers',
     filename: "index.js",
     path: path.resolve(__dirname, "dist"),
+    libraryTarget: 'umd'
   }
 };

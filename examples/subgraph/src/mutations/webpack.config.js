@@ -1,14 +1,21 @@
+const webpack = require("webpack")
 const path = require("path");
-const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: "./src/index.ts",
   target: 'node',
-  externals: {
-    "graphql-tag" : "gql",
-    "web3": "Web3",
-    "ipfs-http-client": "IPFSClient"
+  externals: ["fs", "bindings", "any-promise"],
+  resolve: {
+    extensions: ['*', '.js', '.ts'],
+    alias: {
+      'scrypt.js': path.resolve(__dirname, './node_modules/scrypt.js/js.js'),
+      'swarm-js': path.resolve(__dirname, './node_modules/swarm-js/lib/api-browser.js'),
+      'fs': path.resolve(__dirname, './src/app/fs-fake.js'),
+    }
   },
+  plugins: [
+    new webpack.IgnorePlugin(/^(?:electron|ws)$/)
+  ],
   module: {
     rules: [
       {
@@ -24,9 +31,6 @@ module.exports = {
         }
       }
     ]
-  },
-  resolve: {
-    extensions: ['*', '.js', '.ts'],
   },
   output: {
     library: 'Resolvers',

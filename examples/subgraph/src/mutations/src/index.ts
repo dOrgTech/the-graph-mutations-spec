@@ -31,18 +31,18 @@ async function sendTx(tx: any, msg: string, context: any) {
     })
 }
 
-function getGravityContract(context: any) {
+async function getGravityContract(context: any) {
   const { ethereum } = context.thegraph.config
   const { Gravity } = context.thegraph.dataSources
 
   return new ethereum.eth.Contract(
-    Gravity.abi, Gravity.address
+    await Gravity.abi(), await Gravity.address()
   )
 }
 
 async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.methods.createGravatar(displayName, imageUrl)
 
   await sendTx(tx, "Creating Gravatar", context)
@@ -50,7 +50,7 @@ async function createGravatar(_root: any, {options}: any, context: any) {
 }
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.methods.updateGravatarName(displayName)
 
   await sendTx(tx, "Updating Gravatar Name", context)
@@ -58,7 +58,7 @@ async function updateGravatarName(_root: any, {displayName}: any, context: any) 
 }
 
 async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.methods.updateGravatarImage(imageUrl)
 
   // Example of custom data within the state
@@ -69,7 +69,7 @@ async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
 }
 
 const resolvers = {
-  Mutations: {
+  Mutation: {
     createGravatar,
     updateGravatarName,
     updateGravatarImage

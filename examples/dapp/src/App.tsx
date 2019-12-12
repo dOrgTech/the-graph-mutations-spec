@@ -31,6 +31,7 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
 }
 
 const queryLink = createHttpLink({ uri: process.env.REACT_APP_GRAPHQL_ENDPOINT });
+// TODO: move this under the hood
 const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
 const mutationLink = createMutations({
   mutations: gravatarMutations,

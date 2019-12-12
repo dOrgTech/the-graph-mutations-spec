@@ -49,6 +49,8 @@ Relevant Code:
 
 graph-node Introspection Endpoint Supports Mutation Schema
 
+// TODO: code marker in graph-node where it rejects the new schema of the subgraph manifest yaml file.
+
 graph-node Datasources Endpoint
 
 `graph init`

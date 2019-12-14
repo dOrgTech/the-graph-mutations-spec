@@ -157,15 +157,17 @@ function App() {
   const gotoQuickStartGuide = () => {
     window.location.href = 'https://thegraph.com/docs/quick-start'
   }
+
   const { withImage, withName, orderBy, showHelpDialog } = state
 
   // TODO: have "status?" object be returned from execute mutation
+  // TODO: optimistic response after data is returned from mutations
   const { executeMutation, loadingMutation, subscriptionData } = useMutationAndSubscribe(
     CREATE_GRAVATAR,
     {
       onCompleted: () => { },
       update: () => { },
-      optimisticResponse: {},
+      optimisticResponse: { },
       onError: () => { },
       variables: {
         options: { displayName: "...", imageUrl: "..." }

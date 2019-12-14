@@ -6,6 +6,8 @@ import {
   QueryResult
 } from './types'
 import { ApolloLink, Observable } from 'apollo-link'
+// TODO: foced to standardize here... graphql.js doesn't enforce anything...
+// we could wrap and get rid of it?
 import { Resolvers } from 'apollo-client'
 
 export interface CreateMutationsOptions<T extends ConfigSetters> {
@@ -31,6 +33,8 @@ export const createMutations = <T extends ConfigSetters>(
   }
 
   verifyConfig(options.config, options.mutations.config)
+
+  const context = new MutationsContext();
 
   // TODO:
   // create context
@@ -66,11 +70,14 @@ export const createMutations = <T extends ConfigSetters>(
 
     // Set the config on the context
     // TODO
-    context.graph.config = config;
+    context.config = config;
 
     // TODO Execute the mutation
+    // client = new ApolloClient()
+    // client.link
+    // client.mutate({ document: query, context })
     let result = await makePromise(
-      execute(query, mutations)
+      execute(query, mutations, { graph: context }) // TODO: how to pass context
     )
   }
 }

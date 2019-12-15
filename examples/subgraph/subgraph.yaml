@@ -4,7 +4,13 @@ repository: https://github.com/graphprotocol/example-subgraph
 schema:
   file: ./schema.graphql
 mutations:
-  file: ./src/mutations/mutations.yaml
+  specVersion: 0.0.1
+  repository: https://npmjs.com/package/gravatar-mutations
+  schema:
+    file: ./src/mutations/schema.graphql
+  resolvers:
+    kind: javascript
+    file: ./src/mutations/dist/index.js
 dataSources:
   - kind: ethereum/contract
     name: Gravity

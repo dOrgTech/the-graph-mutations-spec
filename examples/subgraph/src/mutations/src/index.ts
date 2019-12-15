@@ -69,7 +69,7 @@ async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
 }
 
 const resolvers = {
-  Mutations: {
+  Mutation: {
     createGravatar,
     updateGravatarName,
     updateGravatarImage

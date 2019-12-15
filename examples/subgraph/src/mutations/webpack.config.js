@@ -6,14 +6,26 @@ module.exports = {
     library: 'Resolvers',
     filename: "index.js",
     path: path.resolve(__dirname, "dist"),
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    globalObject: "this"
   },
   module: {
     rules: [
       // note that babel-loader is configured to run after ts-loader
       {
         test: /\.(ts|js)$/,
-        loader: "babel-loader?presets[]=env!ts-loader"
+        use: [
+          {
+            loader: "babel-loader",
+            options: {
+              presets: ["env"],
+              plugins: ["add-module-exports"]
+            }
+          },
+          {
+            loader: "ts-loader"
+          }
+        ]
       }
     ]
   },

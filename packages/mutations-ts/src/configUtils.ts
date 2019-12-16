@@ -1,6 +1,7 @@
 import {
   ConfigGetters,
-  ConfigSetters
+  ConfigSetters,
+  ConfigValues
 } from './types'
 
 const initConfig = async (
@@ -34,13 +35,13 @@ const initConfig = async (
   }
 }
 
-export const createConfig = async <T extends ConfigSetters>(
-  getters: ConfigGetters<T>,
+export const createConfig = async <TConfig extends ConfigSetters>(
+  getters: ConfigGetters<TConfig>,
   setters: ConfigSetters
-) => {
+): Promise<ConfigValues<TConfig>> => {
   const config = { }
   await initConfig(config, getters, setters)
-  return config
+  return config as ConfigValues<TConfig>
 }
 
 export const validateConfig = (getters: any, setters: any) => {

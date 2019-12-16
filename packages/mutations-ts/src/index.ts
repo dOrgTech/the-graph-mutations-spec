@@ -4,7 +4,8 @@ import {
   Mutations,
   MutationQuery,
   MutationResult,
-  MutationExecutor
+  MutationExecutor,
+  ConfigValues
 } from './types'
 import {
   validateConfig,
@@ -32,7 +33,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
 
   // Create a config instance object here to be used within
   // execute function.
-  let configInstance = undefined;
+  let configInstance: ConfigValues<TConfig> | undefined = undefined;
 
   return {
     execute: async (mutationQuery: MutationQuery) => {

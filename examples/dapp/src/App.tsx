@@ -46,9 +46,13 @@ const mutations = createMutations({
       }
 
       await ethereum.enable();
-      return ethereum;
+      // TODO: I think this can be changed back to
+      //       return ethereum;
+      return (window as any).web3.currentProvider;
     },
-    ipfs: process.env.REACT_APP_IPFS_PROVIDER,
+    ipfs: () => {
+      return process.env.REACT_APP_IPFS_PROVIDER
+    },
     property: {
       a: "hey",
       b: "hi"
@@ -170,10 +174,6 @@ function App() {
     CREATE_GRAVATAR,
     {
       client,
-      onCompleted: () => { },
-      update: () => { },
-      optimisticResponse: { },
-      onError: () => { },
       variables: {
         options: { displayName: "...", imageUrl: "..." }
       }

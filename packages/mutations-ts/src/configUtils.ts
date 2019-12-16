@@ -4,6 +4,16 @@ import {
   ConfigValues
 } from './types'
 
+const isPromise = (test: any) => typeof test.then === "function"
+
+const callFunc = async (func: any) => {
+  let result = func()
+  if (isPromise(result)) {
+    result = await result
+  }
+  return result
+}
+
 const initConfig = async (
   config: any,
   getters: any,
@@ -12,24 +22,20 @@ const initConfig = async (
   const keys = Object.keys(setters)
   for (let key of keys) {
     if (typeof getters === "function") {
-      if (getters.constructor.name === "AsyncFunction") {
-        getters = await getters()
-      } else {
-        getters = getters()
-      }
+      getters = await callFunc(getters)
     }
 
-    if (typeof setters[key] === "function") {
-      if (getters[key] === "function") {
-        if (getters.constructor.name === "AsyncFunction") {
-          config[key] = setters[key](await getters[key]())
-        } else {
-          config[key] = setters[key](getters[key]())
-        }
-      } else {
-        config[key] = setters[key](getters[key])
+    const getter = getters[key]
+    const setter = setters[key]
+
+    if (typeof setter === "function") {
+      let value = getter
+      if (typeof getter === "function") {
+        value = await callFunc(getter)
       }
+      config[key] = setter(value)
     } else {
+      config[key] = { }
       initConfig(config[key], getters[key], setters[key])
     }
   }

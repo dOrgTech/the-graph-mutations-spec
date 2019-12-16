@@ -9,11 +9,14 @@ module.exports = {
     libraryTarget: 'umd',
     globalObject: "this"
   },
+  resolve: {
+    extensions: ["*", ".json", ".ts", ".js"]
+  },
   module: {
     rules: [
       // note that babel-loader is configured to run after ts-loader
       {
-        test: /\.(ts|js)$/,
+        test: /\.(ts)$/,
         use: [
           {
             loader: "babel-loader",
@@ -28,8 +31,5 @@ module.exports = {
         ]
       }
     ]
-  },
-  resolve: {
-    extensions: [".ts", ".js"]
   }
 };

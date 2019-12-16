@@ -5,7 +5,7 @@ import { gql, InMemoryCache } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { getMainDefinition } from 'apollo-utilities';
 import { ApolloProvider } from 'react-apollo'
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import {
   Grid,
   LinearProgress,
@@ -22,9 +22,9 @@ import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
-import gravatarMutations from '../../subgraph/src/mutations/src'
+import gravatarMutations from 'gravatar-mutations'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
-import executeMutation from '@graphprotocol/mutations-ts/src/mutation-executor/local-resolvers'
+import executeMutation from '@graphprotocol/mutations-ts/dist/mutation-executor/local-resolvers'
 // import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
@@ -48,7 +48,7 @@ const mutations = createMutations({
       await ethereum.enable();
       return ethereum;
     },
-    ipfs: process.env.IPFS_PROVIDER,
+    ipfs: process.env.REACT_APP_IPFS_PROVIDER,
     property: {
       a: "hey",
       b: "hi"
@@ -166,9 +166,10 @@ function App() {
 
   // TODO: have "status?" object be returned from execute mutation
   // TODO: optimistic response after data is returned from mutations
-  const { executeMutation, loadingMutation, subscriptionData } = useMutationAndSubscribe(
+  const [executeMutation] = useMutation(
     CREATE_GRAVATAR,
     {
+      client,
       onCompleted: () => { },
       update: () => { },
       optimisticResponse: { },
@@ -179,6 +180,7 @@ function App() {
     })
 
   const { data, error, loading } = useQuery(GRAVATARS_QUERY, {
+    client,
     variables: {
       where: {
         ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
@@ -189,62 +191,60 @@ function App() {
   });
 
   return (
-    <ApolloProvider client={client}>
-      <div className="App">
-        <Grid container direction="column">
-          <Header onHelp={this.toggleHelpDialog} />
-          <Filter
-            orderBy={orderBy}
-            withImage={withImage}
-            withName={withName}
-            onOrderBy={field => setState({ ...state, orderBy: field })}
-            onToggleWithImage={() =>
-              setState({ ...state, withImage: !state.withImage })
+    <div className="App">
+      <Grid container direction="column">
+        <Header onHelp={toggleHelpDialog} />
+        <Filter
+          orderBy={orderBy}
+          withImage={withImage}
+          withName={withName}
+          onOrderBy={(field: any) => setState({ ...state, orderBy: field })}
+          onToggleWithImage={() =>
+            setState({ ...state, withImage: !state.withImage })
+          }
+          onToggleWithName={() =>
+            setState({ ...state, withName: !state.withName })
+          }
+        />
+        <Grid item>
+          <Grid container>
+            {loading ? (
+              <LinearProgress variant="query" style={{ width: '100%' }} />
+            ) : error ? (
+              <CustomError error={error} />
+            ) : (
+                  <Gravatars gravatars={data.gravatars} />
+                )
             }
-            onToggleWithName={() =>
-              setState({ ...state, withName: !state.withName })
-            }
-          />
-          <Grid item>
-            <Grid container>
-              {loading ? (
-                <LinearProgress variant="query" style={{ width: '100%' }} />
-              ) : error ? (
-                <CustomError error={error} />
-              ) : (
-                    <Gravatars gravatars={data.gravatars} />
-                  )
-              }
-            </Grid>
           </Grid>
         </Grid>
-        <Dialog
-          fullScreen={false}
-          open={showHelpDialog}
-          onClose={this.toggleHelpDialog}
-          aria-labelledby="help-dialog"
-        >
-          <DialogTitle id="help-dialog">{'Show Quick Guide?'}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              We have prepared a quick guide for you to get started with The Graph at
-              this hackathon. Shall we take you there now?
-              </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.toggleHelpDialog} color="primary">
-              Nah, I'm good
-              </Button>
-            <Button onClick={this.gotoQuickStartGuide} color="primary" autoFocus>
-              Yes, pease
-              </Button>
-          </DialogActions>
-        </Dialog>
-        <button onClick={executeMutation}>
-          Create Gravatar
-        </button>
-      </div>
-    </ApolloProvider>
+      </Grid>
+      <Dialog
+        fullScreen={false}
+        open={showHelpDialog}
+        onClose={toggleHelpDialog}
+        aria-labelledby="help-dialog"
+      >
+        <DialogTitle id="help-dialog">{'Show Quick Guide?'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            We have prepared a quick guide for you to get started with The Graph at
+            this hackathon. Shall we take you there now?
+            </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={toggleHelpDialog} color="primary">
+            Nah, I'm good
+            </Button>
+          <Button onClick={gotoQuickStartGuide} color="primary" autoFocus>
+            Yes, pease
+            </Button>
+        </DialogActions>
+      </Dialog>
+      <button onClick={event => executeMutation()}>
+        Create Gravatar
+      </button>
+    </div>
   )
 }
 

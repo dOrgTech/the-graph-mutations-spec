@@ -1,7 +1,8 @@
 {
   "packages": [
     "./packages/*",
-    "./examples/*"
+    "./examples/dapp",
+    "./examples/subgraph/src/mutations"
   ],
   "npmClient": "yarn",
   "useWorkspaces": true,

@@ -13,6 +13,7 @@
     "@types/react-dom": "^16.9.4",
     "apollo-boost": "^0.1.28",
     "graphql": "^14.1.1",
+    "gravatar-mutations": "0.1.0",
     "react": "^16.8.2",
     "react-apollo": "^2.5.8",
     "react-dom": "^16.8.2",

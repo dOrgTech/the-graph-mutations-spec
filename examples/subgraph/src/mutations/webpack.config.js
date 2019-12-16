@@ -1,32 +1,35 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/index.ts",
+  entry: "./src/index",
+  output: {
+    library: 'Resolvers',
+    filename: "index.js",
+    path: path.resolve(__dirname, "dist"),
+    libraryTarget: 'umd',
+    globalObject: "this"
+  },
   module: {
     rules: [
+      // note that babel-loader is configured to run after ts-loader
       {
-        test: /\.(js|ts)$/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ["@babel/preset-env", {
-                targets: {
-                  node: "6.10"
-                }
-              }],
-              "@babel/preset-typescript",
-            ]
+        test: /\.(ts|js)$/,
+        use: [
+          {
+            loader: "babel-loader",
+            options: {
+              presets: ["env"],
+              plugins: ["add-module-exports"]
+            }
+          },
+          {
+            loader: "ts-loader"
           }
-        }
+        ]
       }
     ]
   },
   resolve: {
-    extensions: ['*', '.js','.ts'],
-  },
-  output: {
-    filename: "index.js",
-    path: path.resolve(__dirname, "dist"),
+    extensions: [".ts", ".js"]
   }
 };

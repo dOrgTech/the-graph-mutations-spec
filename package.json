@@ -7,7 +7,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "test": "lerna run test --stream",
-    "test:watch": "lerna run test:watch --stream",
+    "test:watch": "lerna run test:watch --stream"
   },
   "devDependencies": {
     "@types/graphql": "^14.2.2",
@@ -20,6 +20,9 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
+    "apollo-cache-inmemory": "^1.6.5",
+    "apollo-client": "^2.6.8",
+    "apollo-link-state": "^0.4.2",
     "graphql": "^14.4.2"
   }
 }

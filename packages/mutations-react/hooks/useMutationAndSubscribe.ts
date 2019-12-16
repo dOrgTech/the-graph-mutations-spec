@@ -37,7 +37,9 @@ export default function useMutationAndSubscribe(mutation, {
     return {
         executeMutation: () => {
             executeMutation();
-        }, loadingMutation: loading, subscriptionData
+        },
+        loadingMutation: loading,
+        subscriptionData
     }
 }
 

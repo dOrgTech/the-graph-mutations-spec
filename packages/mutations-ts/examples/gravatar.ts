@@ -1,6 +1,7 @@
 import {
-  createMutations
+  createMutations, createMutationsLink
 } from '../src'
+import localExecutor from '../src/mutation-executor/local-resolvers'
 
 const resolvers = {
   Mutation: {
@@ -23,11 +24,15 @@ const mutations = createMutations({
     resolvers,
     config
   },
+  // TODO: be sure to support function (+ async)
   config: {
     a: "Fred",
     b: 4
-  }
+  },
+  mutationExecutor: localExecutor
 })
+
+const link = createMutationsLink({ mutations })
 
 /* mutations({
   document: mutation,

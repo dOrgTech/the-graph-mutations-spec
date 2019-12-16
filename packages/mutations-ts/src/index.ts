@@ -2,115 +2,94 @@ import {
   ConfigSetters,
   ConfigGetters,
   Mutations,
-  Query,
-  QueryResult
+  MutationQuery,
+  MutationResult,
+  MutationExecutor
 } from './types'
-import { ApolloLink, Observable } from 'apollo-link'
-// TODO: foced to standardize here... graphql.js doesn't enforce anything...
-// we could wrap and get rid of it?
-import { Resolvers } from 'apollo-client'
+import {
+  validateConfig,
+  createConfig
+} from './configUtils'
 
-export interface CreateMutationsOptions<T extends ConfigSetters> {
-  mutations: { resolvers: Resolvers, config: T }; // TODO: type safety
-  config: ConfigGetters<T>
+// TODO: move to mutations-apollo
+import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
+import { ApolloLink, Operation, Observable } from 'apollo-link'
+
+export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
+  mutations: { resolvers: Resolvers, config: TConfig }
+  config: ConfigGetters<TConfig>
+  mutationExecutor: MutationExecutor
 }
 
-export const createMutations = <T extends ConfigSetters>(
-  options: CreateMutationsOptions<T>
-): Mutations => {
+export const createMutations = <TConfig extends ConfigSetters>(
+  options: CreateMutationsOptions<TConfig>
+): Mutations<TConfig> => {
 
-  // Verify that the configuration getters and setters match 1:1
-  const verifyConfig = (getters: any, setters: any) => {
-    Object.keys(setters).forEach(key => {
-      if (getters[key] === undefined) {
-        throw Error(`Failed to find mutation configuration value for the property ${key}.`)
-      }
+  const { mutations, mutationExecutor } = options
 
-      if (typeof setters[key] === "object") {
-        verifyConfig(getters[key], setters[key])
-      }
-    })
-  }
+  // Validate that the configuration getters and setters match 1:1
+  validateConfig(options.config, mutations.config)
 
-  verifyConfig(options.config, options.mutations.config)
+  // Create the configuration object
+  let configInstance = createConfig(
+    options.config,
+    mutations.config
+  )
 
-  const context = new MutationsContext();
+  return {
+    execute: async (mutationQuery: MutationQuery) => {
+      const {
+        setContext,
+        uuid
+      } = mutationQuery
 
-  // TODO:
-  // create context
-  // - config { }
-  // - datasources.datasources.${name} -> address
-  // - - catch-all getter https://stackoverflow.com/a/36111309
-  // - mutationState.addTransaction(txHash)
-
-  return async (query: Query): Promise<QueryResult> => {
-    const { mutations } = options
-
-    // Initialize the config
-    const initConfig = (
-      config: any,
-      getters: any,
-      setters: any
-    ) => {
-      Object.keys(setters).forEach(key => {
-        if (typeof setters[key] === "function") {
-          config[key] = setters[key](getters[key])
-        } else {
-          initConfig(config[key], getters[key], setters[key])
-        }
+      setContext({
+        config: configInstance
       })
+
+      // TODO:
+      // context
+      // - config { }
+      // - datasources.datasources.${name} -> address
+      // - - catch-all getter https://stackoverflow.com/a/36111309
+      // - mutationState.addTransaction(txHash)
+
+      return await mutationExecutor(
+        mutationQuery, mutations.resolvers
+      )
+    },
+    configure: (config: ConfigGetters<TConfig>) => {
+      validateConfig(config, mutations.config)
+      configInstance = createConfig(config, mutations.config)
     }
-
-    const config = { }
-    initConfig(
-      config,
-      options.config,
-      options.mutations.config
-    )
-
-    // Set the config on the context
-    // TODO
-    context.config = config;
-
-    // TODO Execute the mutation
-    // client = new ApolloClient()
-    // client.link
-    // client.mutate({ document: query, context })
-    let result = await makePromise(
-      execute(query, mutations, { graph: context }) // TODO: how to pass context
-    )
   }
 }
 
-export const createMutationsLink =
-({ mutations }: { mutations: Mutations }): ApolloLink => {
-  return new ApolloLink(operation => {
-    return new Observable(observer => {
-      mutations({
-        document: operation.query,
+export const createMutationsLink = <TConfig extends ConfigSetters>(
+  { mutations }: { mutations: Mutations<TConfig> }
+): ApolloLink => {
+  return new ApolloLink((operation: Operation) =>
+    new Observable(observer => {
+      mutations.execute({
+        query: operation.query,
         variables: operation.variables,
         operationName: operation.operationName,
+        setContext: operation.setContext,
+        getContext: operation.getContext,
+        uuid: operation.toKey()
       }).then(
-        (result: QueryResult) => {
+        (result: MutationResult) => {
           observer.next(result.result)
           observer.complete()
         },
-        e => observer.error(e),
+        (e: Error) => observer.error(e)
       )
     })
-  })
+  )
 }
 
 /*
-TODO: dApp
-// @graphprotocol/mutations-ts
-createMutations(options) => Mutations
-
-// @graphprotocol/mutations-ts-apollo
-createMutationLink({ mutations }) => MutationLink
-!!! Do this first, then create classes to help with implementation,
-    then move those into the mutations-ts file
-
+TODO:
 // @graphprotocol/mutations-ts-apollo-react
 useMutationAndSubscribe(...)
 

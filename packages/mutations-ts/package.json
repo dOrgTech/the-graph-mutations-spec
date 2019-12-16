@@ -9,6 +9,7 @@
   "license": "MIT/Apache",
   "private": false,
   "scripts": {
+    "build": "tsc",
     "prepublish": "tsc",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests"

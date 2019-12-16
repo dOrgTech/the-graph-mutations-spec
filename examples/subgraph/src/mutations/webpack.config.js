@@ -2,6 +2,7 @@ const path = require("path");
 
 module.exports = {
   entry: "./src/index",
+  target: "node",
   output: {
     library: 'Resolvers',
     filename: "index.js",
@@ -21,7 +22,9 @@ module.exports = {
           {
             loader: "babel-loader",
             options: {
-              presets: ["env"],
+              presets: [
+                ["@babel/preset-env", { forceAllTransforms: true }]
+              ],
               plugins: ["add-module-exports"]
             }
           },

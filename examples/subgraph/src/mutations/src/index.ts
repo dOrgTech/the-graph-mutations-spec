@@ -40,7 +40,7 @@ function getGravityContract(context: any) {
   return contract
 }
 
-function createGravatar(_root: any, {options}: any, context: any) {
+async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = getGravityContract(context)
   const tx = gravity.createGravatar(displayName, imageUrl)

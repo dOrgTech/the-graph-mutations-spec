@@ -31,7 +31,7 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
 }
 
-const queryLink = createHttpLink({ uri: process.env.REACT_APP_GRAPHQL_ENDPOINT });
+const queryLink = createHttpLink({ uri: `${process.env.REACT_APP_GRAPHQL_ENDPOINT}/subgraphs/name/gravity` });
 // TODO: move this under the hood
 // const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
 

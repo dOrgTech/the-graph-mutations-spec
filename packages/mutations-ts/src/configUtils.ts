@@ -3,26 +3,43 @@ import {
   ConfigSetters
 } from './types'
 
-const initConfig = (
+const initConfig = async (
   config: any,
   getters: any,
   setters: any
 ) => {
-  Object.keys(setters).forEach(key => {
+  const keys = Object.keys(setters)
+  for (let key of keys) {
+    if (typeof getters === "function") {
+      if (getters.constructor.name === "AsyncFunction") {
+        getters = await getters()
+      } else {
+        getters = getters()
+      }
+    }
+
     if (typeof setters[key] === "function") {
-      config[key] = setters[key](getters[key])
+      if (getters[key] === "function") {
+        if (getters.constructor.name === "AsyncFunction") {
+          config[key] = setters[key](await getters[key]())
+        } else {
+          config[key] = setters[key](getters[key]())
+        }
+      } else {
+        config[key] = setters[key](getters[key])
+      }
     } else {
       initConfig(config[key], getters[key], setters[key])
     }
-  })
+  }
 }
 
-export const createConfig = <T extends ConfigSetters>(
+export const createConfig = async <T extends ConfigSetters>(
   getters: ConfigGetters<T>,
   setters: ConfigSetters
 ) => {
   const config = { }
-  initConfig(config, getters, setters)
+  await initConfig(config, getters, setters)
   return config
 }
 
@@ -33,6 +50,11 @@ export const validateConfig = (getters: any, setters: any) => {
     }
 
     if (typeof setters[key] === "object") {
+      if (typeof getters[key] === "function") {
+        // we return here, as we can't validate at runtime that
+        // the function will return the shape we're looking for
+        return
+      }
       validateConfig(getters[key], setters[key])
     }
   })

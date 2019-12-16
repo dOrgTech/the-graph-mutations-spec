@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import ApolloClient from 'apollo-client';
 import { split } from 'apollo-link';
 import { gql, InMemoryCache } from 'apollo-boost';
@@ -22,9 +22,10 @@ import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
-import gravatarMutations from 'gravatar-mutations'
-import { createMutations } from '@graphprotocol/mutations-ts'
-import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
+import gravatarMutations from '../../subgraph/src/mutations/src'
+import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
+import executeMutation from '@graphprotocol/mutations-ts/src/mutation-executor/local-resolvers'
+// import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
@@ -32,11 +33,10 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
 
 const queryLink = createHttpLink({ uri: process.env.REACT_APP_GRAPHQL_ENDPOINT });
 // TODO: move this under the hood
-const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
-const mutationLink = createMutations({
+// const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
+
+const mutations = createMutations({
   mutations: gravatarMutations,
-  queryLink: queryLink,
-  metadataLink: metadataLink,
   config: {
     ethereum: async () => {
       const { ethereum } = (window as any);
@@ -48,18 +48,22 @@ const mutationLink = createMutations({
       await ethereum.enable();
       return ethereum;
     },
-    ipfs: process.env.IPFS_PROVIDER
-  }
-  // TODO: use apollo-link-context under the hood
+    ipfs: process.env.IPFS_PROVIDER,
+    property: {
+      a: "hey",
+      b: "hi"
+    }
+  },
+  mutationExecutor: executeMutation
   // TODO: support functions for these getters
-  // TODO: note that they'll be called each time
-  // TODO: document the concept of config getters, setters, and the fact that "createMutations" acts as the glue
 });
+
+const mutationLink = createMutationsLink({ mutations });
 
 const link = split(
   ({ query }) => {
-    const { kind, operation } = getMainDefinition(query);
-    return kind === "OperationDefinition" && operation === "mutation"
+    const node = getMainDefinition(query);
+    return node.kind === "OperationDefinition" && node.operation === "mutation"
   },
   mutationLink,
   queryLink
@@ -143,7 +147,7 @@ const UPDATE_GRAVATAR_IMAGE = gql`
 
 function App() {
 
-  const [state, setState] = useState({
+  const [state, setState] = React.useState({
     withImage: false,
     withName: false,
     orderBy: 'displayName',

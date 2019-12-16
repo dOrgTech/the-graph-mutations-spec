@@ -16,6 +16,13 @@ const config = {
   },
   b: (value: number) => {
     return 1 + value
+  },
+  c: {
+    d: {
+      e: (value: boolean) => {
+        return "hey"
+      }
+    }
   }
 }
 
@@ -26,8 +33,9 @@ const mutations = createMutations({
   },
   // TODO: be sure to support function (+ async)
   config: {
-    a: "Fred",
-    b: 4
+    a: () => "",
+    b: 4,
+    c: { d: { e: () => true } }
   },
   mutationExecutor: localExecutor
 })

@@ -30,11 +30,9 @@ export const createMutations = <TConfig extends ConfigSetters>(
   // Validate that the configuration getters and setters match 1:1
   validateConfig(options.config, mutations.config)
 
-  // Create the configuration object
-  let configInstance = createConfig(
-    options.config,
-    mutations.config
-  )
+  // Create a config instance object here to be used within
+  // execute function.
+  let configInstance = undefined;
 
   return {
     execute: async (mutationQuery: MutationQuery) => {
@@ -43,6 +41,13 @@ export const createMutations = <TConfig extends ConfigSetters>(
         uuid
       } = mutationQuery
 
+      if (!configInstance) {
+        configInstance = await createConfig(
+          options.config,
+          mutations.config
+        )
+      }
+
       setContext({
         config: configInstance
       })
@@ -50,7 +55,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
       // TODO:
       // context
       // - config { }
-      // - datasources.datasources.${name} -> address
+      // - datasources.${name} -> address & abi
       // - - catch-all getter https://stackoverflow.com/a/36111309
       // - mutationState.addTransaction(txHash)
 
@@ -58,9 +63,9 @@ export const createMutations = <TConfig extends ConfigSetters>(
         mutationQuery, mutations.resolvers
       )
     },
-    configure: (config: ConfigGetters<TConfig>) => {
+    configure: async (config: ConfigGetters<TConfig>) => {
       validateConfig(config, mutations.config)
-      configInstance = createConfig(config, mutations.config)
+      configInstance = await createConfig(config, mutations.config)
     }
   }
 }

@@ -4,6 +4,7 @@
   "workspaces": {
     "packages": [
       "packages/*",
+      "./examples/dapp",
       "./examples/subgraph/src/mutations"
     ],
     "nohoist": [

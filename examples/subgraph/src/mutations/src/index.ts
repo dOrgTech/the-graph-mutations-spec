@@ -81,7 +81,13 @@ const config = {
     return new ethers.providers.Web3Provider(provider)
   },
   ipfs: (provider: string) => {
-    return IPFSClient(provider)
+    const url = new URL(provider)
+    return IPFSClient({
+      protocol: url.protocol.replace(/[:]+$/, ''),
+      host: url.hostname,
+      port: url.port,
+      'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/',
+    })
   },
   // Example of a custom configuration property
   property: {

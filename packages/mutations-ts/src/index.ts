@@ -15,6 +15,44 @@ import {
 // TODO: move to mutations-apollo
 import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
 import { ApolloLink, Operation, Observable } from 'apollo-link'
+import { ApolloClient } from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
+import gql from 'graphql-tag'
+
+const METADATA_QUERY = gql`{
+  subgraphs {
+    currentVersion {
+      deployment {
+        manifest {
+          dataSources {
+            name
+            network
+            source {
+              address
+              abi
+            }
+          }
+          templates {
+            name
+            source {
+              abi
+            }
+          }
+        }
+        dynamicDataSources {
+          name
+          network
+          source {
+            address
+            abi
+          }
+        }
+      }
+    }
+  }
+}
+`
 
 export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
   mutations: { resolvers: Resolvers, config: TConfig }
@@ -23,7 +61,8 @@ export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
 }
 
 export const createMutations = <TConfig extends ConfigSetters>(
-  options: CreateMutationsOptions<TConfig>
+  options: CreateMutationsOptions<TConfig>,
+  graphqlEndpoint: string
 ): Mutations<TConfig> => {
 
   const { mutations, mutationExecutor } = options
@@ -37,6 +76,33 @@ export const createMutations = <TConfig extends ConfigSetters>(
 
   return {
     execute: async (mutationQuery: MutationQuery) => {
+
+      const metadataLink = new HttpLink({ uri: `${graphqlEndpoint}/subgraphs` });
+      const cache = new InMemoryCache();
+
+      const client = new ApolloClient({
+        cache,
+        link: metadataLink,
+        queryDeduplication: false,
+        defaultOptions: {
+          watchQuery: {
+            fetchPolicy: 'cache-and-network',
+          },
+        },
+      });
+
+      const metadata = await client.query({
+        query: METADATA_QUERY
+      })
+
+      //TODO: Use Proxy to build dataSources object
+
+      let dataSources = {} as any;
+
+      metadata.data.subgraphs[0].currentVersion.deployment.manifest.dataSources.forEach((datasource: any) => {
+        dataSources[datasource.name] = datasource.source;
+      })
+
       const {
         setContext,
         uuid
@@ -50,7 +116,10 @@ export const createMutations = <TConfig extends ConfigSetters>(
       }
 
       setContext({
-        config: configInstance
+        thegraph: {
+          config: configInstance,
+          dataSources
+        }
       })
 
       // TODO:

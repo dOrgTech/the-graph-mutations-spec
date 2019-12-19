@@ -33,7 +33,6 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
 
 const queryLink = createHttpLink({ uri: `${process.env.REACT_APP_GRAPHQL_ENDPOINT}/subgraphs/name/gravity` });
 // TODO: move this under the hood
-// const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
 
 const mutations = createMutations({
   mutations: gravatarMutations,
@@ -60,7 +59,7 @@ const mutations = createMutations({
   },
   mutationExecutor: executeMutation
   // TODO: support functions for these getters
-});
+}, process.env.REACT_APP_GRAPHQL_ENDPOINT)
 
 const mutationLink = createMutationsLink({ mutations });
 
@@ -118,7 +117,7 @@ const GRAVATARS_QUERY = gql`
 // TODO: how does the GravatarOptions type get here? Does it? Does it get treated as an "any"?
 const CREATE_GRAVATAR = gql`
   mutation createGravatar($options: GravatarOptions) {
-    createGravatar(options: $options) {
+    createGravatar(options: $options) @client{
       id
       owner
       displayName

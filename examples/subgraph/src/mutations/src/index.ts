@@ -4,7 +4,7 @@ import IPFSClient from "ipfs-http-client"
 
 async function queryUserGravatar(context: any) {
   const { client } = context
-  const { ethereum } = context.thegraph.config
+  const { ethereum } = context.config
 
   return await client.query(gql`
   {
@@ -43,9 +43,10 @@ function getGravityContract(context: any) {
 async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = getGravityContract(context)
-  const tx = gravity.createGravatar(displayName, imageUrl)
+  // const tx = gravity.createGravatar(displayName, imageUrl)
 
-  await sendTx(tx, "Creating Gravatar", context)
+  await gravity.createGravatar(displayName, imageUrl);
+  // await sendTx(tx, "Creating Gravatar", context)
   return await queryUserGravatar(context)
 }
 

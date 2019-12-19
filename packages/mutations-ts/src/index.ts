@@ -20,7 +20,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
 import gql from 'graphql-tag'
 
-const METADATA_QUERY = gql`{
+const GET_SUBGRAPHS = gql`{
   subgraphs {
     currentVersion {
       deployment {
@@ -52,6 +52,14 @@ const METADATA_QUERY = gql`{
     }
   }
 }
+`
+
+const GET_ABIS = gql`
+  query ethereumContractAbis($name: String!){
+      ethereumContractAbis(where: {name: $name}){
+        file
+      }
+    }
 `
 
 export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
@@ -92,16 +100,23 @@ export const createMutations = <TConfig extends ConfigSetters>(
       });
 
       const metadata = await client.query({
-        query: METADATA_QUERY
+        query: GET_SUBGRAPHS
       })
 
-      //TODO: Use Proxy to build dataSources object
+      //TODO: Use Proxy to build dataSources object, reformat and make more typesafe
 
       let dataSources = {} as any;
 
-      metadata.data.subgraphs[0].currentVersion.deployment.manifest.dataSources.forEach((datasource: any) => {
+      await Promise.all(metadata.data.subgraphs[0].currentVersion.deployment.manifest.dataSources.map(async (datasource: any) => {
+        const { data } = await client.query({
+          query: GET_ABIS,
+          variables: {name: datasource.name}
+        })
+
+        datasource.source.abi = data.ethereumContractAbis[0].file;
         dataSources[datasource.name] = datasource.source;
-      })
+
+      }))
 
       const {
         setContext,

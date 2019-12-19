@@ -3,8 +3,10 @@ import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
 
 async function queryUserGravatar(context: any) {
-  const { client } = context
-  const { ethereum } = context.config
+  const { client } = context.thegraph.client
+  const { ethereum } = context.thegraph.config
+
+  //TODO: Where is this client coming from? Should we pass apollo client instance here?
 
   return await client.query(gql`
   {
@@ -29,12 +31,14 @@ async function sendTx(tx: any, msg: string, context: any) {
   }
 }
 
-function getGravityContract(context: any) {
+async function getGravityContract(context: any) {
   const { ethereum } = context.thegraph.config
   const { Gravity } = context.thegraph.dataSources
+  const [file] = await context.thegraph.config.ipfs.get(context.thegraph.dataSources.Gravity.abi)
+  const abi = file.content.toString('utf8')
 
   const contract = new ethers.Contract(
-    Gravity.address, Gravity.abi, ethereum
+    Gravity.address, abi, ethereum.getSigner()
   )
   contract.connect(ethereum)
   return contract
@@ -42,16 +46,17 @@ function getGravityContract(context: any) {
 
 async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   // const tx = gravity.createGravatar(displayName, imageUrl)
 
   await gravity.createGravatar(displayName, imageUrl);
   // await sendTx(tx, "Creating Gravatar", context)
-  return await queryUserGravatar(context)
+  // return await queryUserGravatar(context)
+  return null;
 }
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarName(displayName)
 
   await sendTx(tx, "Updating Gravatar Name", context)
@@ -59,7 +64,7 @@ async function updateGravatarName(_root: any, {displayName}: any, context: any) 
 }
 
 async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarImage(imageUrl)
 
   // Example of custom data within the state

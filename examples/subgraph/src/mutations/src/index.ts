@@ -57,10 +57,14 @@ async function createGravatar(_root: any, {options}: any, context: any) {
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
   const gravity = await getGravityContract(context)
-  const tx = gravity.updateGravatarName(displayName)
+  // const tx = gravity.updateGravatarName(displayName)
 
-  await sendTx(tx, "Updating Gravatar Name", context)
-  return await queryUserGravatar(context)
+  // await sendTx(tx, "Updating Gravatar Name", context)
+  // return await queryUserGravatar(context)
+
+  await new Promise( resolve => setTimeout(resolve, 6000) );
+  throw new Error("Test Error for Optimistic Update")
+
 }
 
 async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {

@@ -128,7 +128,7 @@ const CREATE_GRAVATAR = gql`
 
 const UPDATE_GRAVATAR_NAME = gql`
   mutation updateGravatarName($displayName: String!) {
-    updateGravatarName(displayName: $displayName) {
+    updateGravatarName(displayName: $displayName) @client{
       id
       owner
       displayName
@@ -169,12 +169,33 @@ function App() {
 
   // TODO: have "status?" object be returned from execute mutation
   // TODO: optimistic response after data is returned from mutations
-  const [executeMutation] = useMutation(
+  const [executeCreate] = useMutation(
     CREATE_GRAVATAR,
     {
       client,
       variables: {
         options: { displayName: "...", imageUrl: "..." }
+      }
+    })
+
+  const [executeUpdateName] = useMutation(
+    UPDATE_GRAVATAR_NAME,
+    {
+      client,
+      optimisticResponse: {
+        updateGravatarName: {
+          id: '0x0', //Apollo updates cache based on this ID
+          imageUrl: '',
+          owner: '',
+          displayName: "Optimistically Updated Name",
+          __typename: "Gravatar"
+        }
+      },
+      variables: {
+        displayName: "New Name"
+      },
+      onError: (error) => {
+        alert(error)
       }
     })
 
@@ -240,8 +261,11 @@ function App() {
             </Button>
         </DialogActions>
       </Dialog>
-      <button onClick={event => executeMutation()}>
+      <button onClick={event => executeCreate()}>
         Create Gravatar
+      </button>
+      <button onClick={event => executeUpdateName()}>
+        Update First Gravatar (Optimistic)
       </button>
     </div>
   )

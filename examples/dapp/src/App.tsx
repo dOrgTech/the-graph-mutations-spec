@@ -55,11 +55,12 @@ const mutations = createMutations({
     property: {
       a: "hey",
       b: "hi"
-    }
+    },
+    graphNodeURL: process.env.REACT_APP_GRAPHQL_ENDPOINT
   },
   mutationExecutor: executeMutation
   // TODO: support functions for these getters
-}, process.env.REACT_APP_GRAPHQL_ENDPOINT)
+})
 
 const mutationLink = createMutationsLink({ mutations });
 

@@ -69,8 +69,7 @@ export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
 }
 
 export const createMutations = <TConfig extends ConfigSetters>(
-  options: CreateMutationsOptions<TConfig>,
-  graphqlEndpoint: string
+  options: CreateMutationsOptions<TConfig>
 ): Mutations<TConfig> => {
 
   const { mutations, mutationExecutor } = options
@@ -85,7 +84,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
   return {
     execute: async (mutationQuery: MutationQuery) => {
 
-      const metadataLink = new HttpLink({ uri: `${graphqlEndpoint}/subgraphs` });
+      const metadataLink = new HttpLink({ uri: `${options.config.graphNodeURL}/subgraphs` });
       const cache = new InMemoryCache();
 
       const client = new ApolloClient({

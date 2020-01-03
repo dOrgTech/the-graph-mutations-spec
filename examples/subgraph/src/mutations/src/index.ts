@@ -3,20 +3,23 @@ import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
 
 async function queryUserGravatar(context: any) {
-  const { client } = context.thegraph.client
+  const { client } = context
   const { ethereum } = context.thegraph.config
 
-  //TODO: Where is this client coming from? Should we pass apollo client instance here?
-
-  return await client.query(gql`
-  {
-    gravatar(owner: ${ethereum.eth.defaultAccount}) {
-      id
-      owner
-      displayName
-      imageUrl
+  return await client.query({
+    query: gql`
+    query gravatars($owner: String!){
+      gravatars (where:{owner: $owner}) @client {
+        id
+        owner
+        displayName
+        imageUrl
+      }
+    }`,
+    variables: {
+      owner: ethereum.provider.selectedAddress
     }
-  }`)
+  })
 }
 
 async function sendTx(tx: any, msg: string, context: any) {
@@ -47,24 +50,20 @@ async function getGravityContract(context: any) {
 async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = await getGravityContract(context)
-  // const tx = gravity.createGravatar(displayName, imageUrl)
-
-  await gravity.createGravatar(displayName, imageUrl);
-  // await sendTx(tx, "Creating Gravatar", context)
-  // return await queryUserGravatar(context)
-  return null;
+  const tx = await gravity.createGravatar(displayName, imageUrl)
+  console.log(tx)
+  await sendTx(tx, "Creating Gravatar", context)
+  return await queryUserGravatar(context)
 }
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
   const gravity = await getGravityContract(context)
-  // const tx = gravity.updateGravatarName(displayName)
+  const tx = await gravity.updateGravatarName(displayName)
+  console.log(tx)
+  console.log(context)
 
-  // await sendTx(tx, "Updating Gravatar Name", context)
-  // return await queryUserGravatar(context)
-
-  await new Promise( resolve => setTimeout(resolve, 6000) );
-  throw new Error("Test Error for Optimistic Update")
-
+  //await sendTx(tx, "Updating Gravatar Name", context)
+  return await queryUserGravatar(context)
 }
 
 async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {

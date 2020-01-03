@@ -195,6 +195,9 @@ function App() {
       variables: {
         displayName: "New Name"
       },
+      context: {
+        client
+      },
       onError: (error) => {
         alert(error)
       }

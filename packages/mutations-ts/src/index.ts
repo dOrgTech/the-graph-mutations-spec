@@ -12,55 +12,17 @@ import {
   createConfig
 } from './configUtils'
 
+import {
+  getSubgraphs,
+  getABIs,
+  IDataSource,
+  IEthereumContractAbi
+} from './datasourceUtils'
+
 // TODO: move to mutations-apollo
 import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
 import { ApolloLink, Operation, Observable } from 'apollo-link'
-import { ApolloClient } from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
-import gql from 'graphql-tag'
-
-const GET_SUBGRAPHS = gql`{
-  subgraphs {
-    currentVersion {
-      deployment {
-        manifest {
-          dataSources {
-            name
-            network
-            source {
-              address
-              abi
-            }
-          }
-          templates {
-            name
-            source {
-              abi
-            }
-          }
-        }
-        dynamicDataSources {
-          name
-          network
-          source {
-            address
-            abi
-          }
-        }
-      }
-    }
-  }
-}
-`
-
-const GET_ABIS = gql`
-  query ethereumContractAbis($name: String!){
-      ethereumContractAbis(where: {name: $name}){
-        file
-      }
-    }
-`
 
 export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
   mutations: { resolvers: Resolvers, config: TConfig }
@@ -84,38 +46,37 @@ export const createMutations = <TConfig extends ConfigSetters>(
   return {
     execute: async (mutationQuery: MutationQuery) => {
 
-      const metadataLink = new HttpLink({ uri: `${options.config.graphNodeURL}/subgraphs` });
-      const cache = new InMemoryCache();
+      const link = new HttpLink({ uri: `${options.config.graphNodeURL}/subgraphs` });
+      const { data } = await getSubgraphs(link)
+      if(!data) throw new Error("Error fetching subgraph metadata")
 
-      const client = new ApolloClient({
-        cache,
-        link: metadataLink,
-        queryDeduplication: false,
-        defaultOptions: {
-          watchQuery: {
-            fetchPolicy: 'cache-and-network',
-          },
-        },
-      });
+      const dataSources = data.subgraphs[0].currentVersion.deployment.manifest.dataSources as IDataSource[];
+      
+      const proxyDataSources = dataSources.map((dataSource) => {
+        return new Proxy(dataSource, {
+          get: async (target, name) => {
+            switch(name){
+              case 'abi': {
+                const { data } = await getABIs(
+                  link,
+                  {name: target.name}
+                )
+                if(!data) throw new Error(`Error fetching ABIs for subgraph with name '${target.name}'`)
 
-      const metadata = await client.query({
-        query: GET_SUBGRAPHS
-      })
+                const ethereumContractAbis = data.ethereumContractAbis as IEthereumContractAbi[];
 
-      //TODO: Use Proxy to build dataSources object, reformat and make more typesafe
-
-      let dataSources = {} as any;
-
-      await Promise.all(metadata.data.subgraphs[0].currentVersion.deployment.manifest.dataSources.map(async (datasource: any) => {
-        const { data } = await client.query({
-          query: GET_ABIS,
-          variables: {name: datasource.name}
+                return ethereumContractAbis[0].file;
+              }
+              case 'address': {
+                return target.source.address;
+              }
+              case 'name': {
+                return target.name;
+              }
+            }
+          }
         })
-
-        datasource.source.abi = data.ethereumContractAbis[0].file;
-        dataSources[datasource.name] = datasource.source;
-
-      }))
+      })
 
       const {
         setContext,
@@ -132,7 +93,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
       setContext({
         thegraph: {
           config: configInstance,
-          dataSources
+          dataSources: proxyDataSources
         }
       })
 

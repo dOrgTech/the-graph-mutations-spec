@@ -36,15 +36,14 @@ async function sendTx(tx: any, msg: string, context: any) {
 
 async function getGravityContract(context: any) {
   const { ethereum } = context.thegraph.config
-  const datasource = context.thegraph.dataSources.find(dataSource => dataSource.name === "Gravity")
-  const datasourceAbi = await datasource.abi
-  const dataSourceAddress = datasource.address
-  const [file] = await context.thegraph.config.ipfs.get(datasourceAbi)
+  const abi = await context.thegraph.dataSources.Gravity.abi
+  const address = await context.thegraph.dataSources.Gravity.address
+  const [file] = await context.thegraph.config.ipfs.get(abi)
 
-  const abi = file.content.toString('utf8')
+  const abiFile = file.content.toString('utf8')
 
   const contract = new ethers.Contract(
-    dataSourceAddress, abi, ethereum.getSigner()
+    address, abiFile, ethereum.getSigner()
   )
   contract.connect(ethereum)
   return contract

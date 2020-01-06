@@ -23,6 +23,7 @@ import {
 import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 import { HttpLink } from 'apollo-link-http';
+import DataSources from './class/DataSources.class'
 
 export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
   mutations: { resolvers: Resolvers, config: TConfig }
@@ -46,41 +47,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
   return {
     execute: async (mutationQuery: MutationQuery) => {
 
-      const link = new HttpLink({ uri: `${options.config.graphNodeURL}/subgraphs` });
-      const { data } = await getSubgraphs(link)
-      if(!data) throw new Error("Error fetching subgraph metadata")
-
-      const dataSources = data.subgraphs[0].currentVersion.deployment.manifest.dataSources as IDataSource[];
-      
-      const proxyDataSources = dataSources.map((dataSource) => {
-        return new Proxy(dataSource, {
-          get: (target, name) => {
-            switch(name){
-              case 'abi': {
-                return new Promise((resolve, reject) => {
-                  getABIs(
-                    link,
-                    {name: target.name}
-                  ).then((res) => {
-                    if(res){
-                      const {data} = res
-                      if(!data) throw new Error(`Error fetching ABIs for subgraph with name '${target.name}'`)
-                      const ethereumContractAbis = data.ethereumContractAbis as IEthereumContractAbi[];
-                      resolve(ethereumContractAbis[0].file);
-                    }
-                  })
-                }) 
-              }
-              case 'address': {
-                return target.source.address;
-              }
-              case 'name': {
-                return target.name;
-              }
-            }
-          }
-        })
-      })
+      const dataSources = new DataSources(options.config.graphNodeURL as string)
 
       const {
         setContext,
@@ -97,7 +64,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
       setContext({
         thegraph: {
           config: configInstance,
-          dataSources: proxyDataSources
+          dataSources
         }
       })
 

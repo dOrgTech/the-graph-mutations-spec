@@ -36,9 +36,9 @@ async function sendTx(tx: any, msg: string, context: any) {
 
 async function getGravityContract(context: any) {
   const { ethereum } = context.thegraph.config
-  const datasource = await context.thegraph.dataSources.find(async dataSource => await dataSource.name === "Gravity")
+  const datasource = context.thegraph.dataSources.find(dataSource => dataSource.name === "Gravity")
   const datasourceAbi = await datasource.abi
-  const dataSourceAddress = await datasource.address
+  const dataSourceAddress = datasource.address
   const [file] = await context.thegraph.config.ipfs.get(datasourceAbi)
 
   const abi = file.content.toString('utf8')
@@ -54,17 +54,13 @@ async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = await getGravityContract(context)
   const tx = await gravity.createGravatar(displayName, imageUrl)
-  console.log(tx)
-  await sendTx(tx, "Creating Gravatar", context)
+  //await sendTx(tx, "Creating Gravatar", context)
   return await queryUserGravatar(context)
 }
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
   const gravity = await getGravityContract(context)
   const tx = await gravity.updateGravatarName(displayName)
-  console.log(tx)
-  console.log(context)
-
   //await sendTx(tx, "Updating Gravatar Name", context)
   return await queryUserGravatar(context)
 }

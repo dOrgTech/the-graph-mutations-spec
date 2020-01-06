@@ -54,18 +54,22 @@ export const createMutations = <TConfig extends ConfigSetters>(
       
       const proxyDataSources = dataSources.map((dataSource) => {
         return new Proxy(dataSource, {
-          get: async (target, name) => {
+          get: (target, name) => {
             switch(name){
               case 'abi': {
-                const { data } = await getABIs(
-                  link,
-                  {name: target.name}
-                )
-                if(!data) throw new Error(`Error fetching ABIs for subgraph with name '${target.name}'`)
-
-                const ethereumContractAbis = data.ethereumContractAbis as IEthereumContractAbi[];
-
-                return ethereumContractAbis[0].file;
+                return new Promise((resolve, reject) => {
+                  getABIs(
+                    link,
+                    {name: target.name}
+                  ).then((res) => {
+                    if(res){
+                      const {data} = res
+                      if(!data) throw new Error(`Error fetching ABIs for subgraph with name '${target.name}'`)
+                      const ethereumContractAbis = data.ethereumContractAbis as IEthereumContractAbi[];
+                      resolve(ethereumContractAbis[0].file);
+                    }
+                  })
+                }) 
               }
               case 'address': {
                 return target.source.address;

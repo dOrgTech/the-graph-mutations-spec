@@ -6,20 +6,23 @@ import {
 } from '../datasourceUtils'
 
 import { HttpLink } from 'apollo-link-http';
+import { IDataSourceConfig } from '../interface/IDataSourceConfig';
 
 export default class DataSource {
 
     private _dataSources: any;
     private _link: HttpLink;
+    private _ipfs: any;
     private _name: string;
     private _abi: string = '';
     private _address: string = '';
 
-    constructor(dataSources: any, name: string, graphqlEndpoint: string) {
+    constructor(dataSources: any, name: string, {graphqlEndpoint, ipfs}: IDataSourceConfig) {
         this._link = new HttpLink({ uri: `${graphqlEndpoint}/subgraphs` })
         this._name = name;
         this._dataSources = dataSources;
         this._dataSources[name] = this;
+        this._ipfs = ipfs;
     }
 
     get abi(): Promise<string> {
@@ -31,7 +34,8 @@ export default class DataSource {
                 )
                 if (!data || data.ethereumContractAbis.length === 0) throw new Error(`Error fetching ABIs for subgraph with name '${this._name}'`)
                 const ethereumContractAbis = data.ethereumContractAbis as IEthereumContractAbi[];
-                this._abi = ethereumContractAbis[0].file;
+                const [file] = await this._ipfs.get(ethereumContractAbis[0].file)
+                this._abi = file.content.toString('utf8');
                 return this._abi;
             } else {
                 return this._abi;

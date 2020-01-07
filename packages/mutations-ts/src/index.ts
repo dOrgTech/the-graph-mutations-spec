@@ -11,18 +11,13 @@ import {
   validateConfig,
   createConfig
 } from './configUtils'
-
 import {
-  getSubgraphs,
-  getABIs,
-  IDataSource,
-  IEthereumContractAbi
-} from './datasourceUtils'
+  MutationState
+} from './class/MutationState.class';
 
 // TODO: move to mutations-apollo
 import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
 import { ApolloLink, Operation, Observable } from 'apollo-link'
-import { HttpLink } from 'apollo-link-http';
 import DataSources from './class/DataSources.class'
 
 export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
@@ -47,8 +42,6 @@ export const createMutations = <TConfig extends ConfigSetters>(
   return {
     execute: async (mutationQuery: MutationQuery) => {
 
-      const dataSources = new DataSources(options.config.graphNodeURL as string)
-
       const {
         setContext,
         uuid
@@ -60,6 +53,8 @@ export const createMutations = <TConfig extends ConfigSetters>(
           mutations.config
         )
       }
+
+      const dataSources = new DataSources(options.config.graphNodeURL as string, configInstance.ipfs)
 
       setContext({
         thegraph: {

@@ -38,12 +38,9 @@ async function getGravityContract(context: any) {
   const { ethereum } = context.thegraph.config
   const abi = await context.thegraph.dataSources.Gravity.abi
   const address = await context.thegraph.dataSources.Gravity.address
-  const [file] = await context.thegraph.config.ipfs.get(abi)
-
-  const abiFile = file.content.toString('utf8')
 
   const contract = new ethers.Contract(
-    address, abiFile, ethereum.getSigner()
+    address, abi, ethereum.getSigner()
   )
   contract.connect(ethereum)
   return contract

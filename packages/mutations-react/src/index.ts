@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { BehaviorSubject } from 'rxjs';
-import { MutationState } from '@graphprotocol/mutations-ts/dist';
+import { MutationState } from '@graphprotocol/mutations-ts';
 
 function useObservable(observable: BehaviorSubject<MutationState>, setter: React.Dispatch<React.SetStateAction<MutationState>>) {
     useEffect(() => {

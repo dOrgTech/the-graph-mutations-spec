@@ -1,5 +1,5 @@
-import DataSource  from './DataSource.class'
-import { IDataSourceConfig } from '../interface/IDataSourceConfig';
+import DataSource  from './dataSource'
+import { DataSourceConfig } from '../interface/dataSourceConfig';
 
 export default class DataSources {
 
@@ -8,7 +8,7 @@ export default class DataSources {
             get: (target: any, name: string) => {
                 return name in target?
                     target[name]
-                    : new DataSource(target, name, {graphqlEndpoint, ipfs} as IDataSourceConfig);
+                    : new DataSource(target, name, {graphqlEndpoint, ipfs} as DataSourceConfig);
             }
         })
     }

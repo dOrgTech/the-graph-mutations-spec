@@ -1,8 +1,8 @@
 import cloneDeep from 'lodash/cloneDeep';
 import { BehaviorSubject } from 'rxjs';
 
-type ITransactionEvent = ITransactionStartedEvent | ITransactionCancelledEvent | ITransactionConfirmedEvent
-type ITransaction = IStartedTransaction | IConfirmedTransaction | ICancelledTransaction
+type TransactionEvent = TransactionStartedEvent | TransactionCancelledEvent | TransactionConfirmedEvent
+type Transaction = StartedTransaction | ConfirmedTransaction | CancelledTransaction
 
 enum TransactionStatus {
     confirmed = "Confirmed",
@@ -11,52 +11,52 @@ enum TransactionStatus {
     errored = "Errored"
 }
 
-interface ITransactionStartedEvent {
-    transaction: IStartedTransaction
+interface TransactionStartedEvent {
+    transaction: StartedTransaction
     UTCtimestamp: number
 }
 
-interface ITransactionCancelledEvent {
-    transaction: ICancelledTransaction
+interface TransactionCancelledEvent {
+    transaction: CancelledTransaction
     UTCtimestamp: number
 }
 
-interface ITransactionConfirmedEvent {
-    transaction: IConfirmedTransaction
+interface TransactionConfirmedEvent {
+    transaction: ConfirmedTransaction
     UTCtimestamp: number
 }
 
-interface IConfirmedTransaction extends IStartedTransaction {
+interface ConfirmedTransaction extends StartedTransaction {
     hash: string
     to: string
     value: string
 }
 
-interface ICancelledTransaction extends IStartedTransaction {
+interface CancelledTransaction extends StartedTransaction {
     hash: string
     to: string
     value: string
 }
 
-interface IStartedTransaction {
+interface StartedTransaction {
     id: string
     title: string
     payload: Object
     status: TransactionStatus
 }
 
-interface IMutationState {
-    startTransaction(transaction: IStartedTransaction): void
+interface MutationStateInterface {
+    startTransaction(transaction: StartedTransaction): void
     cancelTransaction(id: string, progress: number, transactionCancelData: any): void
     confirmTransaction(id: string, progress: number, transactionConfirmData: any): void
     addError(id: string, error: string): void
 }
 
-export class MutationState implements IMutationState {
+export class MutationState implements MutationStateInterface {
     private _progress: number;
-    private _events: ITransactionEvent[];
+    private _events: TransactionEvent[];
     private _observable: BehaviorSubject<MutationState>;
-    private _transactions: ITransaction[];
+    private _transactions: Transaction[];
     private _errors: string[];
 
     constructor(observable: BehaviorSubject<MutationState>) {
@@ -103,7 +103,7 @@ export class MutationState implements IMutationState {
             hash,
             to,
             value
-        } as IConfirmedTransaction
+        } as ConfirmedTransaction
 
         this._events.push({
             UTCtimestamp: new Date().getTime(),
@@ -123,7 +123,7 @@ export class MutationState implements IMutationState {
             hash,
             to,
             value
-        } as ICancelledTransaction
+        } as CancelledTransaction
 
         this._events.push({
             UTCtimestamp: new Date().getTime(),

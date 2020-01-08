@@ -107,17 +107,17 @@ export const getABIs = async (link: HttpLink, variables: Object) => {
     )
 }
 
-export interface ISource {
+export interface Source {
     abi: string,
     address: string
 }
 
-export interface IDataSource{
+export interface DataSourceInterface{
     name: string,
     network: string,
-    source: ISource
+    source: Source
 }
 
-export interface IEthereumContractAbi{
+export interface EthereumContractAbi{
     file: string
 }

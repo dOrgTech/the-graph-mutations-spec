@@ -13,12 +13,12 @@ import {
 } from './configUtils'
 import {
   MutationState
-} from './class/MutationState.class';
+} from './class/mutationState';
 
 // TODO: move to mutations-apollo
 import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
 import { ApolloLink, Operation, Observable } from 'apollo-link'
-import DataSources from './class/DataSources.class'
+import DataSources from './class/dataSources'
 
 export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
   mutations: { resolvers: Resolvers, config: TConfig }

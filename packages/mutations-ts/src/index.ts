@@ -104,6 +104,8 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
   )
 }
 
+export {MutationState}
+
 /*
 TODO:
 // @graphprotocol/mutations-ts-apollo-react

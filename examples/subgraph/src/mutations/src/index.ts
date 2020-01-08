@@ -1,6 +1,7 @@
 import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
+import {MutationState} from "@graphprotocol/mutations-ts"
 
 async function queryUserGravatar(context: any) {
   const { client } = context
@@ -22,14 +23,15 @@ async function queryUserGravatar(context: any) {
   })
 }
 
-async function sendTx(tx: any, msg: string, context: any) {
-  const { mutationState } = context.thegraph
+async function sendTx(tx: any, id: string, msg: string, progress: number, context: any) {
+  const mutationState: MutationState = context.mutationState;
   try {
+    mutationState.startTransaction({id, title: msg, payload: {}})
     tx = await tx
-    mutationState.addTransaction(tx.hash)
+    mutationState.confirmTransaction(id, progress, tx)
     await tx.wait()
   } catch (error) {
-    mutationState.addError(error)
+    mutationState.addError(id, error)
     throw new Error(`Failed while sending "${msg}"`)
   }
 }
@@ -56,8 +58,9 @@ async function createGravatar(_root: any, {options}: any, context: any) {
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
   const gravity = await getGravityContract(context)
-  const tx = await gravity.updateGravatarName(displayName)
-  //await sendTx(tx, "Updating Gravatar Name", context)
+  const tx = gravity.updateGravatarName(displayName)
+  const randId = Math.floor(Math.random()*(10000000000+1)).toString();
+  await sendTx(tx, randId ,"Updating Gravatar Name", 0.25, context)
   return await queryUserGravatar(context)
 }
 
@@ -68,7 +71,7 @@ async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
   // Example of custom data within the state
   context.thegraph.mutationState.addData("imageUrl", imageUrl)
 
-  await sendTx(tx, "Updating Gravatar Image", context)
+  //await sendTx(tx, "Updating Gravatar Image", context)
   return await queryUserGravatar(context)
 }
 

@@ -25,6 +25,7 @@ import Filter from './components/Filter'
 import gravatarMutations from 'gravatar-mutations'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import executeMutation from '@graphprotocol/mutations-ts/dist/mutation-executor/local-resolvers'
+import {useMutationAndSubscribe} from '@graphprotocol/mutations-react'
 // import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
@@ -179,7 +180,7 @@ function App() {
       }
     })
 
-  const [executeUpdateName] = useMutation(
+  const {executeMutation: executeUpdateName, subscriptionData} = useMutationAndSubscribe(
     UPDATE_GRAVATAR_NAME,
     {
       client,
@@ -202,6 +203,8 @@ function App() {
         alert(error)
       }
     })
+
+  console.log(subscriptionData)
 
   const { data, error, loading } = useQuery(GRAVATARS_QUERY, {
     client,

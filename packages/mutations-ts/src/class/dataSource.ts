@@ -10,6 +10,7 @@ import { DataSourceConfig } from '../interface/dataSourceConfig';
 
 export default class DataSource {
 
+    // TODO: remove ipfs & link
     private _dataSources: any;
     private _link: HttpLink;
     private _ipfs: any;

@@ -7,20 +7,20 @@ async function queryUserGravatar(context: any) {
   const { client } = context
   const { ethereum } = context.thegraph.config
 
+  console.log(client)
+
   return await client.query({
     query: gql`
-    query gravatars($owner: String!){
-      gravatars (where:{owner: $owner}) @client {
-        id
-        owner
-        displayName
-        imageUrl
-      }
-    }`,
-    variables: {
-      owner: ethereum.provider.selectedAddress
+      query GetGravatars {
+        gravatar (id: "0xa") {
+          id
+          owner
+          displayName
+          imageUrl
+        }
+      }`
     }
-  })
+  )
 }
 
 async function sendTx(tx: any, id: string, msg: string, progress: number, context: any) {

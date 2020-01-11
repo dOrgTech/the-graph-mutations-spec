@@ -23,6 +23,7 @@ import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
 import gravatarMutations from 'gravatar-mutations'
+import {State} from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import executeMutation from '@graphprotocol/mutations-ts/dist/mutation-executor/local-resolvers'
 import {useMutationAndSubscribe} from '@graphprotocol/mutations-react'
@@ -202,7 +203,7 @@ function App() {
       onError: (error) => {
         alert(error)
       }
-    })
+    }, State)
 
   console.log(subscriptionData)
 

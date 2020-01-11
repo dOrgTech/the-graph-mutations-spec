@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { BehaviorSubject } from 'rxjs';
-import { MutationState } from '@graphprotocol/mutations-ts';
+import { MutationState } from '@graphprotocol/mutations-ts'
 
-function useObservable(observable: BehaviorSubject<MutationState>, setter: React.Dispatch<React.SetStateAction<MutationState>>) {
+function useObservable<CustomMutationStateType>(observable: BehaviorSubject<CustomMutationStateType>,
+    setter: React.Dispatch<React.SetStateAction<CustomMutationStateType>>) {
+         
     useEffect(() => {
         let subscription = observable.subscribe(result => {
             if (result) setter(result)
@@ -12,19 +14,22 @@ function useObservable(observable: BehaviorSubject<MutationState>, setter: React
     }, [observable, setter])
 }
 
-export function useMutationAndSubscribe(mutation: any, mutationOptions: any) {
-    const [subscriptionData, setSubscriptionData] = useState({} as MutationState)
+export function useMutationAndSubscribe<CustomMutationStateType>(mutation: any,
+    mutationOptions: any,
+    CustomMutationState: new (observable: BehaviorSubject<CustomMutationStateType>) => CustomMutationStateType) {
 
-    const [observable] = useState(new BehaviorSubject({} as MutationState))
+    const [subscriptionData, setSubscriptionData] = useState({} as CustomMutationStateType)
+
+    const [observable] = useState(new BehaviorSubject({} as CustomMutationStateType))
 
     mutationOptions.context = {
         ...mutationOptions.context,
-        mutationState: new MutationState(observable)
+        mutationState: new CustomMutationState(observable)
     }
 
     const [executeMutation, loading] = useMutation(mutation, mutationOptions)
 
-    useObservable(observable, setSubscriptionData);
+    useObservable<CustomMutationStateType>(observable, setSubscriptionData);
 
     return {
         executeMutation: () => {

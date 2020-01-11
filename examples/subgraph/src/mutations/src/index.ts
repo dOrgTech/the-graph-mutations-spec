@@ -2,12 +2,15 @@ import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
 import {MutationState} from "@graphprotocol/mutations-ts"
+import {BehaviorSubject} from 'rxjs';
+
+export class State extends MutationState{
+  public staticProperty = {};
+}
 
 async function queryUserGravatar(context: any) {
   const { client } = context
   const { ethereum } = context.thegraph.config
-
-  console.log(client)
 
   return await client.query({
     query: gql`
@@ -106,5 +109,6 @@ const config = {
 
 export default {
   resolvers,
-  config
+  config,
+  State
 }

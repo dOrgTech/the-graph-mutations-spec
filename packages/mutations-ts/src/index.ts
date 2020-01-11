@@ -10,7 +10,7 @@ import {
 import {
   validateConfig,
   createConfig
-} from './configUtils'
+} from './utils/configUtils'
 import {
   MutationState
 } from './class/mutationState';

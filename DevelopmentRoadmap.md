@@ -8,7 +8,7 @@
 ## Deliverables
 * `@graphprotocol/mutations-ts` Package
 * Functional Gravatar dApp w/ Mutations  
-  * Note: `context.thegraph.datasources...` not available yet, see Milestone 2.
+  * Note: `context.graph.datasources...` not available yet, see Milestone 2.
 * `graph-cli build` Support
 
 ## Details (WIP)

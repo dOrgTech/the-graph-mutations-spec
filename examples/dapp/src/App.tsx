@@ -23,20 +23,21 @@ import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
 import gravatarMutations from 'gravatar-mutations'
+import {State} from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
-import executeMutation from '@graphprotocol/mutations-ts/dist/mutation-executor/local-resolvers'
-// import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
+import { useMutationAndSubscribe } from '@graphprotocol/mutations-react'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
 }
 
-const queryLink = createHttpLink({ uri: `${process.env.REACT_APP_GRAPHQL_ENDPOINT}/subgraphs/name/gravity` });
-// TODO: move this under the hood
-// const metadataLink = createHttpLink({ uri: "https://api.thegraph.com/subgraphs" });
+const nodeEndpoint = process.env.REACT_APP_GRAPHQL_ENDPOINT
+const queryLink = createHttpLink({ uri: `${nodeEndpoint}/subgraphs/name/gravity` });
 
 const mutations = createMutations({
   mutations: gravatarMutations,
+  subgraph: "gravatars",
+  node: nodeEndpoint,
   config: {
     ethereum: async () => {
       const { ethereum } = (window as any);
@@ -57,10 +58,8 @@ const mutations = createMutations({
       a: "hey",
       b: "hi"
     }
-  },
-  mutationExecutor: executeMutation
-  // TODO: support functions for these getters
-});
+  }
+})
 
 const mutationLink = createMutationsLink({ mutations });
 
@@ -78,32 +77,6 @@ const client = new ApolloClient({
   cache: new InMemoryCache()
 })
 
-// TODO
-/*
-createQueryEngine([
-  {
-    id: "subgraphid",
-    mutations: gravatarMutations,
-    config: {
-      ethereum: process.env.ETHEREUM_PROVIDER,
-      ipfs: process.env.IPFS_PROVIDER
-    }
-  },
-  {
-    ...
-  }
-])
-*/
-
-// TODO: remove this from the documentation
-// mutations.resolvers -
-//   wrapped version of the original `gravatarMutations.resolvers`
-//   object. These wrapping functions inject a `context` property
-//   named `thegraph` with all of the fields added by the
-//   `requiredContext` generator functions. Additionally the datasource
-//   addresses have been fetched from the graph-node and are available
-//   like so `context.thegraph.datasources.${name}`.
-
 const GRAVATARS_QUERY = gql`
   query gravatars($where: Gravatar_filter!, $orderBy: Gravatar_orderBy!) {
     gravatars(first: 100, where: $where, orderBy: $orderBy, orderDirection: asc) {
@@ -118,7 +91,7 @@ const GRAVATARS_QUERY = gql`
 // TODO: how does the GravatarOptions type get here? Does it? Does it get treated as an "any"?
 const CREATE_GRAVATAR = gql`
   mutation createGravatar($options: GravatarOptions) {
-    createGravatar(options: $options) {
+    createGravatar(options: $options) @client{
       id
       owner
       displayName
@@ -129,7 +102,7 @@ const CREATE_GRAVATAR = gql`
 
 const UPDATE_GRAVATAR_NAME = gql`
   mutation updateGravatarName($displayName: String!) {
-    updateGravatarName(displayName: $displayName) {
+    updateGravatarName(displayName: $displayName) @client{
       id
       owner
       displayName
@@ -170,7 +143,7 @@ function App() {
 
   // TODO: have "status?" object be returned from execute mutation
   // TODO: optimistic response after data is returned from mutations
-  const [executeMutation] = useMutation(
+  const [executeCreate] = useMutation(
     CREATE_GRAVATAR,
     {
       client,
@@ -178,6 +151,32 @@ function App() {
         options: { displayName: "...", imageUrl: "..." }
       }
     })
+
+  const {executeMutation: executeUpdateName, subscriptionData} = useMutationAndSubscribe(
+    UPDATE_GRAVATAR_NAME,
+    {
+      client,
+      optimisticResponse: {
+        updateGravatarName: {
+          id: '0x0', //Apollo updates cache based on this ID
+          imageUrl: '',
+          owner: '',
+          displayName: "Optimistically Updated Name",
+          __typename: "Gravatar"
+        }
+      },
+      variables: {
+        displayName: "New Name"
+      },
+      context: {
+        client
+      },
+      onError: (error) => {
+        alert(error)
+      }
+    }, State)
+
+  console.log(subscriptionData)
 
   const { data, error, loading } = useQuery(GRAVATARS_QUERY, {
     client,
@@ -241,8 +240,11 @@ function App() {
             </Button>
         </DialogActions>
       </Dialog>
-      <button onClick={event => executeMutation()}>
+      <button onClick={event => executeCreate()}>
         Create Gravatar
+      </button>
+      <button onClick={event => executeUpdateName()}>
+        Update First Gravatar (Optimistic)
       </button>
     </div>
   )

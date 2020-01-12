@@ -90,11 +90,11 @@ const resolvers = {
   Mutation: {
     async createGravatar(_root, args, context) {
       // TODO: move this into its own section after user stories called "Extra Functionality"
-      //       and document the interface of `context.thegraph`
-      // context.thegraph.config.ethereum
-      // context.thegraph.config.ipfs
-      // context.thegraph.datasources.${name} -> address
-      // context.thegraph.mutationState.addTransaction(txHash)
+      //       and document the interface of `context.graph`
+      // context.graph.config.ethereum
+      // context.graph.config.ipfs
+      // context.graph.datasources.${name} -> { address, abi }
+      // context.graph.state.addTransaction(txHash)
       ...
     },
     async updateGravatarName(_root, args, context) {
@@ -108,7 +108,7 @@ const resolvers = {
 
 const config = {
   ethereum: (provider: any) => {
-    // these are added to the context.thegraph.config object
+    // these are added to the context.graph.config object
     return new Web3(provider)
   },
   ipfs: (provider: string) => {
@@ -187,7 +187,7 @@ const client = new ApolloClient({
 3. Create the GraphQL client with the initialized mutation resolvers & context.
 
 ### Initialized Mutations?
-The `mutations.resolvers` created by this function are a wrapped version of the original `gravatarMutations.resolvers` object. These wrapping functions inject a `context` property named `thegraph` with all of the fields added by the `requiredContext` generator functions. Additionally the datasource addresses have been fetched from the graph-node and are available like so `context.thegraph.datasources.${name}`.
+The `mutations.resolvers` created by this function are a wrapped version of the original `gravatarMutations.resolvers` object. These wrapping functions inject a `context` property named `graph` with all of the fields added by the `requiredContext` generator functions. Additionally the datasource addresses & abis can be fetched from the graph-node and are available like so `await context.graph.datasources.${name}.address`.
 
 ## Step 3: Execute Mutations
 

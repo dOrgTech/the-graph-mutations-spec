@@ -43,6 +43,7 @@ export const createMutations = <TConfig extends ConfigSetters>(
     execute: async (mutationQuery: MutationQuery) => {
 
       const {
+        getContext,
         setContext,
         uuid
       } = mutationQuery
@@ -54,21 +55,21 @@ export const createMutations = <TConfig extends ConfigSetters>(
         )
       }
 
-      const dataSources = new DataSources(options.config.graphNodeURL as string, configInstance.ipfs)
+      const dataSources = new DataSources(
+        // TODO: why is graphNodeUrl coming from config?
+        options.config.graphNodeURL as string,
+        configInstance.ipfs
+      )
+
+      const context = getContext()
 
       setContext({
         thegraph: {
           config: configInstance,
-          dataSources
+          dataSources,
+          state: new mutations.State(context.__stateObserver)
         }
       })
-
-      // TODO:
-      // context
-      // - config { }
-      // - datasources.${name} -> address & abi
-      // - - catch-all getter https://stackoverflow.com/a/36111309
-      // - mutationState.addTransaction(txHash)
 
       return await mutationExecutor(
         mutationQuery, mutations.resolvers

@@ -1,8 +1,7 @@
 import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
-import {MutationState} from "@graphprotocol/mutations-ts"
-import {BehaviorSubject} from 'rxjs';
+import { MutationState } from "@graphprotocol/mutations-ts"
 
 export class State extends MutationState{
   public staticProperty = {};
@@ -15,7 +14,7 @@ async function queryUserGravatar(context: any) {
   return await client.query({
     query: gql`
       query GetGravatars {
-        gravatar (id: "0xa") {
+        gravatar (id: '${ethereum.provider.selectedAddress}') {
           id
           owner
           displayName
@@ -27,14 +26,14 @@ async function queryUserGravatar(context: any) {
 }
 
 async function sendTx(tx: any, id: string, msg: string, progress: number, context: any) {
-  const mutationState: MutationState = context.mutationState;
+  const state: MutationState = context.state;
   try {
-    mutationState.startTransaction({id, title: msg, payload: {}})
+    state.startTransaction({id, title: msg, payload: {}})
     tx = await tx
-    mutationState.confirmTransaction(id, progress, tx)
+    state.confirmTransaction(id, progress, tx)
     await tx.wait()
   } catch (error) {
-    mutationState.addError(id, error)
+    state.addError(id, error)
     throw new Error(`Failed while sending "${msg}"`)
   }
 }
@@ -72,7 +71,7 @@ async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
   const tx = gravity.updateGravatarImage(imageUrl)
 
   // Example of custom data within the state
-  context.thegraph.mutationState.addData("imageUrl", imageUrl)
+  context.thegraph.state.addData("imageUrl", imageUrl)
 
   //await sendTx(tx, "Updating Gravatar Image", context)
   return await queryUserGravatar(context)

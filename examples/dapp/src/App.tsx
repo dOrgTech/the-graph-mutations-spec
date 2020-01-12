@@ -23,20 +23,21 @@ import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
 import gravatarMutations from 'gravatar-mutations'
+import {State} from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
-import executeMutation from '@graphprotocol/mutations-ts/dist/mutation-executor/local-resolvers'
-import {useMutationAndSubscribe} from '@graphprotocol/mutations-react'
-// import { useMutationAndSubscribe } from '@graphprotocol/mutations-react';
+import { useMutationAndSubscribe } from '@graphprotocol/mutations-react'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
 }
 
-const queryLink = createHttpLink({ uri: `${process.env.REACT_APP_GRAPHQL_ENDPOINT}/subgraphs/name/gravity` });
-// TODO: move this under the hood
+const nodeEndpoint = process.env.REACT_APP_GRAPHQL_ENDPOINT
+const queryLink = createHttpLink({ uri: `${nodeEndpoint}/subgraphs/name/gravity` });
 
 const mutations = createMutations({
   mutations: gravatarMutations,
+  subgraph: "gravatars",
+  node: nodeEndpoint,
   config: {
     ethereum: async () => {
       const { ethereum } = (window as any);
@@ -56,11 +57,8 @@ const mutations = createMutations({
     property: {
       a: "hey",
       b: "hi"
-    },
-    graphNodeURL: process.env.REACT_APP_GRAPHQL_ENDPOINT
-  },
-  mutationExecutor: executeMutation
-  // TODO: support functions for these getters
+    }
+  }
 })
 
 const mutationLink = createMutationsLink({ mutations });
@@ -78,32 +76,6 @@ const client = new ApolloClient({
   link,
   cache: new InMemoryCache()
 })
-
-// TODO
-/*
-createQueryEngine([
-  {
-    id: "subgraphid",
-    mutations: gravatarMutations,
-    config: {
-      ethereum: process.env.ETHEREUM_PROVIDER,
-      ipfs: process.env.IPFS_PROVIDER
-    }
-  },
-  {
-    ...
-  }
-])
-*/
-
-// TODO: remove this from the documentation
-// mutations.resolvers -
-//   wrapped version of the original `gravatarMutations.resolvers`
-//   object. These wrapping functions inject a `context` property
-//   named `thegraph` with all of the fields added by the
-//   `requiredContext` generator functions. Additionally the datasource
-//   addresses have been fetched from the graph-node and are available
-//   like so `context.thegraph.datasources.${name}`.
 
 const GRAVATARS_QUERY = gql`
   query gravatars($where: Gravatar_filter!, $orderBy: Gravatar_orderBy!) {
@@ -202,7 +174,7 @@ function App() {
       onError: (error) => {
         alert(error)
       }
-    })
+    }, State)
 
   console.log(subscriptionData)
 

@@ -55,11 +55,11 @@ interface MutationStateInterface {
 export class MutationState implements MutationStateInterface {
     private _progress: number;
     private _events: TransactionEvent[];
-    private _observable: BehaviorSubject<MutationState>;
+    private _observable?: BehaviorSubject<MutationState>;
     private _transactions: Transaction[];
     private _errors: string[];
 
-    constructor(observable: BehaviorSubject<MutationState>) {
+    constructor(observable?: BehaviorSubject<MutationState>) {
         this._observable = observable;
         this._events = [];
         this._progress = 0;
@@ -153,7 +153,8 @@ export class MutationState implements MutationStateInterface {
     }
 
     private publish() {
-        this._observable.next(this);
+        if (this._observable) {
+            this._observable.next(this);
+        }
     }
-
 }

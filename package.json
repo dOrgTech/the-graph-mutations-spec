@@ -12,9 +12,7 @@
     ]
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "test": "lerna run test --stream",
-    "test:watch": "lerna run test:watch --stream"
+    "build:packages": "lerna exec --scope @graphprotocol/* -- yarn build"
   },
   "devDependencies": {
     "@types/graphql": "^14.2.2",

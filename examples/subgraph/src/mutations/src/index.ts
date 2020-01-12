@@ -1,18 +1,20 @@
 import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
-import {MutationState} from "@graphprotocol/mutations-ts"
+import { MutationState } from "@graphprotocol/mutations-ts"
+
+export class State extends MutationState{
+  public staticProperty = {};
+}
 
 async function queryUserGravatar(context: any) {
   const { client } = context
-  const { ethereum } = context.thegraph.config
-
-  console.log(client)
+  const { ethereum } = context.graph.config
 
   return await client.query({
     query: gql`
       query GetGravatars {
-        gravatar (id: "0xa") {
+        gravatar (id: '${ethereum.provider.selectedAddress}') {
           id
           owner
           displayName
@@ -24,22 +26,22 @@ async function queryUserGravatar(context: any) {
 }
 
 async function sendTx(tx: any, id: string, msg: string, progress: number, context: any) {
-  const mutationState: MutationState = context.mutationState;
+  const state: MutationState = context.state;
   try {
-    mutationState.startTransaction({id, title: msg, payload: {}})
+    state.startTransaction({id, title: msg, payload: {}})
     tx = await tx
-    mutationState.confirmTransaction(id, progress, tx)
+    state.confirmTransaction(id, progress, tx)
     await tx.wait()
   } catch (error) {
-    mutationState.addError(id, error)
+    state.addError(id, error)
     throw new Error(`Failed while sending "${msg}"`)
   }
 }
 
 async function getGravityContract(context: any) {
-  const { ethereum } = context.thegraph.config
-  const abi = await context.thegraph.dataSources.Gravity.abi
-  const address = await context.thegraph.dataSources.Gravity.address
+  const { ethereum } = context.graph.config
+  const abi = await context.graph.dataSources.Gravity.abi
+  const address = await context.graph.dataSources.Gravity.address
 
   const contract = new ethers.Contract(
     address, abi, ethereum.getSigner()
@@ -69,7 +71,7 @@ async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
   const tx = gravity.updateGravatarImage(imageUrl)
 
   // Example of custom data within the state
-  context.thegraph.mutationState.addData("imageUrl", imageUrl)
+  context.graph.state.addData("imageUrl", imageUrl)
 
   //await sendTx(tx, "Updating Gravatar Image", context)
   return await queryUserGravatar(context)
@@ -106,5 +108,6 @@ const config = {
 
 export default {
   resolvers,
-  config
+  config,
+  State
 }

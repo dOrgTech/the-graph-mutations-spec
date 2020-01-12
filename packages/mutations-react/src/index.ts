@@ -1,37 +1,42 @@
 import { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { BehaviorSubject } from 'rxjs';
-import { MutationState } from '@graphprotocol/mutations-ts';
+import { MutationState } from '@graphprotocol/mutations-ts'
 
-function useObservable(observable: BehaviorSubject<MutationState>, setter: React.Dispatch<React.SetStateAction<MutationState>>) {
-    useEffect(() => {
-        let subscription = observable.subscribe(result => {
-            if (result) setter(result)
-        })
-        return () => subscription.unsubscribe();
-    }, [observable, setter])
+function useObservable<TMutationState>(
+  observable: BehaviorSubject<TMutationState>,
+  setter: React.Dispatch<React.SetStateAction<TMutationState>>
+) {
+  useEffect(() => {
+    let subscription = observable.subscribe(result => {
+      if (result) setter(result)
+    })
+    return () => subscription.unsubscribe();
+  }, [observable, setter])
 }
 
-export function useMutationAndSubscribe(mutation: any, mutationOptions: any) {
-    const [subscriptionData, setSubscriptionData] = useState({} as MutationState)
+export function useMutationAndSubscribe<TMutationState = MutationState>(
+    mutation: any, // TODO: no any
+    mutationOptions: any // TODO: no any
+) {
 
-    const [observable] = useState(new BehaviorSubject({} as MutationState))
+  const [subscriptionData, setSubscriptionData] = useState({} as TMutationState)
+  const [observable] = useState(new BehaviorSubject({} as TMutationState))
 
-    mutationOptions.context = {
-        ...mutationOptions.context,
-        mutationState: new MutationState(observable)
-    }
+  mutationOptions.context = {
+    ...mutationOptions.context,
+    __stateObserver: observable
+  }
 
-    const [executeMutation, loading] = useMutation(mutation, mutationOptions)
+  const [executeMutation, loading] = useMutation(mutation, mutationOptions)
 
-    useObservable(observable, setSubscriptionData);
+  useObservable<TMutationState>(observable, setSubscriptionData);
 
-    return {
-        executeMutation: () => {
-            executeMutation();
-        },
-        loadingMutation: loading,
-        subscriptionData
-    }
+  return {
+    executeMutation: () => {
+      executeMutation();
+    },
+    loadingMutation: loading,
+    subscriptionData
+  }
 }
-

@@ -1,7 +1,7 @@
 import {
   createMutations, createMutationsLink
 } from '../src'
-import localExecutor from '../src/mutation-executor/local-resolvers'
+import { localResolverExecutor } from '../src/mutation-executor'
 
 const resolvers = {
   Mutation: {
@@ -20,7 +20,7 @@ const config = {
   c: {
     d: {
       e: (value: boolean) => {
-        return "hey"
+        return 'hey'
       }
     }
   }
@@ -31,13 +31,14 @@ const mutations = createMutations({
     resolvers,
     config
   },
-  // TODO: be sure to support function (+ async)
+  subgraph: 'my-subgraph',
+  node: 'https://graph-node.io',
   config: {
-    a: () => "",
+    a: async () => '',
     b: 4,
     c: { d: { e: () => true } }
   },
-  mutationExecutor: localExecutor
+  mutationExecutor: localResolverExecutor
 })
 
 const link = createMutationsLink({ mutations })

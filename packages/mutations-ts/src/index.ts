@@ -11,33 +11,54 @@ import {
   validateConfig,
   createConfig
 } from './utils/configUtils'
-import {
-  MutationState
-} from './class/mutationState';
+import { MutationState } from './mutationState';
+import { DataSources } from './dataSources'
+import { localResolverExecutor } from './mutation-executor'
 
-// TODO: move to mutations-apollo
-import { Resolvers } from 'apollo-client' // TODO: Forced to depend on apollo here... maybe wrap the resolvers and make them agnostic?
+import { BehaviorSubject } from 'rxjs'
+import { Resolver } from 'apollo-client'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
-import DataSources from './class/dataSources'
 
-export interface CreateMutationsOptions<TConfig extends ConfigSetters> {
-  mutations: { resolvers: Resolvers, config: TConfig }
-  config: ConfigGetters<TConfig>
-  mutationExecutor: MutationExecutor
+interface MutationsModule<TState> {
+  resolvers: {
+    Mutation: {
+      [resolver: string]: Resolver
+    }
+  },
+  config: ConfigSetters,
+  State?: new (observable?: BehaviorSubject<TState>) => TState
 }
 
-export const createMutations = <TConfig extends ConfigSetters>(
-  options: CreateMutationsOptions<TConfig>
+interface CreateMutationsOptions<
+  TState extends MutationState,
+  TConfig extends ConfigSetters
+> {
+  mutations: MutationsModule<TState>,
+  subgraph: string,
+  node: string,
+  config: ConfigGetters<TConfig>
+  mutationExecutor?: MutationExecutor
+}
+
+export const createMutations = <
+  TState extends MutationState,
+  TConfig extends ConfigSetters
+>(
+  options: CreateMutationsOptions<TState, TConfig>
 ): Mutations<TConfig> => {
 
-  const { mutations, mutationExecutor } = options
+  const { mutations, subgraph, node, config, mutationExecutor } = options
 
   // Validate that the configuration getters and setters match 1:1
-  validateConfig(options.config, mutations.config)
+  validateConfig(config, mutations.config)
 
-  // Create a config instance object here to be used within
-  // execute function.
+  // One config instance for all mutation executions
   let configInstance: ConfigValues<TConfig> | undefined = undefined;
+
+  // One datasources instance for all mutation executions
+  const dataSources = new DataSources(
+    subgraph, node, "https://api.thegraph.com/ipfs/"
+  )
 
   return {
     execute: async (mutationQuery: MutationQuery) => {
@@ -45,35 +66,51 @@ export const createMutations = <TConfig extends ConfigSetters>(
       const {
         getContext,
         setContext,
-        uuid
+        uuid // TODO: use this in the state?
       } = mutationQuery
 
+      // Create the config instance during
+      // the first mutation execution
       if (!configInstance) {
         configInstance = await createConfig(
-          options.config,
+          config,
           mutations.config
         )
       }
 
-      const dataSources = new DataSources(
-        // TODO: why is graphNodeUrl coming from config?
-        options.config.graphNodeURL as string,
-        configInstance.ipfs
-      )
-
+      // See if there's been a state observer added to the context.
+      // This is used for forwarding state updates back to the caller.
+      // For an example, see the mutations-react package.
       const context = getContext()
+      let stateObserver = context.__stateObserver
 
+      // Use the mutations module's state class if one is defined
+      let state: MutationState;
+      if (mutations.State) {
+        state = new mutations.State(stateObserver)
+      } else {
+        state = new MutationState(stateObserver)
+      }
+
+      // Set the context
       setContext({
-        thegraph: {
+        graph: {
           config: configInstance,
           dataSources,
-          state: new mutations.State(context.__stateObserver)
+          state
         }
       })
 
-      return await mutationExecutor(
-        mutationQuery, mutations.resolvers
-      )
+      // Execute the mutation
+      if (mutationExecutor) {
+        return await mutationExecutor(
+          mutationQuery, mutations.resolvers
+        )
+      } else {
+        return await localResolverExecutor(
+          mutationQuery, mutations.resolvers
+        )
+      }
     },
     configure: async (config: ConfigGetters<TConfig>) => {
       validateConfig(config, mutations.config)
@@ -105,17 +142,4 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
   )
 }
 
-export {MutationState}
-
-/*
-TODO:
-// @graphprotocol/mutations-ts-apollo-react
-useMutationAndSubscribe(...)
-
-TODO: subgraph
-// @graphprotocol/mutations-ts
-Type safety | validators for
-- config
-- resolvers context
-MutationState
-*/
+export { MutationState }

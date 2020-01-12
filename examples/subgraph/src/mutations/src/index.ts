@@ -9,7 +9,7 @@ export class State extends MutationState{
 
 async function queryUserGravatar(context: any) {
   const { client } = context
-  const { ethereum } = context.thegraph.config
+  const { ethereum } = context.graph.config
 
   return await client.query({
     query: gql`
@@ -39,9 +39,9 @@ async function sendTx(tx: any, id: string, msg: string, progress: number, contex
 }
 
 async function getGravityContract(context: any) {
-  const { ethereum } = context.thegraph.config
-  const abi = await context.thegraph.dataSources.Gravity.abi
-  const address = await context.thegraph.dataSources.Gravity.address
+  const { ethereum } = context.graph.config
+  const abi = await context.graph.dataSources.Gravity.abi
+  const address = await context.graph.dataSources.Gravity.address
 
   const contract = new ethers.Contract(
     address, abi, ethereum.getSigner()
@@ -71,7 +71,7 @@ async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
   const tx = gravity.updateGravatarImage(imageUrl)
 
   // Example of custom data within the state
-  context.thegraph.state.addData("imageUrl", imageUrl)
+  context.graph.state.addData("imageUrl", imageUrl)
 
   //await sendTx(tx, "Updating Gravatar Image", context)
   return await queryUserGravatar(context)

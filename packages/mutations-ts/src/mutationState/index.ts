@@ -45,49 +45,63 @@ interface StartedTransaction {
     status: TransactionStatus
 }
 
-interface MutationStateInterface {
+export interface MutationState {
+    progress: number
+    events: TransactionEvent[]
+    transactions: Transaction[];
+    errors: string[];
+    ext?: object;
+}
+
+interface IManagedMutationState {
     startTransaction(transaction: StartedTransaction): void
     cancelTransaction(id: string, progress: number, transactionCancelData: any): void
     confirmTransaction(id: string, progress: number, transactionConfirmData: any): void
     addError(id: string, error: string): void
 }
 
-export class MutationState implements MutationStateInterface {
-    private _progress: number;
-    private _events: TransactionEvent[];
-    private _observable?: BehaviorSubject<MutationState>;
-    private _transactions: Transaction[];
-    private _errors: string[];
+export class ManagedMutationState implements IManagedMutationState {
+    public state: MutationState = {
+        progress: 0,
+        events: [],
+        transactions: [],
+        errors: []
+    }
+    private observable?: BehaviorSubject<MutationState>;
 
     constructor(observable?: BehaviorSubject<MutationState>) {
-        this._observable = observable;
-        this._events = [];
-        this._progress = 0;
-        this._transactions = [];
-        this._errors = [];
+        this.observable = observable;
     }
 
-    get events() {
-        return cloneDeep(this._events);
+    setEvents(events: TransactionEvent[]){
+        this.state.events = events;
     }
 
-    get progress() {
-        return this._progress
+    setProgress(progress: number){
+        this.state.progress = progress;
     }
 
-    get errors() {
-        return cloneDeep(this._errors);
+    setErrors(errors: string[]){
+        this.state.errors = errors;
     }
 
-    startTransaction({id, title, payload}: {id: string, title: string, payload: Object}){
+    setTransactions(transactions: Transaction[]){
+        this.state.transactions = transactions;
+    }
+
+    setExt(ext: object){
+        this.state.ext = ext;
+    }
+
+    startTransaction({id, title, payload}: {id: string, title: string, payload: object}){
         const transaction = {
             id,
             title,
             payload,
             status: TransactionStatus.started
         }
-        this._transactions.push(transaction)
-        this._events.push({
+        this.state.transactions.push(transaction)
+        this.state.events.push({
             UTCtimestamp: new Date().getTime(),
             transaction
         })
@@ -105,12 +119,12 @@ export class MutationState implements MutationStateInterface {
             value
         } as ConfirmedTransaction
 
-        this._events.push({
+        this.state.events.push({
             UTCtimestamp: new Date().getTime(),
             transaction
         })
 
-        this._progress = progress;
+        this.state.progress = progress;
 
         this.publish();
     }
@@ -125,12 +139,12 @@ export class MutationState implements MutationStateInterface {
             value
         } as CancelledTransaction
 
-        this._events.push({
+        this.state.events.push({
             UTCtimestamp: new Date().getTime(),
             transaction
         })
 
-        this._progress = progress;
+        this.state.progress = progress;
 
         this.publish();
     }
@@ -138,23 +152,23 @@ export class MutationState implements MutationStateInterface {
     addError(id: string, error: string){
         let transaction = this.getTransaction(id);
         transaction.status = TransactionStatus.errored;
-        this._events.push({
+        this.state.events.push({
             UTCtimestamp: new Date().getTime(),
             transaction 
         })
-        this._errors.push(error);
+        this.state.errors.push(error);
         this.publish();
     }
 
     private getTransaction(id: string){
-        const transaction = this._transactions.find(transaction => transaction.id === id)
+        const transaction = this.state.transactions.find(transaction => transaction.id === id)
         if(!transaction) throw new Error(`Transaction with id '${id}' not found`)
         return transaction;
     }
 
     private publish() {
-        if (this._observable) {
-            this._observable.next(this);
+        if (this.observable) {
+            this.observable.next(cloneDeep(this.state));
         }
     }
 }

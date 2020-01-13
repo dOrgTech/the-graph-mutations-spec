@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, MutationHookOptions } from '@apollo/react-hooks';
 import { BehaviorSubject } from 'rxjs';
 import { MutationState } from '@graphprotocol/mutations-ts'
+import { DocumentNode } from 'graphql';
 
 function useObservable<TMutationState>(
   observable: BehaviorSubject<TMutationState>,
@@ -16,8 +17,8 @@ function useObservable<TMutationState>(
 }
 
 export function useMutationAndSubscribe<TMutationState = MutationState>(
-    mutation: any, // TODO: no any
-    mutationOptions: any // TODO: no any
+  mutation: DocumentNode,
+  mutationOptions: MutationHookOptions
 ) {
 
   const [subscriptionData, setSubscriptionData] = useState({} as TMutationState)

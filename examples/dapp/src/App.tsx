@@ -4,7 +4,6 @@ import { split } from 'apollo-link';
 import { gql, InMemoryCache } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { getMainDefinition } from 'apollo-utilities';
-import { ApolloProvider } from 'react-apollo'
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import {
   Grid,
@@ -23,7 +22,6 @@ import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
 import gravatarMutations from 'gravatar-mutations'
-import {State} from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import { useMutationAndSubscribe } from '@graphprotocol/mutations-react'
 
@@ -174,7 +172,7 @@ function App() {
       onError: (error) => {
         alert(error)
       }
-    }, State)
+    })
 
   console.log(subscriptionData)
 

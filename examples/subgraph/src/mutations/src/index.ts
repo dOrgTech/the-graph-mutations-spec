@@ -1,9 +1,9 @@
 import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
-import { MutationState } from "@graphprotocol/mutations-ts"
+import { ManagedMutationState } from "@graphprotocol/mutations-ts"
 
-export class State extends MutationState{
+export class State extends ManagedMutationState{
   public staticProperty = {};
 }
 
@@ -27,7 +27,7 @@ async function queryUserGravatar(context: any) {
 
 // TODO: remove ID at this level, pass it in using the uuid
 async function sendTx(tx: any, msg: string, progress: number, context: any) {
-  const state: MutationState = context.state;
+  const state: ManagedMutationState = context.state;
   try {
     state.startTransaction({ title: msg, payload: {} })
     tx = await tx

@@ -11,7 +11,7 @@ import {
   validateConfig,
   createConfig
 } from './utils/configUtils'
-import { MutationState } from './mutationState';
+import { MutationState, ManagedMutationState } from './mutationState';
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 
@@ -30,7 +30,7 @@ interface MutationsModule<TState> {
 }
 
 interface CreateMutationsOptions<
-  TState extends MutationState,
+  TState extends ManagedMutationState,
   TConfig extends ConfigSetters
 > {
   mutations: MutationsModule<TState>,
@@ -41,7 +41,7 @@ interface CreateMutationsOptions<
 }
 
 export const createMutations = <
-  TState extends MutationState,
+  TState extends ManagedMutationState,
   TConfig extends ConfigSetters
 >(
   options: CreateMutationsOptions<TState, TConfig>
@@ -85,11 +85,11 @@ export const createMutations = <
       let stateObserver = context.__stateObserver
 
       // Use the mutations module's state class if one is defined
-      let state: MutationState;
+      let state: ManagedMutationState;
       if (mutations.State) {
         state = new mutations.State(stateObserver)
       } else {
-        state = new MutationState(stateObserver)
+        state = new ManagedMutationState(stateObserver)
       }
 
       // Set the context
@@ -142,4 +142,4 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
   )
 }
 
-export { MutationState }
+export { MutationState, ManagedMutationState }

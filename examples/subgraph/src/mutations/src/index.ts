@@ -1,11 +1,51 @@
 import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
-import { ManagedMutationState } from "@graphprotocol/mutations-ts"
+import {
+  EventPayload,
+  StateBuilder,
+  ManagedState,
+  TransactionSent,
+  CoreEvents
+} from "@graphprotocol/mutations-ts"
 
-export class State extends ManagedMutationState{
-  public staticProperty = {};
+interface MyEvent extends EventPayload {
+  foo: string
 }
+
+type EventMap = {
+  'GRAVATAR_UPDATED': MyEvent,
+  'GRAVATAR_CREATED': MyEvent
+}
+
+class State {
+  myValue: string
+  myFlag: boolean
+}
+
+const stateBuilder: StateBuilder<State, EventMap> = {
+  getInitialState(): State {
+    return {
+      myValue: "",
+      myFlag: false
+    }
+  },
+  reducers: {
+    'GRAVATAR_UPDATED': (state: State, payload: MyEvent) => {
+
+    },
+    'GRAVATAR_CREATED': (state: State, payload: MyEvent) => {
+
+    },
+    'TRANSACTION_SENT': (state: State, payload: TransactionSent) => {
+
+    }
+  }
+}
+
+const managedState = new ManagedState<State, EventMap>(stateBuilder)
+const stateCopy = managedState.getState();
+managedState.setState(stateCopy)
 
 async function queryUserGravatar(context: any) {
   const { client } = context
@@ -21,21 +61,24 @@ async function queryUserGravatar(context: any) {
           imageUrl
         }
       }`
-    }
+  }
   )
 }
 
 // TODO: remove ID at this level, pass it in using the uuid
-async function sendTx(tx: any, msg: string, progress: number, context: any) {
-  const state: ManagedMutationState = context.state;
+async function sendTx<TEvent extends keyof (CoreEvents & EventMap)>(tx: any, event: TEvent, context: any) {
+  const state: ManagedState<State, EventMap> = context.state;
   try {
-    state.startTransaction({ title: msg, payload: {} })
     tx = await tx
+    state.sendEvent("TRANSACTION_SENT", tx)
     await tx.wait()
-    state.confirmTransaction(progress, tx)
+    state.sendEvent(event, tx)
   } catch (error) {
-    state.addError(error)
-    throw new Error(`Failed while sending "${msg}"`)
+    console.log(error)
+    state.sendEvent('TRANSACTION_ERROR', {
+      hash: "hash",
+      error
+    })
   }
 }
 
@@ -51,29 +94,25 @@ async function getGravityContract(context: any) {
   return contract
 }
 
-async function createGravatar(_root: any, {options}: any, context: any) {
+async function createGravatar(_root: any, { options }: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = await getGravityContract(context)
   const tx = gravity.createGravatar(displayName, imageUrl)
-  await sendTx(tx, "Creating Gravatar", 0.9, context)
+  await sendTx(tx, "GRAVATAR_CREATED", context)
   return await queryUserGravatar(context)
 }
 
-async function updateGravatarName(_root: any, {displayName}: any, context: any) {
+async function updateGravatarName(_root: any, { displayName }: any, context: any) {
   const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarName(displayName)
-  await sendTx(tx, "Updating Gravatar Name", 0.9, context)
+  await sendTx(tx, "GRAVATAR_UPDATED", context)
   return await queryUserGravatar(context)
 }
 
-async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
+async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
   const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarImage(imageUrl)
-  await sendTx(tx, "Updating Gravatar Image", 0.9, context)
-
-  // Example of custom data within the state
-  context.graph.state.addData("imageUrl", imageUrl)
-
+  await sendTx(tx, "GRAVATAR_UPDATED", context)
   return await queryUserGravatar(context)
 }
 

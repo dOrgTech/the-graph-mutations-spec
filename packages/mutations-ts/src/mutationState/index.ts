@@ -1,174 +1,95 @@
-import cloneDeep from 'lodash/cloneDeep';
-import { BehaviorSubject } from 'rxjs';
+import {
+  EventPayload,
+  EventMap,
+  InferEventPayload,
+  StateBuilder
+} from './types'
+import {
+  CoreEvents,
+  CoreState,
+  FullState,
+  coreStateBuilder
+} from './core'
 
-type TransactionEvent = TransactionStartedEvent | TransactionCancelledEvent | TransactionConfirmedEvent
-type Transaction = StartedTransaction | ConfirmedTransaction | CancelledTransaction
+import { BehaviorSubject } from 'rxjs'
+import cloneDeep from 'lodash/cloneDeep'
 
-enum TransactionStatus {
-    confirmed = "Confirmed",
-    cancelled = "Cancelled",
-    started = "Started",
-    errored = "Errored"
+class ManagedState<
+  TState = { },
+  TEventMap extends EventMap = { }
+> {
+
+  private _state: FullState<TState>
+  private _observer?: BehaviorSubject<TState>
+  private _ext: StateBuilder<TState, TEventMap>
+  private _core: StateBuilder<CoreState, CoreEvents>
+
+  constructor(
+    ext: StateBuilder<TState, TEventMap>,
+    observer?: BehaviorSubject<TState>
+  ) {
+    this._observer = observer
+    this._ext = ext
+    this._core = coreStateBuilder
+
+    this._state = {
+      ...this._core.getInitialState(),
+      ...this._ext.getInitialState()
+    }
+  }
+
+  public getState(): FullState<TState> {
+    return cloneDeep(this._state)
+  }
+
+  public setState(value: FullState<TState>) {
+    this._state = cloneDeep(value)
+    this.publish()
+  }
+
+  public sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
+    event: TEvent,
+    payload: InferEventPayload<TEvent, TEventMap>
+  ) {
+
+    // Append the event
+    this._state.events.push({
+      event: event as string,
+      payload
+    })
+
+    // Call all relevant reducers
+    const coreReducers = this._core.reducers as any
+    const coreReducer = this._core.reducer
+    const extReducers = this._ext.reducers as any
+    const extReducer = this._core.reducer
+
+    if (coreReducers && coreReducers[event] !== undefined) {
+      coreReducers[event](this._state, payload)
+    } else if (coreReducer) {
+      coreReducer(this._state, event as string, payload)
+    }
+
+    if (extReducers && extReducers[event] !== undefined) {
+      extReducers[event](payload)
+    } else if (extReducer) {
+      extReducer(this._state, event as string, payload)
+    }
+
+    // Publish the latest state
+    this.publish()
+  }
+
+  private publish() {
+    if (this._observer) {
+      this._observer.next(this.getState())
+    }
+  }
 }
 
-interface TransactionStartedEvent {
-    transaction: StartedTransaction
-    UTCtimestamp: number
-}
-
-interface TransactionCancelledEvent {
-    transaction: CancelledTransaction
-    UTCtimestamp: number
-}
-
-interface TransactionConfirmedEvent {
-    transaction: ConfirmedTransaction
-    UTCtimestamp: number
-}
-
-interface ConfirmedTransaction extends StartedTransaction {
-    hash: string
-    to: string
-    value: string
-}
-
-interface CancelledTransaction extends StartedTransaction {
-    hash: string
-    to: string
-    value: string
-}
-
-interface StartedTransaction {
-    id: string
-    title: string
-    payload: Object
-    status: TransactionStatus
-}
-
-export interface MutationState {
-    progress: number
-    events: TransactionEvent[]
-    transactions: Transaction[];
-    errors: string[];
-    ext?: object;
-}
-
-interface IManagedMutationState {
-    startTransaction(transaction: StartedTransaction): void
-    cancelTransaction(id: string, progress: number, transactionCancelData: any): void
-    confirmTransaction(id: string, progress: number, transactionConfirmData: any): void
-    addError(id: string, error: string): void
-}
-
-export class ManagedMutationState implements IManagedMutationState {
-    public state: MutationState = {
-        progress: 0,
-        events: [],
-        transactions: [],
-        errors: []
-    }
-    private observable?: BehaviorSubject<MutationState>;
-
-    constructor(observable?: BehaviorSubject<MutationState>) {
-        this.observable = observable;
-    }
-
-    setEvents(events: TransactionEvent[]){
-        this.state.events = events;
-    }
-
-    setProgress(progress: number){
-        this.state.progress = progress;
-    }
-
-    setErrors(errors: string[]){
-        this.state.errors = errors;
-    }
-
-    setTransactions(transactions: Transaction[]){
-        this.state.transactions = transactions;
-    }
-
-    setExt(ext: object){
-        this.state.ext = ext;
-    }
-
-    startTransaction({id, title, payload}: {id: string, title: string, payload: object}){
-        const transaction = {
-            id,
-            title,
-            payload,
-            status: TransactionStatus.started
-        }
-        this.state.transactions.push(transaction)
-        this.state.events.push({
-            UTCtimestamp: new Date().getTime(),
-            transaction
-        })
-
-        this.publish()
-    }
-
-    confirmTransaction(id: string, progress: number, {hash, to, value}: any){
-        let transaction = this.getTransaction(id);
-        transaction = {
-            ...transaction,
-            status: TransactionStatus.confirmed,
-            hash,
-            to,
-            value
-        } as ConfirmedTransaction
-
-        this.state.events.push({
-            UTCtimestamp: new Date().getTime(),
-            transaction
-        })
-
-        this.state.progress = progress;
-
-        this.publish();
-    }
-
-    cancelTransaction(id: string, progress: number, {hash, to, value}: any){
-        let transaction = this.getTransaction(id);
-        transaction = {
-            ...transaction,
-            status: TransactionStatus.cancelled,
-            hash,
-            to,
-            value
-        } as CancelledTransaction
-
-        this.state.events.push({
-            UTCtimestamp: new Date().getTime(),
-            transaction
-        })
-
-        this.state.progress = progress;
-
-        this.publish();
-    }
-
-    addError(id: string, error: string){
-        let transaction = this.getTransaction(id);
-        transaction.status = TransactionStatus.errored;
-        this.state.events.push({
-            UTCtimestamp: new Date().getTime(),
-            transaction 
-        })
-        this.state.errors.push(error);
-        this.publish();
-    }
-
-    private getTransaction(id: string){
-        const transaction = this.state.transactions.find(transaction => transaction.id === id)
-        if(!transaction) throw new Error(`Transaction with id '${id}' not found`)
-        return transaction;
-    }
-
-    private publish() {
-        if (this.observable) {
-            this.observable.next(cloneDeep(this.state));
-        }
-    }
+export {
+  EventPayload,
+  StateBuilder,
+  CoreState as MutationState,
+  ManagedState
 }

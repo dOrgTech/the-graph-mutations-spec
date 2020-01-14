@@ -16,14 +16,14 @@ type EventMap = {
   'PROGRESS_UPDATED': ProgressUpdateEvent
 }
 
-export interface State {
+interface CustomState {
   progress: number
   myValue: number
   myFlag: boolean
 }
 
-const stateBuilder: StateBuilder<State, EventMap> = {
-  getInitialState(): State {
+const stateBuilder: StateBuilder<CustomState, EventMap> = {
+  getInitialState(): CustomState {
     return {
       progress: 0,
       myValue: 0,
@@ -31,7 +31,7 @@ const stateBuilder: StateBuilder<State, EventMap> = {
     }
   },
   reducers: {
-    "PROGRESS_UPDATED": (state: State, payload: ProgressUpdateEvent) => {
+    "PROGRESS_UPDATED": async (state: FullState<CustomState>, payload: ProgressUpdateEvent) => {
       state.progress = payload.progress;
     }
   }
@@ -89,7 +89,7 @@ async function createGravatar(_root: any, { options }: any, context: any) {
   const gravity = await getGravityContract(context)
   const tx = gravity.createGravatar(displayName, imageUrl)
   try{
-    const state: ManagedState<State, EventMap> = context.state;
+    const state: ManagedState<CustomState, EventMap> = context.state;
     const txResult = await tx;
     await txResult.wait();
   }catch(error){
@@ -102,13 +102,13 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
   const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarName(displayName)
   try{
-    const state: ManagedState<State, EventMap> = context.graph.state;
-    state.sendEvent("PROGRESS_UPDATED", {progress: 20})
+    const state: ManagedState<CustomState, EventMap> = context.graph.state;
+    await state.sendEvent("PROGRESS_UPDATED", {progress: 20})
     const txResult = await tx;
-    state.sendEvent("TRANSACTION_SENT", txResult)
-    state.sendEvent("PROGRESS_UPDATED", {progress: 50})
+    await state.sendEvent("TRANSACTION_SENT", txResult)
+    await state.sendEvent("PROGRESS_UPDATED", {progress: 50})
     await txResult.wait();
-    state.sendEvent("PROGRESS_UPDATED", {progress: 100})
+    await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
   }catch(error){
     console.log(error)
   }
@@ -119,7 +119,7 @@ async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) 
   const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarImage(imageUrl)
   try{
-    const state: ManagedState<State, EventMap> = context.state;
+    const state: ManagedState<CustomState, EventMap> = context.state;
     const txResult = await tx;
     await txResult.wait();
   }catch(error){
@@ -156,6 +156,8 @@ const config = {
     b: (value: string) => { }
   }
 }
+
+export type State = FullState<CustomState>
 
 export default {
   resolvers,

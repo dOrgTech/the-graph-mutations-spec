@@ -38,7 +38,7 @@ class ManagedState<
     }
   }
 
-  public sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
+  public async sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
     event: TEvent,
     payload: InferEventPayload<TEvent, CoreEvents & TEventMap>
   ) {
@@ -56,15 +56,15 @@ class ManagedState<
     const extReducer = this._core.reducer
 
     if (coreReducers && coreReducers[event] !== undefined) {
-      coreReducers[event](this._state, payload)
+      await coreReducers[event](this._state, payload)
     } else if (coreReducer) {
-      coreReducer(this._state, event as string, payload)
+      await coreReducer(this._state, event as string, payload)
     }
 
     if (extReducers && extReducers[event] !== undefined) {
-      extReducers[event](this._state, payload)
+      await extReducers[event](this._state, payload)
     } else if (extReducer) {
-      extReducer(this._state, event as string, payload)
+      await extReducer(this._state, event as string, payload)
     }
 
     // Publish the latest state
@@ -83,5 +83,6 @@ export {
   EventMap,
   StateBuilder,
   FullState,
-  ManagedState
+  ManagedState,
+  CoreState
 }

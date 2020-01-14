@@ -31,10 +31,10 @@ export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
     }
   },
   reducers: {
-    'TRANSACTION_SENT': (state: CoreState, payload: TransactionSent) => {
+    'TRANSACTION_SENT': async (state: CoreState, payload: TransactionSent) => {
       
     },
-    'TRANSACTION_ERROR': (state: CoreState, payload: TransactionError) => {
+    'TRANSACTION_ERROR': async (state: CoreState, payload: TransactionError) => {
       
     }
   }

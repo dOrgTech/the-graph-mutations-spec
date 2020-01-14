@@ -4,7 +4,7 @@ import gql from 'graphql-tag'
 
 const GET_DATASOURCE = gql`
   query GetDataSource($subgraph: String, $dataSource: String) {
-    subgraphs (where: {name: $subgraph}) {
+    subgraphs {
       currentVersion {
         deployment {
           manifest {
@@ -21,6 +21,14 @@ const GET_DATASOURCE = gql`
   }
 `
 
+const GET_CONTRACT_ABIS = gql`
+  query GetContractAbis($name: String) {
+    ethereumContractAbis (where: {name: $name}) {
+        file
+      }
+    }
+`
+
 export const getDataSource = async (link: HttpLink, subgraph: string, dataSource: string) => {
   return await makePromise(
     execute(link, {
@@ -28,6 +36,17 @@ export const getDataSource = async (link: HttpLink, subgraph: string, dataSource
       variables: {
         subgraph,
         dataSource
+      }
+    })
+  )
+}
+
+export const getContractAbis = async (link: HttpLink, name: string) => {
+  return await makePromise(
+    execute(link, {
+      query: GET_CONTRACT_ABIS,
+      variables: {
+        name
       }
     })
   )

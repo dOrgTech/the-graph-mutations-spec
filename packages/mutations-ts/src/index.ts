@@ -37,21 +37,25 @@ import { BehaviorSubject } from 'rxjs'
 import { Resolver } from 'apollo-client'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
-interface MutationsModule<TState> {
+interface MutationsModule<
+TState extends CoreState,
+ TEventMap extends CoreEvents
+ > {
   resolvers: {
     Mutation: {
       [resolver: string]: Resolver
     }
   },
   config: ConfigSetters,
-  State?: new (observable?: BehaviorSubject<TState>) => TState
+  stateBuilder: StateBuilder<TState, TEventMap>
 }
 
 interface CreateMutationsOptions<
   TState extends CoreState,
-  TConfig extends ConfigSetters
+  TConfig extends ConfigSetters,
+  TEventMap extends CoreEvents
 > {
-  mutations: MutationsModule<TState>,
+  mutations: MutationsModule<TState, TEventMap>,
   subgraph: string,
   node: string,
   config: ConfigGetters<TConfig>
@@ -60,9 +64,10 @@ interface CreateMutationsOptions<
 
 export const createMutations = <
   TState extends CoreState,
-  TConfig extends ConfigSetters
+  TConfig extends ConfigSetters,
+  TEventMap extends CoreEvents
 >(
-  options: CreateMutationsOptions<TState, TConfig>
+  options: CreateMutationsOptions<TState, TConfig, TEventMap>
 ): Mutations<TConfig> => {
 
   const { mutations, subgraph, node, config, mutationExecutor } = options
@@ -75,7 +80,7 @@ export const createMutations = <
 
   // One datasources instance for all mutation executions
   const dataSources = new DataSources(
-    subgraph, node, "https://api.thegraph.com/ipfs/"
+    subgraph, node, "http://localhost:5001" 
   )
 
   return {
@@ -100,15 +105,12 @@ export const createMutations = <
       // This is used for forwarding state updates back to the caller.
       // For an example, see the mutations-react package.
       const context = getContext()
-      let stateObserver = context.__stateObserver
+      let stateObserver: BehaviorSubject<TState> = context.__stateObserver
+
+      const state = new ManagedState<TState, TEventMap>(mutations.stateBuilder, stateObserver)
 
       // Use the mutations module's state class if one is defined
-      let state: ManagedState;
-      if (mutations.State) {
-        state = new mutations.State(stateObserver)
-      } else {
-        state = new ManagedState(stateObserver)
-      }
+      //const state = new ManagedState<TState, TEventMap>(stateObserver)
 
       // Set the context
       setContext({

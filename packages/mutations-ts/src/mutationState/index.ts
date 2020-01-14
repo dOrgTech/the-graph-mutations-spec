@@ -38,15 +38,6 @@ class ManagedState<
     }
   }
 
-  public getState(): FullState<TState> {
-    return cloneDeep(this._state)
-  }
-
-  public setState(value: FullState<TState>) {
-    this._state = cloneDeep(value)
-    this.publish()
-  }
-
   public sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
     event: TEvent,
     payload: InferEventPayload<TEvent, TEventMap>
@@ -71,7 +62,7 @@ class ManagedState<
     }
 
     if (extReducers && extReducers[event] !== undefined) {
-      extReducers[event](payload)
+      extReducers[event](this._state, payload)
     } else if (extReducer) {
       extReducer(this._state, event as string, payload)
     }
@@ -82,7 +73,7 @@ class ManagedState<
 
   private publish() {
     if (this._observer) {
-      this._observer.next(this.getState())
+      this._observer.next(cloneDeep(this._state))
     }
   }
 }

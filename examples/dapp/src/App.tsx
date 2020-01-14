@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button,
+  Button
 } from '@material-ui/core'
 import './App.css'
 import Header from './components/Header'
@@ -22,6 +22,7 @@ import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 
 import gravatarMutations from 'gravatar-mutations'
+import { State } from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import { useMutationAndSubscribe } from '@graphprotocol/mutations-react'
 
@@ -150,7 +151,7 @@ function App() {
       }
     })
 
-  const {executeMutation: executeUpdateName, subscriptionData} = useMutationAndSubscribe(
+  const {executeMutation: executeUpdateName, subscriptionData} = useMutationAndSubscribe<State>(
     UPDATE_GRAVATAR_NAME,
     {
       client,
@@ -244,6 +245,11 @@ function App() {
       <button onClick={event => executeUpdateName()}>
         Update First Gravatar (Optimistic)
       </button>
+      <div>
+        <br></br>
+        Progress:
+        <LinearProgress variant="determinate" value={subscriptionData.progress? subscriptionData.progress: 0} />
+      </div>
     </div>
   )
 }

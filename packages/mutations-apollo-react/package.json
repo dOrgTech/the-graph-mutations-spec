@@ -1,5 +1,5 @@
 {
-  "name": "@graphprotocol/mutations-react",
+  "name": "@graphprotocol/mutations-apollo-react",
   "version": "0.0.0",
   "description": "TODO",
   "main": "dist/index.js",

@@ -24,7 +24,7 @@ import Filter from './components/Filter'
 import gravatarMutations from 'gravatar-mutations'
 import { State } from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
-import { useMutationAndSubscribe } from '@graphprotocol/mutations-react'
+import { useMutationAndSubscribe } from '@graphprotocol/mutations-apollo-react'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')

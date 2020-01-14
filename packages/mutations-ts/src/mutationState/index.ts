@@ -49,7 +49,7 @@ class ManagedState<
 
   public sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
     event: TEvent,
-    payload: InferEventPayload<TEvent, TEventMap>
+    payload: InferEventPayload<TEvent, CoreEvents & TEventMap>
   ) {
 
     // Append the event

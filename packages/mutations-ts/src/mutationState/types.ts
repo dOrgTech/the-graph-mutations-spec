@@ -24,7 +24,6 @@ export type EventMap = {
   [event: string]: EventPayload
 }
 
-export type InferEventPayload<TEvent extends keyof (CoreEvents & TEvents), TEvents extends EventMap> =
-  TEvent extends keyof CoreEvents ? CoreEvents[TEvent] :
+export type InferEventPayload<TEvent extends keyof TEvents, TEvents extends EventMap> =
   TEvent extends keyof TEvents ? TEvents[TEvent] :
   any

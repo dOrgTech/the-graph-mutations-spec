@@ -1,13 +1,13 @@
 import {
   EventPayload,
   EventMap,
+  FullState,
   InferEventPayload,
   StateBuilder
 } from './types'
 import {
   CoreEvents,
   CoreState,
-  FullState,
   coreStateBuilder
 } from './core'
 
@@ -80,7 +80,8 @@ class ManagedState<
 
 export {
   EventPayload,
+  EventMap,
   StateBuilder,
-  CoreState as MutationState,
+  FullState,
   ManagedState
 }

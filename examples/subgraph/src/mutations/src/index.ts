@@ -4,8 +4,8 @@ import IPFSClient from "ipfs-http-client"
 import {
   EventPayload,
   StateBuilder,
-  ManagedState,
-  CoreState
+  FullState,
+  ManagedState
 } from "@graphprotocol/mutations-ts"
 
 interface ProgressUpdateEvent extends EventPayload {
@@ -16,7 +16,8 @@ type EventMap = {
   'PROGRESS_UPDATED': ProgressUpdateEvent
 }
 
-export interface State extends CoreState {
+export interface State {
+  progress: number
   myValue: number
   myFlag: boolean
 }
@@ -24,9 +25,8 @@ export interface State extends CoreState {
 const stateBuilder: StateBuilder<State, EventMap> = {
   getInitialState(): State {
     return {
-      myValue: 0,
       progress: 0,
-      events: [],
+      myValue: 0,
       myFlag: false
     }
   },

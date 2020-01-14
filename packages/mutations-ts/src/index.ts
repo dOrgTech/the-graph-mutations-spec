@@ -11,25 +11,11 @@ import {
   validateConfig,
   createConfig
 } from './utils/configUtils'
-import { 
-  MutationState,
-  ManagedState 
-} from './mutationState';
 import {
-  EventPayload,
+  ManagedState,
   EventMap,
-  InferEventPayload,
   StateBuilder
-} from './mutationState/types'
-import {
-  CoreEvents,
-  CoreState,
-  FullState,
-  coreStateBuilder,
-  TransactionError,
-  TransactionSent
-} from './mutationState/core'
-
+} from './mutationState';
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 
@@ -38,9 +24,9 @@ import { Resolver } from 'apollo-client'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface MutationsModule<
-TState extends CoreState,
- TEventMap extends CoreEvents
- > {
+  TState,
+  TEventMap extends EventMap
+> {
   resolvers: {
     Mutation: {
       [resolver: string]: Resolver
@@ -51,9 +37,9 @@ TState extends CoreState,
 }
 
 interface CreateMutationsOptions<
-  TState extends CoreState,
-  TConfig extends ConfigSetters,
-  TEventMap extends CoreEvents
+  TState,
+  TEventMap extends EventMap,
+  TConfig extends ConfigSetters
 > {
   mutations: MutationsModule<TState, TEventMap>,
   subgraph: string,
@@ -63,11 +49,11 @@ interface CreateMutationsOptions<
 }
 
 export const createMutations = <
-  TState extends CoreState,
-  TConfig extends ConfigSetters,
-  TEventMap extends CoreEvents
+  TState,
+  TEventMap extends EventMap,
+  TConfig extends ConfigSetters
 >(
-  options: CreateMutationsOptions<TState, TConfig, TEventMap>
+  options: CreateMutationsOptions<TState, TEventMap, TConfig>
 ): Mutations<TConfig> => {
 
   const { mutations, subgraph, node, config, mutationExecutor } = options
@@ -162,17 +148,4 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
   )
 }
 
-export { 
-  MutationState,
-  ManagedState,
-  CoreEvents,
-  CoreState,
-  FullState,
-  coreStateBuilder,
-  EventPayload,
-  EventMap,
-  InferEventPayload,
-  StateBuilder,
-  TransactionError,
-  TransactionSent
-}
+export * from './mutationState'

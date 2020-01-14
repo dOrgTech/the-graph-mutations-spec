@@ -1,14 +1,19 @@
-import { CoreEvents } from './core'
+import {
+  CoreEvents,
+  CoreState
+} from './core'
+
+export type FullState<TState> = CoreState & TState
 
 export interface StateBuilder<TState, TEventMap extends EventMap = { }> {
   getInitialState(): TState
   reducers?: {
     [TEvent in keyof (TEventMap & CoreEvents)]?: (
-      state: TState,
+      state: FullState<TState>,
       payload: InferEventPayload<TEvent, TEventMap>
     ) => void
   }
-  reducer?: (state: TState, event: string, payload: any) => void
+  reducer?: (state: FullState<TState>, event: string, payload: any) => void
 }
 
 export interface EventPayload { }

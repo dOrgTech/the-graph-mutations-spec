@@ -5,11 +5,8 @@ import {
 } from './types'
 
 export interface CoreState {
-  progress: Number
   events: EventLog
 }
-
-export type FullState<TState> = CoreState & TState
 
 export type CoreEvents = {
   'TRANSACTION_SENT': TransactionSent,
@@ -30,7 +27,6 @@ export interface TransactionError extends EventPayload {
 export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
   getInitialState(): CoreState {
     return {
-      progress: 0,
       events: []
     }
   },

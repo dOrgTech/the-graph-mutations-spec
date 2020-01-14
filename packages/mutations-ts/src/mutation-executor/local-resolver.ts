@@ -1,8 +1,7 @@
 import { execute, makePromise } from 'apollo-link'
 import { withClientState } from 'apollo-link-state'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import { MutationQuery, MutationResult } from '../types'
-import { Resolvers } from 'apollo-client';
+import { MutationQuery, MutationResult, Resolvers } from '../types'
 
 export default async (mutationQuery: MutationQuery, resolvers: Resolvers): Promise<MutationResult> => {
   // TODO: note that this is being thrown away each time... desired?

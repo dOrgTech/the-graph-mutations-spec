@@ -1,7 +1,12 @@
 import { ExecutionResult } from 'graphql/execution'
 import { DocumentNode } from 'graphql/language'
-import { Resolvers } from 'apollo-client'
+import { GraphQLFieldResolver } from 'graphql'
 
+export interface Resolvers {
+  [key: string]: {
+      [field: string]: GraphQLFieldResolver<any, any>;
+  };
+}
 export interface MutationQuery {
   query: DocumentNode
   variables: Record<string, any>

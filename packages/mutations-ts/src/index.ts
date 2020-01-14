@@ -20,7 +20,7 @@ import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 
 import { BehaviorSubject } from 'rxjs'
-import { Resolver } from 'apollo-client'
+import { GraphQLFieldResolver } from 'graphql'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface MutationsModule<
@@ -29,7 +29,7 @@ interface MutationsModule<
 > {
   resolvers: {
     Mutation: {
-      [resolver: string]: Resolver
+      [resolver: string]: GraphQLFieldResolver<any, any>
     }
   },
   config: ConfigSetters,

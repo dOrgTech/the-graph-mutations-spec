@@ -13,7 +13,7 @@ export interface StateBuilder<TState, TEventMap extends EventMap = { }> {
       payload: InferEventPayload<TEvent, TEventMap>
     ) => void
   }
-  reducer?: (state: FullState<TState>, event: string, payload: any) => void
+  reducer?: (state: FullState<TState>, event: string, payload: any) => Promise<void>
 }
 
 export interface EventPayload { }

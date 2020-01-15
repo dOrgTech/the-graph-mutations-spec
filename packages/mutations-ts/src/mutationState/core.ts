@@ -14,13 +14,12 @@ export type CoreEvents = {
 }
 
 export interface TransactionSent extends EventPayload {
-  hash: string
-  to: string
-  value: string
+  id: string,
+  description: string
 }
 
 export interface TransactionError extends EventPayload {
-  hash: string
+  id: string
   error: Error
 }
 
@@ -32,10 +31,10 @@ export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
   },
   reducers: {
     'TRANSACTION_SENT': async (state: CoreState, payload: TransactionSent) => {
-      
+      return state;      
     },
     'TRANSACTION_ERROR': async (state: CoreState, payload: TransactionError) => {
-      
+      return state;
     }
   }
 }

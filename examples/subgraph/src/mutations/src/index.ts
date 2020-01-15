@@ -33,6 +33,7 @@ const stateBuilder: StateBuilder<CustomState, EventMap> = {
   reducers: {
     "PROGRESS_UPDATED": async (state: FullState<CustomState>, payload: ProgressUpdateEvent) => {
       state.progress = payload.progress;
+      return state
     }
   }
 }
@@ -107,6 +108,7 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
     const txResult = await tx;
     await state.sendEvent("TRANSACTION_SENT", txResult)
     await state.sendEvent("PROGRESS_UPDATED", {progress: 50})
+    await state.sendEvent("TRANSACTION_SENT", txResult)
     await txResult.wait();
     await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
   }catch(error){

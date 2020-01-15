@@ -53,18 +53,20 @@ class ManagedState<
     const coreReducers = this._core.reducers as any
     const coreReducer = this._core.reducer
     const extReducers = this._ext.reducers as any
-    const extReducer = this._core.reducer
+    const extReducer = this._ext.reducer
 
     if (coreReducers && coreReducers[event] !== undefined) {
-      await coreReducers[event](this._state, payload)
+      const coreState = await coreReducers[event](cloneDeep(this._state), payload)
+      this._state = cloneDeep({...this._state, ...coreState})
     } else if (coreReducer) {
-      await coreReducer(this._state, event as string, payload)
+      const coreState = await coreReducer(cloneDeep(this._state), event as string, payload)
+      this._state = cloneDeep({...this._state, ...coreState})
     }
 
     if (extReducers && extReducers[event] !== undefined) {
-      await extReducers[event](this._state, payload)
+      this._state = await extReducers[event](cloneDeep(this._state), payload)
     } else if (extReducer) {
-      await extReducer(this._state, event as string, payload)
+      this._state = await extReducer(cloneDeep(this._state), event as string, payload)
     }
 
     // Publish the latest state

@@ -11,9 +11,9 @@ export interface StateBuilder<TState, TEventMap extends EventMap = { }> {
     [TEvent in keyof (TEventMap & CoreEvents)]?: (
       state: FullState<TState>,
       payload: InferEventPayload<TEvent, TEventMap>
-    ) => void
+    ) => Promise<FullState<TState>>
   }
-  reducer?: (state: FullState<TState>, event: string, payload: any) => Promise<void>
+  reducer?: (state: FullState<TState>, event: string, payload: any) => Promise<FullState<TState>>
 }
 
 export interface EventPayload { }

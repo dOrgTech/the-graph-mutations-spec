@@ -18,7 +18,7 @@ import {
 } from './mutationState';
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
-
+import { v1 } from 'uuid'
 import { BehaviorSubject } from 'rxjs'
 import { GraphQLFieldResolver } from 'graphql'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
@@ -130,13 +130,14 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
 ): ApolloLink => {
   return new ApolloLink((operation: Operation) =>
     new Observable(observer => {
+      console.log(operation)
       mutations.execute({
         query: operation.query,
         variables: operation.variables,
         operationName: operation.operationName,
         setContext: operation.setContext,
         getContext: operation.getContext,
-        uuid: operation.toKey()
+        uuid: v1()
       }).then(
         (result: MutationResult) => {
           observer.next(result.result)

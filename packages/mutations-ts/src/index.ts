@@ -10,7 +10,7 @@ import {
 import {
   validateConfig,
   createConfig
-} from './utils/configUtils'
+} from './utils'
 import {
   ManagedState,
   EventMap,

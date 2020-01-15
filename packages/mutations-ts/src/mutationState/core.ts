@@ -6,6 +6,7 @@ import {
 
 export interface CoreState {
   events: EventLog
+  uuid: string
 }
 
 export type CoreEvents = {
@@ -24,9 +25,10 @@ export interface TransactionError extends EventPayload {
 }
 
 export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
-  getInitialState(): CoreState {
+  getInitialState(uuid: string): CoreState {
     return {
-      events: []
+      events: [],
+      uuid
     }
   },
   reducers: {

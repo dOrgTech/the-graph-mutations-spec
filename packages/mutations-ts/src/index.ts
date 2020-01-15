@@ -91,9 +91,9 @@ export const createMutations = <
       // This is used for forwarding state updates back to the caller.
       // For an example, see the mutations-react package.
       const context = getContext()
-      let stateObserver: BehaviorSubject<TState> = context.__stateObserver
+      let stateObserver: BehaviorSubject<TState> = context.__stateObserver;
 
-      const state = new ManagedState<TState, TEventMap>(mutations.stateBuilder, stateObserver)
+      const state = new ManagedState<TState, TEventMap>(mutations.stateBuilder, uuid, stateObserver)
 
       // Use the mutations module's state class if one is defined
       //const state = new ManagedState<TState, TEventMap>(stateObserver)

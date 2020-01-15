@@ -26,6 +26,7 @@ class ManagedState<
 
   constructor(
     ext: StateBuilder<TState, TEventMap>,
+    uuid: string,
     observer?: BehaviorSubject<TState>
   ) {
     this._observer = observer
@@ -33,8 +34,8 @@ class ManagedState<
     this._core = coreStateBuilder
 
     this._state = {
-      ...this._core.getInitialState(),
-      ...this._ext.getInitialState()
+      ...this._core.getInitialState(uuid),
+      ...this._ext.getInitialState(),
     }
   }
 

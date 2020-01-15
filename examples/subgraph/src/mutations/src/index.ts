@@ -7,6 +7,7 @@ import {
   FullState,
   ManagedState
 } from "@graphprotocol/mutations-ts"
+import { Transaction } from "ethers/utils"
 
 interface ProgressUpdateEvent extends EventPayload {
   progress: number
@@ -56,22 +57,15 @@ async function queryUserGravatar(context: any) {
   )
 }
 
-// TODO: remove ID at this level, pass it in using the uuid
-// async function sendTx<TEvent extends keyof (CoreEvents & EventMap)>(tx: any, event: TEvent, payload, context: any) {
-//   const state: ManagedState<State, EventMap> = context.state;
-//   try {
-//     tx = await tx
-//     state.sendEvent("TRANSACTION_SENT", tx)
-//     await tx.wait()
-//     state.sendEvent(event, payload)
-//   } catch (error) {
-//     console.log(error)
-//     state.sendEvent('TRANSACTION_ERROR', {
-//       hash: "hash",
-//       error
-//     })
-//   }
-// }
+async function sendTx(tx: Transaction, state: ManagedState<CustomState, EventMap>) {
+  try {
+    tx = await tx
+    await state.sendEvent("TRANSACTION_SENT", {id: tx.hash, description: tx.data})
+    return tx;
+  } catch (error) {
+    await state.sendEvent('TRANSACTION_ERROR', error)
+  }
+}
 
 async function getGravityContract(context: any) {
   const { ethereum } = context.graph.config
@@ -88,45 +82,29 @@ async function getGravityContract(context: any) {
 async function createGravatar(_root: any, { options }: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = await getGravityContract(context)
-  const tx = gravity.createGravatar(displayName, imageUrl)
-  try{
-    const state: ManagedState<CustomState, EventMap> = context.state;
-    const txResult = await tx;
-    await txResult.wait();
-  }catch(error){
-    console.log(error)
-  }
+  const tx: Transaction = gravity.createGravatar(displayName, imageUrl)
+  const state: ManagedState<CustomState, EventMap> = context.state;
+  await sendTx(tx, state)
   return await queryUserGravatar(context)
 }
 
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
   const gravity = await getGravityContract(context)
-  const tx = gravity.updateGravatarName(displayName)
-  try{
-    const state: ManagedState<CustomState, EventMap> = context.graph.state;
-    await state.sendEvent("PROGRESS_UPDATED", {progress: 20})
-    const txResult = await tx;
-    await state.sendEvent("TRANSACTION_SENT", txResult)
-    await state.sendEvent("PROGRESS_UPDATED", {progress: 50})
-    await state.sendEvent("TRANSACTION_SENT", txResult)
-    await txResult.wait();
-    await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
-  }catch(error){
-    console.log(error)
-  }
+  const tx: Transaction = gravity.updateGravatarName(displayName)
+  const state: ManagedState<CustomState, EventMap> = context.graph.state;
+  await state.sendEvent("PROGRESS_UPDATED", {progress: 20})
+  const txResult = await sendTx(tx, state)
+  console.log(txResult)
+  if(!txResult) throw new Error("ON ERROR ERROR")
+  await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
   return await queryUserGravatar(context)
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
   const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarImage(imageUrl)
-  try{
-    const state: ManagedState<CustomState, EventMap> = context.state;
-    const txResult = await tx;
-    await txResult.wait();
-  }catch(error){
-    console.log(error)
-  }
+  const state: ManagedState<CustomState, EventMap> = context.state;
+  await sendTx(tx, state)
   return await queryUserGravatar(context)
 }
 

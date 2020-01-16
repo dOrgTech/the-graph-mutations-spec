@@ -46,7 +46,7 @@ async function queryUserGravatar(context: any) {
   return await client.query({
     query: gql`
       query GetGravatars {
-        gravatar (id: "${ethereum.provider.selectedAddress}") {
+        gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
           id
           owner
           displayName
@@ -94,10 +94,10 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
   const state: ManagedState<CustomState, EventMap> = context.graph.state;
   await state.sendEvent("PROGRESS_UPDATED", {progress: 20})
   const txResult = await sendTx(tx, state)
-  console.log(txResult)
   if(!txResult) throw new Error("ON ERROR ERROR")
   await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
-  return await queryUserGravatar(context)
+  const { data } = await queryUserGravatar(context)
+  return data.gravatars[0];
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {

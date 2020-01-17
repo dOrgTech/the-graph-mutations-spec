@@ -41,7 +41,8 @@ class ManagedState<
 
   public async sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
     event: TEvent,
-    payload: InferEventPayload<TEvent, CoreEvents & TEventMap>
+    payload: InferEventPayload<TEvent, CoreEvents & TEventMap>,
+    progress: number
   ) {
 
     // Append the event
@@ -49,6 +50,9 @@ class ManagedState<
       event: event as string,
       payload
     })
+
+    //Update the progress
+    this._state.progress = progress;
 
     // Call all relevant reducers
     const coreReducers = this._core.reducers as any

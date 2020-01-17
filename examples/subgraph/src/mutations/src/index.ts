@@ -9,16 +9,15 @@ import {
 } from "@graphprotocol/mutations-ts"
 import { Transaction } from "ethers/utils"
 
-interface ProgressUpdateEvent extends EventPayload {
-  progress: number
+interface CustomEvent extends EventPayload {
+  myValue: number
 }
 
 type EventMap = {
-  'PROGRESS_UPDATED': ProgressUpdateEvent
+  'CUSTOM_EVENT': CustomEvent
 }
 
 interface CustomState {
-  progress: number
   myValue: number
   myFlag: boolean
 }
@@ -26,14 +25,13 @@ interface CustomState {
 const stateBuilder: StateBuilder<CustomState, EventMap> = {
   getInitialState(): CustomState {
     return {
-      progress: 0,
       myValue: 0,
       myFlag: false
     }
   },
   reducers: {
-    "PROGRESS_UPDATED": async (state: FullState<CustomState>, payload: ProgressUpdateEvent) => {
-      state.progress = payload.progress;
+    "CUSTOM_EVENT": async (state: FullState<CustomState>, payload: CustomEvent) => {
+      state.myValue = payload.myValue;
       return state
     }
   }
@@ -59,11 +57,12 @@ async function queryUserGravatar(context: any) {
 
 async function sendTx(tx: Transaction, state: ManagedState<CustomState, EventMap>) {
   try {
+    await state.sendEvent("TRANSACTION_CREATED", {id: tx.hash, description: tx.data}, 20)
     tx = await tx
-    await state.sendEvent("TRANSACTION_SENT", {id: tx.hash, description: tx.data})
+    await state.sendEvent("TRANSACTION_COMPLETED", {id: tx.hash, description: tx.data}, 60)
     return tx;
   } catch (error) {
-    await state.sendEvent('TRANSACTION_ERROR', error)
+    await state.sendEvent('TRANSACTION_ERROR', error, 60)
   }
 }
 
@@ -91,12 +90,11 @@ async function createGravatar(_root: any, { options }: any, context: any) {
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
   const gravity = await getGravityContract(context)
   const state: ManagedState<CustomState, EventMap> = context.graph.state;
-  await state.sendEvent("PROGRESS_UPDATED", {progress: 20})
   await sleep(2000)
   if(context.fail) throw new Error("Transaction Errored (Controlled Error Test Case)")
   const txResult = await sendTx(gravity.updateGravatarName(displayName), state)
-  if(!txResult) throw new Error("ON ERROR ERROR")
-  await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
+  if(!txResult) throw new Error("WHOLE PROCESS FAILED")
+  await state.sendEvent("CUSTOM_EVENT", {myValue: 999}, 100)
   const { data } = await queryUserGravatar(context)
   return data.gravatars[0];
 }

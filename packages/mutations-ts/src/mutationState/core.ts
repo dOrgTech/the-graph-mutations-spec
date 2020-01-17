@@ -7,14 +7,21 @@ import {
 export interface CoreState {
   events: EventLog
   uuid: string
+  progress: number
 }
 
 export type CoreEvents = {
-  'TRANSACTION_SENT': TransactionSent,
+  'TRANSACTION_CREATED': TransactionCreated,
+  'TRANSACTION_COMPLETED': TransactionCompleted
   'TRANSACTION_ERROR': TransactionError
 }
 
-export interface TransactionSent extends EventPayload {
+export interface TransactionCreated extends EventPayload {
+  id: string,
+  description: string
+}
+
+export interface TransactionCompleted extends EventPayload {
   id: string,
   description: string
 }
@@ -28,11 +35,15 @@ export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
   getInitialState(uuid: string): CoreState {
     return {
       events: [],
+      progress: 0,
       uuid
     }
   },
   reducers: {
-    'TRANSACTION_SENT': async (state: CoreState, payload: TransactionSent) => {
+    'TRANSACTION_CREATED': async (state: CoreState, payload: TransactionCreated) => {
+      return state;      
+    },
+    'TRANSACTION_COMPLETED': async (state: CoreState, payload: TransactionCreated) => {
       return state;      
     },
     'TRANSACTION_ERROR': async (state: CoreState, payload: TransactionError) => {

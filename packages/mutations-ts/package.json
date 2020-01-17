@@ -1,6 +1,25 @@
 {
-  "name": "@graphmutations/mutations-ts",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT"
+  "name": "@graphprotocol/mutations-ts",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "TODO",
+  "author": "Graph Protocol, Inc.",
+  "license": "MIT/Apache",
+  "private": false,
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "tsc",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch --passWithNoTests"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.5.0",
+    "@types/node": "^12.6.1",
+    "@types/lodash": "^4.14.149"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15"
+  }
 }

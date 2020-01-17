@@ -8,7 +8,7 @@
 ## Deliverables
 * `@graphprotocol/mutations-ts` Package
 * Functional Gravatar dApp w/ Mutations  
-  * Note: `context.thegraph.datasources...` not available yet, see Milestone 2.
+  * Note: `context.graph.datasources...` not available yet, see Milestone 2.
 * `graph-cli build` Support
 
 ## Details (WIP)
@@ -22,35 +22,23 @@
 ### Demo dApp functional!
 The spec is already there.
 
-### `graph build`  
-Logic: 
+### `graph cli integration`  
 - [x] combine & parse the mutation's schema.graphql
 - [x] validate mutations.yaml
 - [x] validate subgraph.yaml
 - [x] open & validate resolvers module
+- [x] upload mutation files to IPFS
+- [x] output to the build directory
 
-Relevant Code:
-- [x] update manifest-schema.graphql with the new fields that're being added to the subgraph manifest file
-- [x] update validation/manifest.js
-- [x] update validation/schema.js
-- [x] update tests with all new output + errors for effected commands
-
-# 2. graph-node Support
+# 2. Tests + Added Features
 ## Deliverables
-* `graph-cli deploy` Support
-* graph-node Schema Introspection W/ Mutations
-* graph-node Datasources Fetch
+* API tests
+* datasources fetch
+* optimistic updates
+* resolver state updates
 * `graph-cli init` Support
 
 ## Details (WIP)
-`graph deploy`
-- upload js module to ipfs + add hash to subgraph.yaml
-- upload schema to graph-node for introspection
-
-graph-node Introspection Endpoint Supports Mutation Schema
-
-graph-node Datasources Endpoint
-
 `graph init`
 - will add a mutation resolvers package for developers to start implementing from.
 

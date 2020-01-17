@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card } from 'semantic-ui-react'
-import CompleteButton from '../components/CompleteButton';
-import DeleteButton from '../components/DeleteButton';
+import CompleteButton from './CompleteButton';
+import DeleteButton from './DeleteButton';
 
 const TodoCard = ({ todo: { id, asignee, description, completed } }) => {
 

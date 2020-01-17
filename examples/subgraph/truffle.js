@@ -1,5 +1,3 @@
-require('babel-register')
-require('babel-polyfill')
 const HDWalletProvider = require('truffle-hdwallet-provider')
 
 module.exports = {
@@ -21,7 +19,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: '0.4.25'    // Fetch exact version from solc-bin (default: truffle's version)
+      version: '0.5.0'
     }
   }
 }

@@ -1,1 +1,106 @@
-!function(e,r){"object"==typeof exports&&"object"==typeof module?module.exports=r():"function"==typeof define&&define.amd?define([],r):"object"==typeof exports?exports.Resolvers=r():e.Resolvers=r()}(this,(function(){return function(e){var r={};function t(n){if(r[n])return r[n].exports;var a=r[n]={i:n,l:!1,exports:{}};return e[n].call(a.exports,a,a.exports,t),a.l=!0,a.exports}return t.m=e,t.c=r,t.d=function(e,r,n){t.o(e,r)||Object.defineProperty(e,r,{enumerable:!0,get:n})},t.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},t.t=function(e,r){if(1&r&&(e=t(e)),8&r)return e;if(4&r&&"object"==typeof e&&e&&e.__esModule)return e;var n=Object.create(null);if(t.r(n),Object.defineProperty(n,"default",{enumerable:!0,value:e}),2&r&&"string"!=typeof e)for(var a in e)t.d(n,a,function(r){return e[r]}.bind(null,a));return n},t.n=function(e){var r=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(r,"a",r),r},t.o=function(e,r){return Object.prototype.hasOwnProperty.call(e,r)},t.p="",t(t.s=3)}([function(e,r,t){"use strict";Object.defineProperty(r,"__esModule",{value:!0});var n,a,u=(n=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],a=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],Object.freeze(Object.defineProperties(n,{raw:{value:Object.freeze(a)}}))),i=s(t(0)),o=t(1),c=s(t(2));function s(e){return e&&e.__esModule?e:{default:e}}var f=function(e,r,t,n){return new(t||(t=Promise))((function(a,u){function i(e){try{c(n.next(e))}catch(e){u(e)}}function o(e){try{c(n.throw(e))}catch(e){u(e)}}function c(e){var r;e.done?a(e.value):(r=e.value,r instanceof t?r:new t((function(e){e(r)}))).then(i,o)}c((n=n.apply(e,r||[])).next())}))};function d(e){return f(this,void 0,void 0,regeneratorRuntime.mark((function r(){var t,n;return regeneratorRuntime.wrap((function(r){for(;;)switch(r.prev=r.next){case 0:return t=e.client,n=e.thegraph.config.ethereum,r.next=4,t.query((0,i.default)(u,n.eth.defaultAccount));case 4:return r.abrupt("return",r.sent);case 5:case"end":return r.stop()}}),r,this)})))}function p(e,r,t){return f(this,void 0,void 0,regeneratorRuntime.mark((function n(){var a;return regeneratorRuntime.wrap((function(n){for(;;)switch(n.prev=n.next){case 0:return a=t.thegraph.mutationState,n.prev=1,n.next=4,e;case 4:return e=n.sent,a.addTransaction(e.hash),n.next=8,e.wait();case 8:n.next=14;break;case 10:throw n.prev=10,n.t0=n.catch(1),a.addError(n.t0),new Error('Failed while sending "'+r+'"');case 14:case"end":return n.stop()}}),n,this,[[1,10]])})))}function v(e){var r=e.thegraph.config.ethereum,t=e.thegraph.dataSources.Gravity,n=new o.ethers.Contract(t.address,t.abi,r);return n.connect(r),n}var h={Mutation:{createGravatar:function(e,r,t){var n=r.options;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a,u,i;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=n.displayName,a=n.imageUrl,u=v(t),i=u.createGravatar(r,a),e.next=5,p(i,"Creating Gravatar",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))},updateGravatarName:function(e,r,t){var n=r.displayName;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarName(n),e.next=4,p(a,"Updating Gravatar Name",t);case 4:return e.next=6,d(t);case 6:return e.abrupt("return",e.sent);case 7:case"end":return e.stop()}}),e,this)})))},updateGravatarImage:function(e,r,t){var n=r.imageUrl;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarImage(n),t.thegraph.mutationState.addData("imageUrl",n),e.next=5,p(a,"Updating Gravatar Image",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))}}},m={ethereum:function(e){return new o.ethers.providers.Web3Provider(e)},ipfs:function(e){return(0,c.default)(e)},property:{a:function(e){},b:function(e){}}};r.default={resolvers:h,config:m},e.exports=r.default},function(e,r,t){"use strict";Object.defineProperty(r,"__esModule",{value:!0});var n,a,u=(n=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],a=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],Object.freeze(Object.defineProperties(n,{raw:{value:Object.freeze(a)}}))),i=s(t(0)),o=t(1),c=s(t(2));function s(e){return e&&e.__esModule?e:{default:e}}var f=function(e,r,t,n){return new(t||(t=Promise))((function(a,u){function i(e){try{c(n.next(e))}catch(e){u(e)}}function o(e){try{c(n.throw(e))}catch(e){u(e)}}function c(e){var r;e.done?a(e.value):(r=e.value,r instanceof t?r:new t((function(e){e(r)}))).then(i,o)}c((n=n.apply(e,r||[])).next())}))};function d(e){return f(this,void 0,void 0,regeneratorRuntime.mark((function r(){var t,n;return regeneratorRuntime.wrap((function(r){for(;;)switch(r.prev=r.next){case 0:return t=e.client,n=e.thegraph.config.ethereum,r.next=4,t.query((0,i.default)(u,n.eth.defaultAccount));case 4:return r.abrupt("return",r.sent);case 5:case"end":return r.stop()}}),r,this)})))}function p(e,r,t){return f(this,void 0,void 0,regeneratorRuntime.mark((function n(){var a;return regeneratorRuntime.wrap((function(n){for(;;)switch(n.prev=n.next){case 0:return a=t.thegraph.mutationState,n.prev=1,n.next=4,e;case 4:return e=n.sent,a.addTransaction(e.hash),n.next=8,e.wait();case 8:n.next=14;break;case 10:throw n.prev=10,n.t0=n.catch(1),a.addError(n.t0),new Error('Failed while sending "'+r+'"');case 14:case"end":return n.stop()}}),n,this,[[1,10]])})))}function v(e){var r=e.thegraph.config.ethereum,t=e.thegraph.dataSources.Gravity,n=new o.ethers.Contract(t.address,t.abi,r);return n.connect(r),n}var h={Mutation:{createGravatar:function(e,r,t){var n=r.options;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a,u,i;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=n.displayName,a=n.imageUrl,u=v(t),i=u.createGravatar(r,a),e.next=5,p(i,"Creating Gravatar",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))},updateGravatarName:function(e,r,t){var n=r.displayName;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarName(n),e.next=4,p(a,"Updating Gravatar Name",t);case 4:return e.next=6,d(t);case 6:return e.abrupt("return",e.sent);case 7:case"end":return e.stop()}}),e,this)})))},updateGravatarImage:function(e,r,t){var n=r.imageUrl;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarImage(n),t.thegraph.mutationState.addData("imageUrl",n),e.next=5,p(a,"Updating Gravatar Image",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))}}},m={ethereum:function(e){return new o.ethers.providers.Web3Provider(e)},ipfs:function(e){return(0,c.default)(e)},property:{a:function(e){},b:function(e){}}};r.default={resolvers:h,config:m},e.exports=r.default},function(e,r,t){"use strict";Object.defineProperty(r,"__esModule",{value:!0});var n,a,u=(n=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],a=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],Object.freeze(Object.defineProperties(n,{raw:{value:Object.freeze(a)}}))),i=s(t(0)),o=t(1),c=s(t(2));function s(e){return e&&e.__esModule?e:{default:e}}var f=function(e,r,t,n){return new(t||(t=Promise))((function(a,u){function i(e){try{c(n.next(e))}catch(e){u(e)}}function o(e){try{c(n.throw(e))}catch(e){u(e)}}function c(e){var r;e.done?a(e.value):(r=e.value,r instanceof t?r:new t((function(e){e(r)}))).then(i,o)}c((n=n.apply(e,r||[])).next())}))};function d(e){return f(this,void 0,void 0,regeneratorRuntime.mark((function r(){var t,n;return regeneratorRuntime.wrap((function(r){for(;;)switch(r.prev=r.next){case 0:return t=e.client,n=e.thegraph.config.ethereum,r.next=4,t.query((0,i.default)(u,n.eth.defaultAccount));case 4:return r.abrupt("return",r.sent);case 5:case"end":return r.stop()}}),r,this)})))}function p(e,r,t){return f(this,void 0,void 0,regeneratorRuntime.mark((function n(){var a;return regeneratorRuntime.wrap((function(n){for(;;)switch(n.prev=n.next){case 0:return a=t.thegraph.mutationState,n.prev=1,n.next=4,e;case 4:return e=n.sent,a.addTransaction(e.hash),n.next=8,e.wait();case 8:n.next=14;break;case 10:throw n.prev=10,n.t0=n.catch(1),a.addError(n.t0),new Error('Failed while sending "'+r+'"');case 14:case"end":return n.stop()}}),n,this,[[1,10]])})))}function v(e){var r=e.thegraph.config.ethereum,t=e.thegraph.dataSources.Gravity,n=new o.ethers.Contract(t.address,t.abi,r);return n.connect(r),n}var h={Mutation:{createGravatar:function(e,r,t){var n=r.options;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a,u,i;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=n.displayName,a=n.imageUrl,u=v(t),i=u.createGravatar(r,a),e.next=5,p(i,"Creating Gravatar",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))},updateGravatarName:function(e,r,t){var n=r.displayName;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarName(n),e.next=4,p(a,"Updating Gravatar Name",t);case 4:return e.next=6,d(t);case 6:return e.abrupt("return",e.sent);case 7:case"end":return e.stop()}}),e,this)})))},updateGravatarImage:function(e,r,t){var n=r.imageUrl;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarImage(n),t.thegraph.mutationState.addData("imageUrl",n),e.next=5,p(a,"Updating Gravatar Image",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))}}},m={ethereum:function(e){return new o.ethers.providers.Web3Provider(e)},ipfs:function(e){return(0,c.default)(e)},property:{a:function(e){},b:function(e){}}};r.default={resolvers:h,config:m},e.exports=r.default},function(e,r,t){"use strict";Object.defineProperty(r,"__esModule",{value:!0});var n,a,u=(n=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],a=["\n  {\n    gravatar(owner: ",") {\n      id\n      owner\n      displayName\n      imageUrl\n    }\n  }"],Object.freeze(Object.defineProperties(n,{raw:{value:Object.freeze(a)}}))),i=s(t(0)),o=t(1),c=s(t(2));function s(e){return e&&e.__esModule?e:{default:e}}var f=function(e,r,t,n){return new(t||(t=Promise))((function(a,u){function i(e){try{c(n.next(e))}catch(e){u(e)}}function o(e){try{c(n.throw(e))}catch(e){u(e)}}function c(e){var r;e.done?a(e.value):(r=e.value,r instanceof t?r:new t((function(e){e(r)}))).then(i,o)}c((n=n.apply(e,r||[])).next())}))};function d(e){return f(this,void 0,void 0,regeneratorRuntime.mark((function r(){var t,n;return regeneratorRuntime.wrap((function(r){for(;;)switch(r.prev=r.next){case 0:return t=e.client,n=e.thegraph.config.ethereum,r.next=4,t.query((0,i.default)(u,n.eth.defaultAccount));case 4:return r.abrupt("return",r.sent);case 5:case"end":return r.stop()}}),r,this)})))}function p(e,r,t){return f(this,void 0,void 0,regeneratorRuntime.mark((function n(){var a;return regeneratorRuntime.wrap((function(n){for(;;)switch(n.prev=n.next){case 0:return a=t.thegraph.mutationState,n.prev=1,n.next=4,e;case 4:return e=n.sent,a.addTransaction(e.hash),n.next=8,e.wait();case 8:n.next=14;break;case 10:throw n.prev=10,n.t0=n.catch(1),a.addError(n.t0),new Error('Failed while sending "'+r+'"');case 14:case"end":return n.stop()}}),n,this,[[1,10]])})))}function v(e){var r=e.thegraph.config.ethereum,t=e.thegraph.dataSources.Gravity,n=new o.ethers.Contract(t.address,t.abi,r);return n.connect(r),n}var h={Mutation:{createGravatar:function(e,r,t){var n=r.options;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a,u,i;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=n.displayName,a=n.imageUrl,u=v(t),i=u.createGravatar(r,a),e.next=5,p(i,"Creating Gravatar",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))},updateGravatarName:function(e,r,t){var n=r.displayName;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarName(n),e.next=4,p(a,"Updating Gravatar Name",t);case 4:return e.next=6,d(t);case 6:return e.abrupt("return",e.sent);case 7:case"end":return e.stop()}}),e,this)})))},updateGravatarImage:function(e,r,t){var n=r.imageUrl;return f(this,void 0,void 0,regeneratorRuntime.mark((function e(){var r,a;return regeneratorRuntime.wrap((function(e){for(;;)switch(e.prev=e.next){case 0:return r=v(t),a=r.updateGravatarImage(n),t.thegraph.mutationState.addData("imageUrl",n),e.next=5,p(a,"Updating Gravatar Image",t);case 5:return e.next=7,d(t);case 7:return e.abrupt("return",e.sent);case 8:case"end":return e.stop()}}),e,this)})))}}},m={ethereum:function(e){return new o.ethers.providers.Web3Provider(e)},ipfs:function(e){return(0,c.default)(e)},property:{a:function(e){},b:function(e){}}};r.default={resolvers:h,config:m},e.exports=r.default}])}));
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import gql from "graphql-tag";
+import { ethers } from "ethers";
+import IPFSClient from "ipfs-http-client";
+function queryUserGravatar(context) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { client } = context;
+        const { ethereum } = context.thegraph.config;
+        return yield client.query(gql `
+  {
+    gravatar(owner: ${ethereum.eth.defaultAccount}) {
+      id
+      owner
+      displayName
+      imageUrl
+    }
+  }`);
+    });
+}
+function sendTx(tx, msg, context) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { mutationState } = context.thegraph;
+        try {
+            tx = yield tx;
+            mutationState.addTransaction(tx.hash);
+            yield tx.wait();
+        }
+        catch (error) {
+            mutationState.addError(error);
+            throw new Error(`Failed while sending "${msg}"`);
+        }
+    });
+}
+function getGravityContract(context) {
+    const { ethereum } = context.thegraph.config;
+    const { Gravity } = context.thegraph.dataSources;
+    const contract = new ethers.Contract(Gravity.address, Gravity.abi, ethereum);
+    contract.connect(ethereum);
+    return contract;
+}
+function createGravatar(_root, { options }, context) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { displayName, imageUrl } = options;
+        const gravity = getGravityContract(context);
+        const tx = gravity.createGravatar(displayName, imageUrl);
+        yield sendTx(tx, "Creating Gravatar", context);
+        return yield queryUserGravatar(context);
+    });
+}
+function updateGravatarName(_root, { displayName }, context) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const gravity = getGravityContract(context);
+        const tx = gravity.updateGravatarName(displayName);
+        yield sendTx(tx, "Updating Gravatar Name", context);
+        return yield queryUserGravatar(context);
+    });
+}
+function updateGravatarImage(_root, { imageUrl }, context) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const gravity = getGravityContract(context);
+        const tx = gravity.updateGravatarImage(imageUrl);
+        // Example of custom data within the state
+        context.thegraph.mutationState.addData("imageUrl", imageUrl);
+        yield sendTx(tx, "Updating Gravatar Image", context);
+        return yield queryUserGravatar(context);
+    });
+}
+const resolvers = {
+    Mutation: {
+        createGravatar,
+        updateGravatarName,
+        updateGravatarImage
+    }
+};
+const config = {
+    ethereum: (provider) => {
+        return new ethers.providers.Web3Provider(provider);
+    },
+    ipfs: (provider) => {
+        const url = new URL(provider);
+        return IPFSClient({
+            protocol: url.protocol.replace(/[:]+$/, ''),
+            host: url.hostname,
+            port: url.port,
+            'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/',
+        });
+    },
+    // Example of a custom configuration property
+    property: {
+        // Property setters can be nested
+        a: (value) => { },
+        b: (value) => { }
+    }
+};
+export default {
+    resolvers,
+    config
+};

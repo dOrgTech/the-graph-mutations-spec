@@ -1,40 +1,51 @@
 import gql from "graphql-tag"
 import { ethers } from "ethers"
 import IPFSClient from "ipfs-http-client"
+import { ManagedMutationState } from "@graphprotocol/mutations-ts"
+
+export class State extends ManagedMutationState{
+  public staticProperty = {};
+}
 
 async function queryUserGravatar(context: any) {
   const { client } = context
-  const { ethereum } = context.thegraph.config
+  const { ethereum } = context.graph.config
 
-  return await client.query(gql`
-  {
-    gravatar(owner: ${ethereum.eth.defaultAccount}) {
-      id
-      owner
-      displayName
-      imageUrl
+  return await client.query({
+    query: gql`
+      query GetGravatars {
+        gravatar (id: '${ethereum.provider.selectedAddress}') {
+          id
+          owner
+          displayName
+          imageUrl
+        }
+      }`
     }
-  }`)
+  )
 }
 
-async function sendTx(tx: any, msg: string, context: any) {
-  const { mutationState } = context.thegraph
+// TODO: remove ID at this level, pass it in using the uuid
+async function sendTx(tx: any, msg: string, progress: number, context: any) {
+  const state: ManagedMutationState = context.state;
   try {
+    state.startTransaction({ title: msg, payload: {} })
     tx = await tx
-    mutationState.addTransaction(tx.hash)
     await tx.wait()
+    state.confirmTransaction(progress, tx)
   } catch (error) {
-    mutationState.addError(error)
+    state.addError(error)
     throw new Error(`Failed while sending "${msg}"`)
   }
 }
 
-function getGravityContract(context: any) {
-  const { ethereum } = context.thegraph.config
-  const { Gravity } = context.thegraph.dataSources
+async function getGravityContract(context: any) {
+  const { ethereum } = context.graph.config
+  const abi = await context.graph.dataSources.Gravity.abi
+  const address = await context.graph.dataSources.Gravity.address
 
   const contract = new ethers.Contract(
-    Gravity.address, Gravity.abi, ethereum
+    address, abi, ethereum.getSigner()
   )
   contract.connect(ethereum)
   return contract
@@ -42,29 +53,27 @@ function getGravityContract(context: any) {
 
 async function createGravatar(_root: any, {options}: any, context: any) {
   const { displayName, imageUrl } = options
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.createGravatar(displayName, imageUrl)
-
-  await sendTx(tx, "Creating Gravatar", context)
+  await sendTx(tx, "Creating Gravatar", 0.9, context)
   return await queryUserGravatar(context)
 }
 
 async function updateGravatarName(_root: any, {displayName}: any, context: any) {
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarName(displayName)
-
-  await sendTx(tx, "Updating Gravatar Name", context)
+  await sendTx(tx, "Updating Gravatar Name", 0.9, context)
   return await queryUserGravatar(context)
 }
 
 async function updateGravatarImage(_root: any, {imageUrl}: any, context: any) {
-  const gravity = getGravityContract(context)
+  const gravity = await getGravityContract(context)
   const tx = gravity.updateGravatarImage(imageUrl)
+  await sendTx(tx, "Updating Gravatar Image", 0.9, context)
 
   // Example of custom data within the state
-  context.thegraph.mutationState.addData("imageUrl", imageUrl)
+  context.graph.state.addData("imageUrl", imageUrl)
 
-  await sendTx(tx, "Updating Gravatar Image", context)
   return await queryUserGravatar(context)
 }
 
@@ -81,7 +90,13 @@ const config = {
     return new ethers.providers.Web3Provider(provider)
   },
   ipfs: (provider: string) => {
-    return IPFSClient(provider)
+    const url = new URL(provider)
+    return IPFSClient({
+      protocol: url.protocol.replace(/[:]+$/, ''),
+      host: url.hostname,
+      port: url.port,
+      'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/',
+    })
   },
   // Example of a custom configuration property
   property: {
@@ -93,5 +108,6 @@ const config = {
 
 export default {
   resolvers,
-  config
+  config,
+  State
 }

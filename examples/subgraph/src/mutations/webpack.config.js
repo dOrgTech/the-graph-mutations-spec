@@ -2,6 +2,7 @@ const path = require("path");
 
 module.exports = {
   entry: "./src/index",
+  target: "node",
   output: {
     library: 'Resolvers',
     filename: "index.js",
@@ -9,16 +10,22 @@ module.exports = {
     libraryTarget: 'umd',
     globalObject: "this"
   },
+  resolve: {
+    extensions: ["*", ".json", ".ts", ".js"]
+  },
   module: {
     rules: [
       // note that babel-loader is configured to run after ts-loader
       {
-        test: /\.(ts|js)$/,
+        test: /\.(ts)$/,
+        exclude: /node_modules/,
         use: [
           {
             loader: "babel-loader",
             options: {
-              presets: ["env"],
+              presets: [
+                ["@babel/preset-env", { forceAllTransforms: true }]
+              ],
               plugins: ["add-module-exports"]
             }
           },
@@ -28,8 +35,5 @@ module.exports = {
         ]
       }
     ]
-  },
-  resolve: {
-    extensions: [".ts", ".js"]
   }
 };

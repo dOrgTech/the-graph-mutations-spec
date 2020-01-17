@@ -4,19 +4,21 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "./node_modules/.bin/tsc",
     "verify": "es-check es5 ./dist/index.js"
   },
   "dependencies": {
     "ethers": "^4.0.40",
     "graphql-tag": "^2.10.1",
-    "ipfs-http-client": "^39.0.2"
+    "ipfs-http-client": "^34.0.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
+    "@babel/core": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
+    "babel-core": "^7.0.0-bridge.0",
     "babel-loader": "^7.1.5",
     "babel-plugin-add-module-exports": "^1.0.2",
-    "babel-preset-env": "^1.7.0",
+    "babel-plugin-minify-mangle-names": "^0.5.0",
     "es-check": "^5.1.0",
     "ts-loader": "6.2.1",
     "typescript": "^3.7.3",

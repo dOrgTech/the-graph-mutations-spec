@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ApolloClient from 'apollo-client';
 import { split } from 'apollo-link';
-import { gql, InMemoryCache } from 'apollo-boost';
+import { InMemoryCache } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { getMainDefinition } from 'apollo-utilities';
 import { useQuery, useMutation } from '@apollo/react-hooks';
@@ -20,6 +20,7 @@ import Header from './components/Header'
 import CustomError from './components/Error'
 import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
+import { CREATE_GRAVATAR, GRAVATARS_QUERY } from './utils';
 
 import gravatarMutations from 'gravatar-mutations'
 import { State } from 'gravatar-mutations/dist'
@@ -76,51 +77,6 @@ const client = new ApolloClient({
   cache: new InMemoryCache()
 })
 
-const GRAVATARS_QUERY = gql`
-  query gravatars($where: Gravatar_filter!, $orderBy: Gravatar_orderBy!) {
-    gravatars(first: 100, where: $where, orderBy: $orderBy, orderDirection: asc) {
-      id
-      owner
-      displayName
-      imageUrl
-    }
-  }
-`
-
-// TODO: how does the GravatarOptions type get here? Does it? Does it get treated as an "any"?
-const CREATE_GRAVATAR = gql`
-  mutation createGravatar($options: GravatarOptions) {
-    createGravatar(options: $options) @client{
-      id
-      owner
-      displayName
-      imageUrl
-    }
-  }
-`
-
-const UPDATE_GRAVATAR_NAME = gql`
-  mutation updateGravatarName($displayName: String!) {
-    updateGravatarName(displayName: $displayName) @client{
-      id
-      owner
-      displayName
-      imageUrl
-    }
-  }
-`
-
-const UPDATE_GRAVATAR_IMAGE = gql`
-  mutation updateGravatarImage($imageUrl: String!) {
-    updateGravatarImage(imageUrl: $imageUrl) {
-      id
-      owner
-      displayName
-      imageUrl
-    }
-  }
-`
-
 function App() {
 
   const [state, setState] = React.useState({
@@ -150,32 +106,6 @@ function App() {
         options: { displayName: "...", imageUrl: "..." }
       }
     })
-
-  const {executeMutation: executeUpdateName, subscriptionData} = useMutationAndSubscribe<State>(
-    UPDATE_GRAVATAR_NAME,
-    {
-      client,
-      optimisticResponse: {
-        updateGravatarName: {
-          id: '0x0', //Apollo updates cache based on this ID
-          imageUrl: '',
-          owner: '',
-          displayName: "Optimistically Updated Name",
-          __typename: "Gravatar"
-        }
-      },
-      variables: {
-        displayName: "New Name"
-      },
-      context: {
-        client
-      },
-      onError: (error) => {
-        alert(error)
-      }
-    })
-
-  console.log(subscriptionData)
 
   const { data, error, loading } = useQuery(GRAVATARS_QUERY, {
     client,
@@ -211,7 +141,7 @@ function App() {
             ) : error ? (
               <CustomError error={error} />
             ) : (
-                  <Gravatars gravatars={data.gravatars} />
+                  <Gravatars client={client} gravatars={data.gravatars} />
                 )
             }
           </Grid>
@@ -242,14 +172,6 @@ function App() {
       <button onClick={event => executeCreate()}>
         Create Gravatar
       </button>
-      <button onClick={event => executeUpdateName()}>
-        Update First Gravatar (Optimistic)
-      </button>
-      <div>
-        <br></br>
-        Progress:
-        <LinearProgress variant="determinate" value={subscriptionData.progress? subscriptionData.progress: 0} />
-      </div>
     </div>
   )
 }

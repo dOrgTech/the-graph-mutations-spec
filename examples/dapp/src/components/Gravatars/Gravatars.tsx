@@ -1,19 +1,26 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {
   Card,
   CardContent,
   CardActionArea,
+  CardActions,
   CardMedia,
   Grid,
   Typography,
   createStyles,
   withStyles,
+  Button,
+  LinearProgress,
+  Input
 } from '@material-ui/core'
+import { UPDATE_GRAVATAR_NAME } from '../../utils';
+import {State} from 'gravatar-mutations/dist';
+import {useMutationAndSubscribe} from '@graphprotocol/mutations-apollo-react'
 
 const gravatarStyles = theme =>
   createStyles({
     actionArea: {
-      maxWidth: 300,
+      maxWidth: 400,
     },
     image: {
       height: 150,
@@ -32,7 +39,70 @@ const gravatarStyles = theme =>
     },
   })
 
-const Gravatar = ({ classes, id, displayName, imageUrl, owner }) => (
+const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
+
+  const [name, setName] = useState('')
+  
+  const {executeMutation: succesfulUpdate, subscriptionData, loadingMutation: {loading}} = useMutationAndSubscribe<State>(
+    UPDATE_GRAVATAR_NAME,
+    {
+      client,
+      optimisticResponse: {
+        updateGravatarName: {
+          id, //Apollo updates cache based on this ID
+          imageUrl,
+          owner,
+          displayName: name,
+          __typename: "Gravatar"
+        }
+      },
+      context: {
+        client,
+        fail: false
+      },
+      variables: {
+        id,
+        displayName: name
+      },
+      onError: (error) => {
+        alert(error)
+      }
+    })
+
+    const {executeMutation: failedUpdate, subscriptionData: failSubData} = useMutationAndSubscribe<State>(
+      UPDATE_GRAVATAR_NAME,
+      {
+        client,
+        optimisticResponse: {
+          updateGravatarName: {
+            id, //Apollo updates cache based on this ID
+            imageUrl,
+            owner,
+            displayName: name,
+            __typename: "Gravatar"
+          }
+        },
+        context: {
+          client,
+          fail: true
+        },
+        variables: {
+          id,
+          displayName: name
+        },
+        onError: (error) => {
+          alert(error)
+        }
+      })
+
+  const handleNameChange = (event: any) => {
+    setName(event.target.value)
+  }
+
+  console.log("Success Case: ", subscriptionData)
+  console.log("Failure Case: ", failSubData)
+
+  return (
   <Grid item>
     <Card>
       <CardActionArea className={classes.actionArea}>
@@ -52,10 +122,25 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner }) => (
             {owner}
           </Typography>
         </CardContent>
+        {((window as any).web3.currentProvider.selectedAddress === owner)? 
+          (<CardActions>
+            <Input
+              placeholder="Type new name..."
+              onChange={handleNameChange}></Input>
+            <Button size="small" color="primary" variant="outlined" onClick={succesfulUpdate}>
+              Update Name
+            </Button>
+            <Button size="small" color="secondary" variant="outlined" onClick={failedUpdate}>
+              Update Name
+            </Button>
+          </CardActions>): null
+        }
       </CardActionArea>
+      {(loading && subscriptionData.progress !== 100)? 
+        (<LinearProgress variant="determinate" value={subscriptionData.progress? subscriptionData.progress: 0}></LinearProgress>): null}
     </Card>
   </Grid>
-)
+)}
 
 const StyledGravatar = withStyles(gravatarStyles)(Gravatar)
 
@@ -66,7 +151,7 @@ const gravatarsStyles = theme =>
     },
   })
 
-const Gravatars = ({ classes, gravatars }) => (
+const Gravatars = ({ classes, gravatars, client }) => (
   <Grid container direction="column" spacing={16}>
     <Grid item>
       <Typography variant="title" className={classes.title}>
@@ -76,7 +161,7 @@ const Gravatars = ({ classes, gravatars }) => (
     <Grid item>
       <Grid container direction="row" spacing={16}>
         {gravatars.map(gravatar => (
-          <StyledGravatar key={gravatar.id} {...gravatar} />
+          <StyledGravatar client={client} key={gravatar.id} {...gravatar} />
         ))}
       </Grid>
     </Grid>

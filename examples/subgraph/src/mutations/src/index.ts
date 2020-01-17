@@ -82,18 +82,19 @@ async function getGravityContract(context: any) {
 async function createGravatar(_root: any, { options }: any, context: any) {
   const { displayName, imageUrl } = options
   const gravity = await getGravityContract(context)
-  const tx: Transaction = gravity.createGravatar(displayName, imageUrl)
   const state: ManagedState<CustomState, EventMap> = context.state;
-  await sendTx(tx, state)
-  return await queryUserGravatar(context)
+  await sendTx(gravity.createGravatar(displayName, imageUrl), state)
+  const { data } = await queryUserGravatar(context)
+  return data.gravatars[0]
 }
 
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
   const gravity = await getGravityContract(context)
-  const tx: Transaction = gravity.updateGravatarName(displayName)
   const state: ManagedState<CustomState, EventMap> = context.graph.state;
   await state.sendEvent("PROGRESS_UPDATED", {progress: 20})
-  const txResult = await sendTx(tx, state)
+  await sleep(2000)
+  if(context.fail) throw new Error("Transaction Errored (Controlled Error Test Case)")
+  const txResult = await sendTx(gravity.updateGravatarName(displayName), state)
   if(!txResult) throw new Error("ON ERROR ERROR")
   await state.sendEvent("PROGRESS_UPDATED", {progress: 100})
   const { data } = await queryUserGravatar(context)
@@ -102,10 +103,10 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
   const gravity = await getGravityContract(context)
-  const tx = gravity.updateGravatarImage(imageUrl)
   const state: ManagedState<CustomState, EventMap> = context.state;
-  await sendTx(tx, state)
-  return await queryUserGravatar(context)
+  await sendTx(gravity.updateGravatarImage(imageUrl), state)
+  const { data } = await queryUserGravatar(context)
+  return data.gravatars[0]
 }
 
 const resolvers = {
@@ -143,4 +144,8 @@ export default {
   resolvers,
   config,
   stateBuilder
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

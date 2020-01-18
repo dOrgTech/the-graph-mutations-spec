@@ -46,8 +46,6 @@ const mutations = createMutations({
       }
 
       await ethereum.enable();
-      // TODO: I think this can be changed back to
-      //       return ethereum;
       return (window as any).web3.currentProvider;
     },
     ipfs: () => {
@@ -95,8 +93,6 @@ function App() {
 
   const { withImage, withName, orderBy, showHelpDialog } = state
 
-  // TODO: have "status?" object be returned from execute mutation
-  // TODO: optimistic response after data is returned from mutations
   const [executeCreate] = useMutation(
     CREATE_GRAVATAR,
     {

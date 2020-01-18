@@ -14,8 +14,7 @@ import {
   Input
 } from '@material-ui/core'
 import { UPDATE_GRAVATAR_NAME } from '../../utils';
-import {State} from 'gravatar-mutations/dist';
-import {useMutationAndSubscribe} from '@graphprotocol/mutations-apollo-react'
+import { useMutation } from '@graphprotocol/mutations-apollo-react'
 
 const gravatarStyles = theme =>
   createStyles({
@@ -43,7 +42,7 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
 
   const [name, setName] = useState('')
   
-  const {executeMutation: succesfulUpdate, subscriptionData, loadingMutation: {loading}} = useMutationAndSubscribe<State>(
+  const [successUpdate, { state: successState, data: successData, loading: successLoading }] = useMutation(
     UPDATE_GRAVATAR_NAME,
     {
       client,
@@ -69,7 +68,7 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
       }
     })
 
-    const {executeMutation: failedUpdate, subscriptionData: failSubData} = useMutationAndSubscribe<State>(
+    const [failUpdate, { state: failState, data: failData }] = useMutation(
       UPDATE_GRAVATAR_NAME,
       {
         client,
@@ -99,8 +98,8 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
     setName(event.target.value)
   }
 
-  console.log("Success Case: ", subscriptionData)
-  console.log("Failure Case: ", failSubData)
+  console.log("Success Case: ", successData)
+  console.log("Failure Case: ", failData)
 
   return (
   <Grid item>
@@ -127,17 +126,17 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
             <Input
               placeholder="Type new name..."
               onChange={handleNameChange}></Input>
-            <Button size="small" color="primary" variant="outlined" onClick={succesfulUpdate}>
+            <Button size="small" color="primary" variant="outlined" onClick={() => successUpdate()}>
               Update Name
             </Button>
-            <Button size="small" color="secondary" variant="outlined" onClick={failedUpdate}>
+            <Button size="small" color="secondary" variant="outlined" onClick={() => failUpdate()}>
               Update Name
             </Button>
           </CardActions>): null
         }
       </CardActionArea>
-      {(loading && subscriptionData.progress !== 100)? 
-        (<LinearProgress variant="determinate" value={subscriptionData.progress? subscriptionData.progress: 0}></LinearProgress>): null}
+      {(successLoading && successState.progress !== 100)? 
+        (<LinearProgress variant="determinate" value={successState.progress}></LinearProgress>): null}
     </Card>
   </Grid>
 )}

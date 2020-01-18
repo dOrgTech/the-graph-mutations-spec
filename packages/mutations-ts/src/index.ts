@@ -61,7 +61,7 @@ export const createMutations = <
       const {
         getContext,
         setContext,
-        uuid // TODO: use this in the state?
+        uuid
       } = mutationQuery
 
       // Create the config instance during
@@ -115,7 +115,6 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
 ): ApolloLink => {
   return new ApolloLink((operation: Operation) =>
     new Observable(observer => {
-      console.log(operation)
       mutations.execute({
         query: operation.query,
         variables: operation.variables,

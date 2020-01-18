@@ -1,17 +1,22 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": [
-    "./packages/*",
-    "./examples/subgraph/*",
-    "./examples/subgraph/src/mutations/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "./packages/*",
+      "./examples/*",
+      "./examples/subgraph/src/*",
+      "graph-cli"
+    ],
+    "nohoist": [
+      "**/graph-ts"
+    ]
+  },
   "scripts": {
-    "build:packages": "lerna exec --scope @graphprotocol/* -- yarn build",
+    "build:packages": "lerna exec --scope @graphprotocol/mutations-* -- yarn build",
     "build:examples": "lerna exec --scope example-* -- yarn build",
-    "env:init": "([ ! -d graph-cli ] && git clone --branch mutations-build https://github.com/dOrgTech/graph-cli) || true && cd graph-cli && yarn",
     "env:start": "yarn build:packages && ",
-    "postinstall": "yarn env:init"
+    "preinstall": "([ ! -d graph-cli ] && git clone --branch mutations-build https://github.com/dOrgTech/graph-cli) || true"
   },
   "devDependencies": {
     "@types/graphql": "^14.2.2",

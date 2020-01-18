@@ -10,67 +10,92 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import gql from "graphql-tag";
 import { ethers } from "ethers";
 import IPFSClient from "ipfs-http-client";
+const stateBuilder = {
+    getInitialState() {
+        return {
+            myValue: 0,
+            myFlag: false
+        };
+    },
+    reducers: {
+        "CUSTOM_EVENT": (state, payload) => __awaiter(void 0, void 0, void 0, function* () {
+            state.myValue = payload.myValue;
+            return state;
+        })
+    }
+};
 function queryUserGravatar(context) {
     return __awaiter(this, void 0, void 0, function* () {
         const { client } = context;
-        const { ethereum } = context.thegraph.config;
-        return yield client.query(gql `
-  {
-    gravatar(owner: ${ethereum.eth.defaultAccount}) {
-      id
-      owner
-      displayName
-      imageUrl
-    }
-  }`);
+        const { ethereum } = context.graph.config;
+        return yield client.query({
+            query: gql `
+      query GetGravatars {
+        gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
+          id
+          owner
+          displayName
+          imageUrl
+        }
+      }`
+        });
     });
 }
-function sendTx(tx, msg, context) {
+function sendTx(tx, state) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { mutationState } = context.thegraph;
         try {
+            yield state.sendEvent("TRANSACTION_CREATED", { id: tx.hash, description: tx.data }, 20);
             tx = yield tx;
-            mutationState.addTransaction(tx.hash);
-            yield tx.wait();
+            yield state.sendEvent("TRANSACTION_COMPLETED", { id: tx.hash, description: tx.data }, 60);
+            return tx;
         }
         catch (error) {
-            mutationState.addError(error);
-            throw new Error(`Failed while sending "${msg}"`);
+            yield state.sendEvent('TRANSACTION_ERROR', error, 60);
         }
     });
 }
 function getGravityContract(context) {
-    const { ethereum } = context.thegraph.config;
-    const { Gravity } = context.thegraph.dataSources;
-    const contract = new ethers.Contract(Gravity.address, Gravity.abi, ethereum);
-    contract.connect(ethereum);
-    return contract;
+    return __awaiter(this, void 0, void 0, function* () {
+        const { ethereum } = context.graph.config;
+        const abi = yield context.graph.dataSources.Gravity.abi;
+        const address = yield context.graph.dataSources.Gravity.address;
+        const contract = new ethers.Contract(address, abi, ethereum.getSigner());
+        contract.connect(ethereum);
+        return contract;
+    });
 }
 function createGravatar(_root, { options }, context) {
     return __awaiter(this, void 0, void 0, function* () {
         const { displayName, imageUrl } = options;
-        const gravity = getGravityContract(context);
-        const tx = gravity.createGravatar(displayName, imageUrl);
-        yield sendTx(tx, "Creating Gravatar", context);
-        return yield queryUserGravatar(context);
+        const gravity = yield getGravityContract(context);
+        const state = context.state;
+        yield sendTx(gravity.createGravatar(displayName, imageUrl), state);
+        const { data } = yield queryUserGravatar(context);
+        return data.gravatars[0];
     });
 }
 function updateGravatarName(_root, { displayName }, context) {
     return __awaiter(this, void 0, void 0, function* () {
-        const gravity = getGravityContract(context);
-        const tx = gravity.updateGravatarName(displayName);
-        yield sendTx(tx, "Updating Gravatar Name", context);
-        return yield queryUserGravatar(context);
+        const gravity = yield getGravityContract(context);
+        const state = context.graph.state;
+        yield sleep(2000);
+        if (context.fail)
+            throw new Error("Transaction Errored (Controlled Error Test Case)");
+        const txResult = yield sendTx(gravity.updateGravatarName(displayName), state);
+        if (!txResult)
+            throw new Error("WHOLE PROCESS FAILED");
+        yield state.sendEvent("CUSTOM_EVENT", { myValue: 999 }, 100);
+        const { data } = yield queryUserGravatar(context);
+        return data.gravatars[0];
     });
 }
 function updateGravatarImage(_root, { imageUrl }, context) {
     return __awaiter(this, void 0, void 0, function* () {
-        const gravity = getGravityContract(context);
-        const tx = gravity.updateGravatarImage(imageUrl);
-        // Example of custom data within the state
-        context.thegraph.mutationState.addData("imageUrl", imageUrl);
-        yield sendTx(tx, "Updating Gravatar Image", context);
-        return yield queryUserGravatar(context);
+        const gravity = yield getGravityContract(context);
+        const state = context.state;
+        yield sendTx(gravity.updateGravatarImage(imageUrl), state);
+        const { data } = yield queryUserGravatar(context);
+        return data.gravatars[0];
     });
 }
 const resolvers = {
@@ -102,5 +127,9 @@ const config = {
 };
 export default {
     resolvers,
-    config
+    config,
+    stateBuilder
 };
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}

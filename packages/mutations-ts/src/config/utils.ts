@@ -2,7 +2,7 @@ import {
   ConfigGetters,
   ConfigSetters,
   ConfigValues
-} from '../types'
+} from './types'
 
 const isPromise = (test: any) => typeof test.then === "function"
 

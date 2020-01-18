@@ -9,24 +9,31 @@ import {
   MutationResult,
   Resolvers
 } from '../types'
-import {
-  hasDirectives
-} from '../utils'
+import { hasDirectives } from './utils'
 
-export default async (mutationQuery: MutationQuery, resolvers: Resolvers): Promise<MutationResult> => {
+export default (mutationQuery: MutationQuery, resolvers: Resolvers): Promise<MutationResult> => {
   // @client directive must be used
   if (!hasDirectives(['client'], mutationQuery.query)) {
     throw new Error(`Mutation '${mutationQuery.operationName}' is missing client directive`)
   }
 
-  // TODO: note that this is being thrown away each time... desired?
-  const cache = new InMemoryCache()
+  // Reuse the cache from the client
+  const context = mutationQuery.getContext()
+  const client = context.client
+  let cache;
+
+  if (client && client.cache) {
+    cache = client.cache
+  } else {
+    cache = new InMemoryCache()
+  }
+
   const link = withClientState({
     cache,
     resolvers
   })
 
-  let result = await makePromise(
+  return makePromise(
     execute(link, {
       query: mutationQuery.query,
       variables: mutationQuery.variables,
@@ -34,5 +41,4 @@ export default async (mutationQuery: MutationQuery, resolvers: Resolvers): Promi
       context: mutationQuery.getContext()
     })
   )
-  return { result }
 }

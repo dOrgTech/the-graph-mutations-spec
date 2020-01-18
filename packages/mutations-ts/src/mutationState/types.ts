@@ -6,7 +6,7 @@ import {
 export type FullState<TState> = CoreState & TState
 
 export interface StateBuilder<TState, TEventMap extends EventMap = { }> {
-  getInitialState(uuid?: string): TState
+  getInitialState(uuid: string): TState
   reducers?: {
     [TEvent in keyof (TEventMap & CoreEvents)]?: (
       state: FullState<TState>,

@@ -4,7 +4,7 @@ import { split } from 'apollo-link';
 import { InMemoryCache } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { getMainDefinition } from 'apollo-utilities';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+import { useQuery } from '@apollo/react-hooks';
 import {
   Grid,
   LinearProgress,
@@ -23,9 +23,8 @@ import Filter from './components/Filter'
 import { CREATE_GRAVATAR, GRAVATARS_QUERY } from './utils';
 
 import gravatarMutations from 'gravatar-mutations'
-import { State } from 'gravatar-mutations/dist'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
-import { useMutationAndSubscribe } from '@graphprotocol/mutations-apollo-react'
+import { useMutation } from '@graphprotocol/mutations-apollo-react'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')

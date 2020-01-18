@@ -1,43 +1,45 @@
-import { useEffect, useState } from 'react';
-import { useMutation, MutationHookOptions } from '@apollo/react-hooks';
-import { BehaviorSubject } from 'rxjs';
+import {
+  useState
+} from 'react'
+import {
+  useMutation as apolloUseMutation,
+  MutationHookOptions,
+} from '@apollo/react-hooks'
+import { OperationVariables } from '@apollo/react-common'
+import { DocumentNode } from 'graphql'
+import { BehaviorSubject } from 'rxjs'
 import { CoreState } from '@graphprotocol/mutations-ts'
-import { DocumentNode } from 'graphql';
+import { MutationTupleWithState } from './types'
+import { useObservable } from './utils'
 
-function useObservable<TMutationState>(
-  observable: BehaviorSubject<TMutationState>,
-  setter: React.Dispatch<React.SetStateAction<TMutationState>>
-) {
-  useEffect(() => {
-    let subscription = observable.subscribe(result => {
-      if (result) setter(result)
-    })
-    return () => subscription.unsubscribe();
-  }, [observable, setter])
-}
-
-export function useMutationAndSubscribe<TMutationState = CoreState>(
+export function useMutation<
+  TState = CoreState,
+  TData = any,
+  TVariables = OperationVariables
+>(
   mutation: DocumentNode,
-  mutationOptions: MutationHookOptions
-) {
+  mutationOptions: MutationHookOptions<TData, TVariables>
+): MutationTupleWithState<TState, TData, TVariables> {
 
-  const [subscriptionData, setSubscriptionData] = useState({} as TMutationState)
-  const [observable] = useState(new BehaviorSubject({} as TMutationState))
+  const [state, setState] = useState({} as TState)
+  const [observable] = useState(new BehaviorSubject({} as TState))
 
   mutationOptions.context = {
     ...mutationOptions.context,
     __stateObserver: observable
   }
 
-  const [executeMutation, loading] = useMutation(mutation, mutationOptions)
+  const [execute, result] = apolloUseMutation(
+    mutation, mutationOptions
+  )
 
-  useObservable<TMutationState>(observable, setSubscriptionData);
+  useObservable(observable, setState)
 
-  return {
-    executeMutation: () => {
-      executeMutation();
-    },
-    loadingMutation: loading,
-    subscriptionData
-  }
+  return [
+    execute,
+    {
+      ...result,
+      state
+    }
+  ]
 }

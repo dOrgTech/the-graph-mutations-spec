@@ -1,40 +1,26 @@
 import {
-  ConfigSetters,
-  ConfigGetters,
   Mutations,
+  MutationsModule,
   MutationQuery,
   MutationResult,
   MutationExecutor,
-  ConfigValues
 } from './types'
 import {
+  ConfigSetters,
+  ConfigGetters,
+  ConfigValues,
   validateConfig,
   createConfig
-} from './utils'
+} from './config'
 import {
   ManagedState,
-  EventMap,
-  StateBuilder
-} from './mutationState';
+  EventMap
+} from './mutationState'
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 import { v1 } from 'uuid'
 import { BehaviorSubject } from 'rxjs'
-import { GraphQLFieldResolver } from 'graphql'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
-
-interface MutationsModule<
-  TState,
-  TEventMap extends EventMap
-> {
-  resolvers: {
-    Mutation: {
-      [resolver: string]: GraphQLFieldResolver<any, any>
-    }
-  },
-  config: ConfigSetters,
-  stateBuilder: StateBuilder<TState, TEventMap>
-}
 
 interface CreateMutationsOptions<
   TState,
@@ -62,7 +48,7 @@ export const createMutations = <
   validateConfig(config, mutations.config)
 
   // One config instance for all mutation executions
-  let configInstance: ConfigValues<TConfig> | undefined = undefined;
+  let configInstance: ConfigValues<TConfig> | undefined = undefined
 
   // One datasources instance for all mutation executions
   const dataSources = new DataSources(
@@ -91,12 +77,11 @@ export const createMutations = <
       // This is used for forwarding state updates back to the caller.
       // For an example, see the mutations-react package.
       const context = getContext()
-      let stateObserver: BehaviorSubject<TState> = context.__stateObserver;
+      let stateObserver: BehaviorSubject<TState> = context.__stateObserver
 
-      const state = new ManagedState<TState, TEventMap>(mutations.stateBuilder, uuid, stateObserver)
-
-      // Use the mutations module's state class if one is defined
-      //const state = new ManagedState<TState, TEventMap>(stateObserver)
+      const state = new ManagedState<TState, TEventMap>(
+        uuid, mutations.stateBuilder, stateObserver
+      )
 
       // Set the context
       setContext({
@@ -140,7 +125,7 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
         uuid: v1()
       }).then(
         (result: MutationResult) => {
-          observer.next(result.result)
+          observer.next(result)
           observer.complete()
         },
         (e: Error) => observer.error(e)

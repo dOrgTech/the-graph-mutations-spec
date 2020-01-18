@@ -1,5 +1,5 @@
 {
-  "name": "ethdenver-dapp",
+  "name": "example-dapp",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -8,18 +8,20 @@
     "@graphprotocol/mutations-apollo-react": "^0.0.0",
     "@material-ui/core": "^3.9.2",
     "@material-ui/icons": "^3.0.2",
-    "@types/jest": "^24.0.23",
-    "@types/node": "^12.12.14",
-    "@types/react": "^16.9.13",
-    "@types/react-dom": "^16.9.4",
+    "example-mutations": "0.1.0",
     "apollo-boost": "^0.1.28",
     "graphql": "^14.1.1",
-    "gravatar-mutations": "0.1.0",
     "react": "^16.8.2",
     "react-apollo": "^2.5.8",
     "react-dom": "^16.8.2",
     "react-scripts": "2.1.5",
     "typescript": "^3.7.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.23",
+    "@types/node": "^12.12.14",
+    "@types/react": "^16.9.13",
+    "@types/react-dom": "^16.9.4"
   },
   "scripts": {
     "start": "react-scripts start",

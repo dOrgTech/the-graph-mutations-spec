@@ -17,11 +17,16 @@
   "devDependencies": {
     "@babel/types": "^7.5.0",
     "@types/node": "^12.6.1",
-    "@types/lodash": "^4.14.149"
+    "@types/lodash": "^4.14.149",
+    "@types/uuid": "^3.4.6"
   },
   "dependencies": {
-    "@types/uuid": "^3.4.6",
     "lodash": "^4.17.15",
     "uuid": "^3.3.3"
+  },
+  "peerDependencies": {
+    "apollo-link": "^1.2.12",
+    "apollo-link-http": "^1.5.15",
+    "graphql-tag": "^2.10.1"
   }
 }

@@ -36,7 +36,6 @@ export interface MutationQuery {
   extensions?: Record<string, any>
   setContext: (context: Record<string, any>) => Record<string, any>
   getContext: () => Record<string, any>
-  uuid: string
 }
 
 export type MutationResult = ExecutionResult

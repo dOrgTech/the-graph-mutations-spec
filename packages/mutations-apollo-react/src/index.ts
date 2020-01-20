@@ -26,7 +26,9 @@ export function useMutation<
 
   mutationOptions.context = {
     ...mutationOptions.context,
-    __stateObserver: observable
+    graph: {
+      __stateObserver: observable
+    }
   }
 
   const [execute, result] = apolloUseMutation(

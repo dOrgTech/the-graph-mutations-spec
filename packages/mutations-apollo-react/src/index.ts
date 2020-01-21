@@ -21,6 +21,7 @@ export const useMutation = <
   mutationOptions: MutationHookOptions<TData, TVariables>
 ): MutationTupleWithState<TState, TData, TVariables> => {
 
+  // TODO: nest object
   const [state, setState] = useState({} as TState)
   const [observable] = useState(new BehaviorSubject({} as TState))
 

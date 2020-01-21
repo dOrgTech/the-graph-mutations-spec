@@ -93,7 +93,7 @@ export const createMutations = <
       let uuid = v4()
 
       const state = new ManagedState<TState, TEventMap>(
-        uuid, mutations.stateBuilder, observables.pop()
+        uuid, mutations.stateBuilder, observables.shift()
       )
 
       // Create a new context with the state added to context.graph

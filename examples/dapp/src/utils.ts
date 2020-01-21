@@ -43,3 +43,29 @@ export const UPDATE_GRAVATAR_IMAGE = gql`
     }
   }
 `
+
+export const TEST_TRIPLE_UPDATE = gql`
+  mutation updateGravatarName{
+    updateGravatarName(displayName: "First") @client{
+      id
+      owner
+      displayName
+      imageUrl
+    }
+
+    updateGravatarName(displayName: "Second") @client{
+        id
+        owner
+        displayName
+        imageUrl
+    }
+
+    updateGravatarName(displayName: "Third") @client{
+        id
+        owner
+        displayName
+        imageUrl
+    }
+
+  }
+`

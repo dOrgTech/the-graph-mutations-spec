@@ -13,7 +13,7 @@ import {
   LinearProgress,
   Input
 } from '@material-ui/core'
-import { UPDATE_GRAVATAR_NAME } from '../../utils';
+import { UPDATE_GRAVATAR_NAME, TEST_TRIPLE_UPDATE } from '../../utils';
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
 
 const gravatarStyles = theme =>
@@ -68,7 +68,7 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
       }
     })
 
-    const [failUpdate, { state: failState, data: failData }] = useMutation(
+    const [failUpdate, { state: failState }] = useMutation(
       UPDATE_GRAVATAR_NAME,
       {
         client,
@@ -94,12 +94,36 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
         }
       })
 
+      const [multiUpdate, { state: multiState }] = useMutation(
+        TEST_TRIPLE_UPDATE,
+        {
+          client,
+          optimisticResponse: {
+            updateGravatarName: {
+              id, //Apollo updates cache based on this ID
+              imageUrl,
+              owner,
+              displayName: "Triple updating...",
+              __typename: "Gravatar"
+            }
+          },
+          context: {
+            client,
+            fail: false
+          },
+          variables: {
+            id
+          },
+          onError: (error) => {
+            alert(error)
+          }
+        })
+
+        console.log("MultiState: ", multiState)
+
   const handleNameChange = (event: any) => {
     setName(event.target.value)
   }
-
-  console.log("Success Case: ", successData)
-  console.log("Failure Case: ", failData)
 
   return (
   <Grid item>
@@ -127,16 +151,17 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
               placeholder="Type new name..."
               onChange={handleNameChange}></Input>
             <Button size="small" color="primary" variant="outlined" onClick={() => successUpdate()}>
-              Update Name
+              Success Test
+            </Button>
+            <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
+              Multi Test
             </Button>
             <Button size="small" color="secondary" variant="outlined" onClick={() => failUpdate()}>
-              Update Name
+              Failure Test
             </Button>
           </CardActions>): null
         }
       </CardActionArea>
-      {(successLoading && successState.progress !== 100)? 
-        (<LinearProgress variant="determinate" value={successState.progress}></LinearProgress>): null}
     </Card>
   </Grid>
 )}

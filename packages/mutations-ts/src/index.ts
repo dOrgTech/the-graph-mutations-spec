@@ -16,10 +16,12 @@ import {
   ManagedState,
   EventMap
 } from './mutationState'
+import {getMutations} from './mutation-executor/utils'
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 import { v4 } from 'uuid'
-import { BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, combineLatest } from 'rxjs'
+import { mergeMap, mergeAll, map } from 'rxjs/operators'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface CreateMutationsOptions<
@@ -57,24 +59,49 @@ export const createMutations = <
 
   // Wrap the resolvers and add a mutation state instance to the context
   const resolverNames = Object.keys(mutations.resolvers.Mutation)
-  for (let i = 0; i < resolverNames.length; ++i) {
+  const observables: BehaviorSubject<TState>[] = []
+  const repeatedCount: any = {};
+  
+  for (let i = 0; i < resolverNames.length; i++) {
     const name = resolverNames[i]
     const resolver = mutations.resolvers.Mutation[name]
 
     // Wrap the resolver
     mutations.resolvers.Mutation[name] = (source, args, context, info) => {
+      let stateObserver: BehaviorSubject<TState[]> = context.graph.__stateObserver
+      let mutationNames: string[] = context.graph.mutationsCalled
+
+      if(observables.length === 0){
+        for (let j = 0; j < mutationNames.length; ++j) {
+          repeatedCount[mutationNames[j]] = getOccurrence(mutationNames, mutationNames[j])
+          observables.push(new BehaviorSubject<TState>({} as TState));
+        }
+        combineLatest(observables).subscribe((values: TState[])=>{
+          const result: any = {};
+          let count = 1;
+          values.forEach((value, index) => {
+            if(result[mutationNames[index]]){
+              count++;
+              result[`${mutationNames[index]}_${count}`]
+            }else{
+              result[mutationNames[index]] = value;
+            }
+          })
+          stateObserver.next(result)
+        })
+      }
+
       // TODO: fix the observers (root observer => { observer1, observer2, etc })
 
       // See if there's been a state observer added to the context.
       // This is used for forwarding state updates back to the caller.
       // For an example, see the mutations-react package.
-      let stateObserver: BehaviorSubject<TState> = context.graph.__stateObserver
 
       // Generate a unique ID for this resolver execution
       let uuid = v4()
 
       const state = new ManagedState<TState, TEventMap>(
-        uuid, mutations.stateBuilder, stateObserver
+        uuid, mutations.stateBuilder, observables[i]
       )
 
       // Create a new context with the state added to context.graph
@@ -88,7 +115,7 @@ export const createMutations = <
   return {
     execute: async (mutationQuery: MutationQuery) => {
 
-      const { setContext } = mutationQuery
+      const { setContext,getContext, query } = mutationQuery
 
       // Create the config instance during
       // the first mutation execution
@@ -99,11 +126,15 @@ export const createMutations = <
         )
       }
 
+      console.log("HELLO")
+
       // Set the context
       setContext({
         graph: {
+          __stateObserver: getContext().graph.__stateObserver,
           config: configInstance,
-          dataSources
+          dataSources,
+          mutationsCalled: getMutations(query)
         }
       })
 
@@ -145,6 +176,12 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
       )
     })
   )
+}
+
+function getOccurrence(array: string[], value: string) {
+  var count = 0;
+  array.forEach((v) => (v === value && count++));
+  return count;
 }
 
 export * from './mutationState'

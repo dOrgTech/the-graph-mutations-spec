@@ -16,7 +16,7 @@ import {
   ManagedState,
   EventMap
 } from './mutationState'
-import {getMutations} from './mutation-executor/utils'
+import { getUniqueMutations } from './utils'
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 import { v4 } from 'uuid'
@@ -118,7 +118,8 @@ export const createMutations = <
         )
       }
 
-      console.log("HELLO")
+      //Check to see if 'graph' context object exists
+      if(!getContext().graph) throw new Error("'graph' context object has not been set")
 
       // Set the context
       setContext({
@@ -126,7 +127,7 @@ export const createMutations = <
           __stateObserver: getContext().graph.__stateObserver,
           config: configInstance,
           dataSources,
-          mutationsCalled: getMutations(query)
+          mutationsCalled: getUniqueMutations(query, Object.keys(mutations.resolvers.Mutation))
         }
       })
 

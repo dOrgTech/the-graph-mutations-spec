@@ -9,7 +9,7 @@ import {
   MutationResult,
   Resolvers
 } from '../types'
-import { hasDirectives } from './utils'
+import { hasDirectives } from '../utils'
 
 export default (mutationQuery: MutationQuery, resolvers: Resolvers): Promise<MutationResult> => {
   // @client directive must be used

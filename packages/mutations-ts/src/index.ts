@@ -60,7 +60,6 @@ export const createMutations = <
   // Wrap the resolvers and add a mutation state instance to the context
   const resolverNames = Object.keys(mutations.resolvers.Mutation)
   const observables: BehaviorSubject<TState>[] = []
-  const repeatedCount: any = {};
   
   for (let i = 0; i < resolverNames.length; i++) {
     const name = resolverNames[i]
@@ -68,24 +67,17 @@ export const createMutations = <
 
     // Wrap the resolver
     mutations.resolvers.Mutation[name] = (source, args, context, info) => {
-      let stateObserver: BehaviorSubject<TState[]> = context.graph.__stateObserver
+      let stateObserver: BehaviorSubject<{[key: string]: TState}> = context.graph.__stateObserver
       let mutationNames: string[] = context.graph.mutationsCalled
 
       if(observables.length === 0){
         for (let j = 0; j < mutationNames.length; ++j) {
-          repeatedCount[mutationNames[j]] = getOccurrence(mutationNames, mutationNames[j])
           observables.push(new BehaviorSubject<TState>({} as TState));
         }
         combineLatest(observables).subscribe((values: TState[])=>{
-          const result: any = {};
-          let count = 1;
+          const result: {[key: string]: TState} = {}
           values.forEach((value, index) => {
-            if(result[mutationNames[index]]){
-              count++;
-              result[`${mutationNames[index]}_${count}`]
-            }else{
-              result[mutationNames[index]] = value;
-            }
+            result[mutationNames[index]] = value;
           })
           stateObserver.next(result)
         })
@@ -101,7 +93,7 @@ export const createMutations = <
       let uuid = v4()
 
       const state = new ManagedState<TState, TEventMap>(
-        uuid, mutations.stateBuilder, observables[i]
+        uuid, mutations.stateBuilder, observables.pop()
       )
 
       // Create a new context with the state added to context.graph
@@ -176,12 +168,6 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
       )
     })
   )
-}
-
-function getOccurrence(array: string[], value: string) {
-  var count = 0;
-  array.forEach((v) => (v === value && count++));
-  return count;
 }
 
 export * from './mutationState'

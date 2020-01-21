@@ -22,7 +22,7 @@ import Gravatars from './components/Gravatars'
 import Filter from './components/Filter'
 import { CREATE_GRAVATAR, GRAVATARS_QUERY } from './utils';
 
-import gravatarMutations from 'gravatar-mutations'
+import gravatarMutations from 'example-mutations'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
 

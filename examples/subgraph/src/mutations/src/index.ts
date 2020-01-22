@@ -79,9 +79,11 @@ async function getGravityContract(context: any) {
 }
 
 async function createGravatar(_root: any, { options }: any, context: any) {
+  await sleep(2000)
   const { displayName, imageUrl } = options
   const gravity = await getGravityContract(context)
-  const state: ManagedState<CustomState, EventMap> = context.state;
+  await sleep(2000)
+  const state: ManagedState<CustomState, EventMap> = context.graph.state;
   await sendTx(gravity.createGravatar(displayName, imageUrl), state)
   const { data } = await queryUserGravatar(context)
   return data.gravatars[0]

@@ -5,6 +5,7 @@ import { InMemoryCache } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { getMainDefinition } from 'apollo-utilities';
 import { useQuery } from '@apollo/react-hooks';
+import { cloneDeep } from 'lodash'
 import {
   Grid,
   LinearProgress,
@@ -83,6 +84,8 @@ function App() {
     showHelpDialog: false,
   })
 
+  const [gravatars, setGravatars] = React.useState([])
+
   const toggleHelpDialog = () => {
     setState({ ...state, showHelpDialog: !state.showHelpDialog })
   }
@@ -92,15 +95,6 @@ function App() {
   }
 
   const { withImage, withName, orderBy, showHelpDialog } = state
-
-  const [executeCreate] = useMutation(
-    CREATE_GRAVATAR,
-    {
-      client,
-      variables: {
-        options: { displayName: "...", imageUrl: "..." }
-      }
-    })
 
   const { data, error, loading } = useQuery(GRAVATARS_QUERY, {
     client,
@@ -112,6 +106,43 @@ function App() {
       orderBy: orderBy,
     }
   });
+
+  if(data && gravatars.length === 0){
+    setGravatars(data.gravatars)
+  }
+
+  const [executeCreate, { state: createState, data: createData }] = useMutation(
+    CREATE_GRAVATAR,
+    {
+      client,
+      variables: {
+        options: { displayName: "...", imageUrl: "..." }
+      },
+      optimisticResponse: {
+        createGravatar: {
+          id: "New",
+          imageUrl: "...",
+          owner: (window as any).web3.currentProvider.selectedAddress,
+          displayName: "...",
+          __typename: "Gravatar"
+        }
+      },
+      update: (proxy, result) => {
+        const data:any = proxy.readQuery({
+            query: GRAVATARS_QUERY,
+            variables: {
+              where: {
+                ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+                ...(withName ? { displayName_not: '' } : {}),
+              },
+              orderBy: orderBy,
+            }
+        }, true);
+
+        if(result.data && result.data.createGravatar) data.gravatars.push(result.data.createGravatar)
+        setGravatars(data.gravatars)
+    },
+    })
 
   return (
     <div className="App">
@@ -136,7 +167,7 @@ function App() {
             ) : error ? (
               <CustomError error={error} />
             ) : (
-                  <Gravatars client={client} gravatars={data.gravatars} />
+                  <Gravatars client={client} gravatars={gravatars} />
                 )
             }
           </Grid>

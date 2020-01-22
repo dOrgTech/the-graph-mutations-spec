@@ -66,7 +66,7 @@ export const createMutations = <
     const resolver = mutations.resolvers.Mutation[name]
 
     // Wrap the resolver
-    mutations.resolvers.Mutation[name] = (source, args, context, info) => {
+    mutations.resolvers.Mutation[name] = async (source, args, context, info) => {
       let stateObserver: BehaviorSubject<{[key: string]: TState}> = context.graph.__stateObserver
       let mutationNames: string[] = context.graph.mutationsCalled
 
@@ -100,7 +100,7 @@ export const createMutations = <
       const newContext = { ...context, graph: { ...context.graph, state } }
 
       // Execute the resolver
-      resolver(source, args, newContext, info)
+      return await resolver(source, args, newContext, info)
     }
   }
 

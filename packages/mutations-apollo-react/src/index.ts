@@ -26,6 +26,7 @@ export function useMutation<
 
   mutationOptions.context = {
     ...mutationOptions.context,
+    client: mutationOptions.client,
     graph: {
       __stateObserver: observable
     }

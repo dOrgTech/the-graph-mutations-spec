@@ -56,7 +56,6 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
         }
       },
       context: {
-        client,
         fail: false
       },
       variables: {
@@ -82,7 +81,6 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
           }
         },
         context: {
-          client,
           fail: true
         },
         variables: {
@@ -108,7 +106,6 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
             }
           },
           context: {
-            client,
             fail: false
           },
           variables: {
@@ -118,8 +115,6 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
             alert(error)
           }
         })
-
-        console.log("MultiState: ", multiState)
 
   const handleNameChange = (event: any) => {
     setName(event.target.value)

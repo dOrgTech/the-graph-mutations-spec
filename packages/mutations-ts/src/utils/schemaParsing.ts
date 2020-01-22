@@ -2,7 +2,7 @@ import { DocumentNode } from 'graphql'
 import { visit } from 'graphql/language/visitor';
 import { makeRepeatedUnique } from './arrayUtils';
 
-export function getDirectiveNames(doc: DocumentNode) {
+export const getDirectiveNames = (doc: DocumentNode) => {
   const names: string[] = [];
 
   visit(doc, {
@@ -14,11 +14,12 @@ export function getDirectiveNames(doc: DocumentNode) {
   return names;
 }
 
-export function getUniqueMutations(doc: DocumentNode, resolverNames: string[]) {
+export const getUniqueMutations = (doc: DocumentNode, resolverNames: string[]) => {
   let names: string [] = [];
+
   visit(doc, {
     OperationDefinition(node) {
-      node.selectionSet.selections.reduce(function(result: string[], selection){
+      node.selectionSet.selections.reduce((result: string[], selection) => {
         if(selection.kind === "Field" && resolverNames.includes(selection.name.value)){
           result.push(selection.name.value)
         }
@@ -28,10 +29,9 @@ export function getUniqueMutations(doc: DocumentNode, resolverNames: string[]) {
   })
 
   return makeRepeatedUnique(names)
-  
 }
 
-export function hasDirectives(names: string[], doc: DocumentNode) {
+export const hasDirectives = (names: string[], doc: DocumentNode) => {
   return getDirectiveNames(doc).some(
     (name: string) => names.indexOf(name) > -1,
   );

@@ -12,15 +12,16 @@ import { CoreState } from '@graphprotocol/mutations-ts'
 import { MutationTupleWithState } from './types'
 import { useObservable } from './utils'
 
-export function useMutation<
+export const useMutation = <
   TState = CoreState,
   TData = any,
   TVariables = OperationVariables
 >(
   mutation: DocumentNode,
   mutationOptions: MutationHookOptions<TData, TVariables>
-): MutationTupleWithState<TState, TData, TVariables> {
+): MutationTupleWithState<TState, TData, TVariables> => {
 
+  // TODO: nest object
   const [state, setState] = useState({} as TState)
   const [observable] = useState(new BehaviorSubject({} as TState))
 

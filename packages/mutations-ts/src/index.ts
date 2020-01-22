@@ -59,41 +59,38 @@ export const createMutations = <
 
   // Wrap the resolvers and add a mutation state instance to the context
   const resolverNames = Object.keys(mutations.resolvers.Mutation)
-  const observables: BehaviorSubject<TState>[] = []
-  
+
   for (let i = 0; i < resolverNames.length; i++) {
     const name = resolverNames[i]
     const resolver = mutations.resolvers.Mutation[name]
 
     // Wrap the resolver
-    mutations.resolvers.Mutation[name] = async (source, args, context, info) => {
-      let stateObserver: BehaviorSubject<{[key: string]: TState}> = context.graph.__stateObserver
-      let mutationNames: string[] = context.graph.mutationsCalled
+    mutations.resolvers.Mutation[name] = (source, args, context, info) => {
+      const rootObserver = context.graph.__rootObserver
+      const mutationObservers: BehaviorSubject<TState>[] = context.graph.__mutationObservers
+      const mutationsCalled = context.graph.__mutationsCalled
 
-      if(observables.length === 0){
-        for (let j = 0; j < mutationNames.length; ++j) {
-          observables.push(new BehaviorSubject<TState>({} as TState));
+      if (rootObserver && mutationObservers.length === 0){
+        for (const mutation of mutationsCalled) {
+          mutationObservers.push(new BehaviorSubject<TState>({} as TState));
         }
-        combineLatest(observables).subscribe((values: TState[])=>{
+
+        combineLatest(mutationObservers).subscribe((values: TState[])=>{
           const result: {[key: string]: TState} = {}
+
           values.forEach((value, index) => {
-            result[mutationNames[index]] = value;
+            result[mutationsCalled[index]] = value;
           })
-          stateObserver.next(result)
+
+          rootObserver.next(result)
         })
       }
-
-      // TODO: fix the observers (root observer => { observer1, observer2, etc })
-
-      // See if there's been a state observer added to the context.
-      // This is used for forwarding state updates back to the caller.
-      // For an example, see the mutations-react package.
 
       // Generate a unique ID for this resolver execution
       let uuid = v4()
 
       const state = new ManagedState<TState, TEventMap>(
-        uuid, mutations.stateBuilder, observables.shift()
+        uuid, mutations.stateBuilder, rootObserver ? mutationObservers.shift() : undefined
       )
 
       // Create a new context with the state added to context.graph
@@ -118,16 +115,16 @@ export const createMutations = <
         )
       }
 
-      //Check to see if 'graph' context object exists
-      if(!getContext().graph) throw new Error("'graph' context object has not been set")
+      const context = getContext()
 
       // Set the context
       setContext({
         graph: {
-          __stateObserver: getContext().graph.__stateObserver,
           config: configInstance,
           dataSources,
-          mutationsCalled: getUniqueMutations(query, Object.keys(mutations.resolvers.Mutation))
+          __rootObserver: context.graph ? context.graph.__stateObserver : undefined,
+          __mutationObservers: [],
+          __mutationsCalled: getUniqueMutations(query, Object.keys(mutations.resolvers.Mutation)),
         }
       })
 

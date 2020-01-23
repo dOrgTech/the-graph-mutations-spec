@@ -79,33 +79,55 @@ async function getGravityContract(context: any) {
 }
 
 async function createGravatar(_root: any, { options }: any, context: any) {
-  await sleep(2000)
   const { displayName, imageUrl } = options
-  const gravity = await getGravityContract(context)
-  await sleep(2000)
   const state: ManagedState<CustomState, EventMap> = context.graph.state;
-  await sendTx(gravity.createGravatar(displayName, imageUrl), state)
+  const gravity = await getGravityContract(context)
+  
+  await sleep(2000)
+  if(context.fail){
+    throw new Error("Transaction Errored (Controlled Error Test Case)")
+  }
+
+  const txResult = await sendTx(gravity.createGravatar(displayName, imageUrl), state)
+  if(!txResult) {
+    throw new Error("WHOLE PROCESS FAILED")
+  }
+
   const { data } = await queryUserGravatar(context)
   return data.gravatars[0]
 }
 
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
-  await sleep(2000)
-  const gravity = await getGravityContract(context)
   const state: ManagedState<CustomState, EventMap> = context.graph.state;
+  const gravity = await getGravityContract(context)
+  
   await sleep(2000)
-  if(context.fail) throw new Error("Transaction Errored (Controlled Error Test Case)")
+  if(context.fail){
+    throw new Error("Transaction Errored (Controlled Error Test Case)")
+  }
+
   const txResult = await sendTx(gravity.updateGravatarName(displayName), state)
-  if(!txResult) throw new Error("WHOLE PROCESS FAILED")
+  if(!txResult) {
+    throw new Error("WHOLE PROCESS FAILED")
+  }
+
   await state.sendEvent("CUSTOM_EVENT", {myValue: displayName}, 100)
+
   const { data } = await queryUserGravatar(context)
   return data.gravatars[0];
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
+  const state: ManagedState<CustomState, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
-  const state: ManagedState<CustomState, EventMap> = context.state;
+  
+  await sleep(2000)
+  if(context.fail){
+    throw new Error("Transaction Errored (Controlled Error Test Case)")
+  }
+
   await sendTx(gravity.updateGravatarImage(imageUrl), state)
+  
   const { data } = await queryUserGravatar(context)
   return data.gravatars[0]
 }

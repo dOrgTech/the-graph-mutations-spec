@@ -4,8 +4,8 @@
   "workspaces": {
     "packages": [
       "./packages/*",
-      "./examples/*",
-      "./examples/subgraph/src/*",
+      "./example/*",
+      "./example/subgraph/src/*",
       "graph-cli"
     ],
     "nohoist": [
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build:packages": "lerna exec --scope @graphprotocol/mutations-* -- yarn build",
-    "build:examples": "lerna exec --scope example-* -- yarn build",
+    "build:example": "lerna exec --scope example-* -- yarn build",
     "env:start": "yarn build:packages && ",
     "preinstall": "([ ! -d graph-cli ] && git clone --branch mutations-build https://github.com/dOrgTech/graph-cli) || true"
   },

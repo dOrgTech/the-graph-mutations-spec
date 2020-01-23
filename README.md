@@ -9,20 +9,40 @@ https://github.com/graphprotocol/rfcs/pull/10
 This monorepo contains an e2e prototype, showing how mutations can be added to The Graph's existing tool-chain.
 
 [`./packages`](./packages)  
-TODO TODO TODO  
+Runtime packages for mutation & dApp developer.  
   * [`mutations-ts`](./packages/mutations-ts)  
-  TODO TODO TODO  
+  Typescript API used within mutation javascript modules & dApps that use mutations. This API includes functions, classes, and interfaces to support:  
+    * Mutation Resolvers  
+    * Mutation Context  
+    * Mutation State  
+    * Mutation Configuration  
+    * Instantiation  
+    * Querying  
   * [`mutations-apollo-react`](./packages/mutations-apollo-react)  
-  TODO TODO TODO  
+  Utility wrappers around commonly used hooks and components for React applications that use Apollo.  
+  * [`mutations-apollo-vue`](./packages/mutations-apollo-vue)  
+  Coming soon.  
 
-[`./examples`](./examples)  
-TODO TODO TODO  
-  * [`subgraph`](./examples/subgraph)  
-  TODO TODO TODO  
-  * [`dapp-react`](./examples/dapp-react)  
-  TODO TODO TODO  
+[`./example`](./example)  
+Example mutation integration into an existing subgraph & dApp.  
+  * [`subgraph`](./example/subgraph)  
+  * [`dapp-react`](./example/dapp-react)  
 
 [`./graph-cli`](./graph-cli)  
-TODO TODO TODO  
+A version of the `graph-cli` that supports mutations.  
 
 ## Setup & Run
+In the root directory...
+
+* Install all dependencies  
+  * `nvm install $(cat .nvmrc)`  
+  * `nvm use $(cat .nvmrc)`  
+  * `yarn`
+* Build all packages  
+  * `yarn build:packages`  
+* Build the example  
+  * `yarn build:example`  
+* (CMD 1) Start the environment  
+  * `yarn start:subgraph`  
+* (CMD 2) Start the dApp  
+  * `yarn start:dapp`  

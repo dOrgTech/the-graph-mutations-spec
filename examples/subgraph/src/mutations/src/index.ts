@@ -1,12 +1,13 @@
-import gql from "graphql-tag"
-import { ethers } from "ethers"
-import IPFSClient from "ipfs-http-client"
 import {
   EventPayload,
   StateBuilder,
   MutationState,
   StateUpdater
 } from "@graphprotocol/mutations-ts"
+
+import gql from "graphql-tag"
+import { ethers } from "ethers"
+import IPFSClient from "ipfs-http-client"
 import { Transaction } from "ethers/utils"
 
 interface CustomEvent extends EventPayload {
@@ -17,20 +18,20 @@ type EventMap = {
   'CUSTOM_EVENT': CustomEvent
 }
 
-interface CustomState {
+interface State {
   myValue: string
   myFlag: boolean
 }
 
-const stateBuilder: StateBuilder<CustomState, EventMap> = {
-  getInitialState(): CustomState {
+const stateBuilder: StateBuilder<State, EventMap> = {
+  getInitialState(): State {
     return {
       myValue: '',
       myFlag: false
     }
   },
   reducers: {
-    "CUSTOM_EVENT": async (state: MutationState<CustomState>, payload: CustomEvent) => {
+    "CUSTOM_EVENT": async (state: MutationState<State>, payload: CustomEvent) => {
       state.myValue = payload.myValue;
       return state
     }
@@ -51,11 +52,11 @@ async function queryUserGravatar(context: any) {
           imageUrl
         }
       }`
-  }
+    }
   )
 }
 
-async function sendTx(tx: Transaction, state: StateUpdater<CustomState, EventMap>) {
+async function sendTx(tx: Transaction, state: StateUpdater<State, EventMap>) {
   try {
     await state.dispatch("TRANSACTION_CREATED", { id: tx.hash, description: tx.data })
     tx = await tx
@@ -80,7 +81,7 @@ async function getGravityContract(context: any) {
 
 async function createGravatar(_root: any, { options }: any, context: any) {
   const { displayName, imageUrl } = options
-  const state: StateUpdater<CustomState, EventMap> = context.graph.state;
+  const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
   
   await sleep(2000)
@@ -98,7 +99,7 @@ async function createGravatar(_root: any, { options }: any, context: any) {
 }
 
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
-  const state: StateUpdater<CustomState, EventMap> = context.graph.state;
+  const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
   
   await sleep(2000)
@@ -118,7 +119,7 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
-  const state: StateUpdater<CustomState, EventMap> = context.graph.state;
+  const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
 
   await sleep(2000)
@@ -161,12 +162,16 @@ const config = {
   }
 }
 
-export type State = CustomState
-
 export default {
   resolvers,
   config,
   stateBuilder
+}
+
+export {
+  State,
+  EventMap,
+  CustomEvent
 }
 
 function sleep(ms: number): Promise<void> {

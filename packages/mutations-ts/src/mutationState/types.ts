@@ -4,6 +4,12 @@ import {
 } from './core'
 
 export type MutationState<TState> = CoreState & TState
+
+// A collection of mutation states
+export type MutationStates<TState> = {
+  [mutation: string]: TState
+}
+
 export type MutationEvents<TEventMap> = CoreEvents & TEventMap
 
 export interface StateBuilder<TState, TEventMap extends EventTypeMap = { }> {

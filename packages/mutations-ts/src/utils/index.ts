@@ -1,4 +1,7 @@
-import { hasDirectives, getUniqueMutations} from './schemaParsing'
+import {
+    hasDirectives,
+    getUniqueMutations
+} from './schemaParsing'
 
 export {
     hasDirectives,

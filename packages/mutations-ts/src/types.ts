@@ -6,6 +6,7 @@ import {
   ConfigGetters,
   ConfigSetters
 } from './config'
+
 import { ExecutionResult } from 'graphql/execution'
 import { DocumentNode } from 'graphql/language'
 import { GraphQLFieldResolver } from 'graphql'

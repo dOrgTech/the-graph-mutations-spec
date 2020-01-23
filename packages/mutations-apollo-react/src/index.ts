@@ -1,3 +1,10 @@
+import { MutationTupleWithState } from './types'
+import { useObservable } from './utils'
+import {
+  CoreState,
+  MutationStates
+} from '@graphprotocol/mutations-ts'
+
 import {
   useState
 } from 'react'
@@ -8,9 +15,6 @@ import {
 import { OperationVariables } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
 import { BehaviorSubject } from 'rxjs'
-import { CoreState } from '@graphprotocol/mutations-ts'
-import { MutationTupleWithState } from './types'
-import { useObservable } from './utils'
 
 export const useMutation = <
   TState = CoreState,
@@ -21,9 +25,8 @@ export const useMutation = <
   mutationOptions: MutationHookOptions<TData, TVariables>
 ): MutationTupleWithState<TState, TData, TVariables> => {
 
-  // TODO: nest object
-  const [state, setState] = useState({} as TState)
-  const [observable] = useState(new BehaviorSubject({} as TState))
+  const [state, setState] = useState({} as MutationStates<TState>)
+  const [observable] = useState(new BehaviorSubject({} as MutationStates<TState>))
 
   mutationOptions.context = {
     ...mutationOptions.context,

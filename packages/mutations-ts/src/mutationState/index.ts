@@ -3,6 +3,7 @@ import {
   EventTypeMap,
   MutationEvents,
   MutationState,
+  MutationStates,
   InferEventPayload,
   StateBuilder
 } from './types'
@@ -92,6 +93,7 @@ export {
   MutationEvents,
   StateBuilder,
   MutationState,
+  MutationStates,
   StateUpdater,
   CoreState
 }

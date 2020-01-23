@@ -1,6 +1,7 @@
+import { makeRepeatedUnique } from './arrayUtils'
+
 import { DocumentNode } from 'graphql'
-import { visit } from 'graphql/language/visitor';
-import { makeRepeatedUnique } from './arrayUtils';
+import { visit } from 'graphql/language/visitor'
 
 export const getDirectiveNames = (doc: DocumentNode) => {
   const names: string[] = [];

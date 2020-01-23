@@ -1,5 +1,5 @@
 import {
-  EventMap,
+  EventTypeMap,
   StateBuilder
 } from './mutationState'
 import {
@@ -12,19 +12,15 @@ import { GraphQLFieldResolver } from 'graphql'
 
 export interface MutationsModule<
   TState,
-  TEventMap extends EventMap
+  TEventMap extends EventTypeMap
 > {
-  resolvers: {
-    Mutation: {
-      [resolver: string]: GraphQLFieldResolver<any, any>
-    }
-  },
+  resolvers: MutationResolvers,
   config: ConfigSetters,
-  stateBuilder: StateBuilder<TState, TEventMap>
+  stateBuilder?: StateBuilder<TState, TEventMap>
 }
 
-export interface Resolvers {
-  [key: string]: {
+export interface MutationResolvers {
+  Mutation: {
       [field: string]: GraphQLFieldResolver<any, any>;
   };
 }
@@ -40,7 +36,7 @@ export interface MutationQuery {
 
 export type MutationResult = ExecutionResult
 
-export type MutationExecutor = (query: MutationQuery, resolvers: Resolvers) => Promise<MutationResult>
+export type MutationExecutor = (query: MutationQuery, resolvers: MutationResolvers) => Promise<MutationResult>
 
 export interface Mutations<TConfig extends ConfigSetters> {
   execute: (query: MutationQuery) => Promise<MutationResult>

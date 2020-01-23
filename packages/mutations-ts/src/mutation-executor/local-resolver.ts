@@ -7,11 +7,11 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import {
   MutationQuery,
   MutationResult,
-  Resolvers
+  MutationResolvers
 } from '../types'
 import { hasDirectives } from '../utils'
 
-export default (mutationQuery: MutationQuery, resolvers: Resolvers): Promise<MutationResult> => {
+export default (mutationQuery: MutationQuery, resolvers: MutationResolvers): Promise<MutationResult> => {
   // @client directive must be used
   if (!hasDirectives(['client'], mutationQuery.query)) {
     throw new Error(`Mutation '${mutationQuery.operationName}' is missing client directive`)

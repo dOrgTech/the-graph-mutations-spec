@@ -4,8 +4,8 @@ import IPFSClient from "ipfs-http-client"
 import {
   EventPayload,
   StateBuilder,
-  FullState,
-  ManagedState
+  MutationState,
+  StateUpdater
 } from "@graphprotocol/mutations-ts"
 import { Transaction } from "ethers/utils"
 
@@ -30,7 +30,7 @@ const stateBuilder: StateBuilder<CustomState, EventMap> = {
     }
   },
   reducers: {
-    "CUSTOM_EVENT": async (state: FullState<CustomState>, payload: CustomEvent) => {
+    "CUSTOM_EVENT": async (state: MutationState<CustomState>, payload: CustomEvent) => {
       state.myValue = payload.myValue;
       return state
     }
@@ -55,14 +55,14 @@ async function queryUserGravatar(context: any) {
   )
 }
 
-async function sendTx(tx: Transaction, state: ManagedState<CustomState, EventMap>) {
+async function sendTx(tx: Transaction, state: StateUpdater<CustomState, EventMap>) {
   try {
-    await state.sendEvent("TRANSACTION_CREATED", {id: tx.hash, description: tx.data}, 20)
+    await state.dispatch("TRANSACTION_CREATED", { id: tx.hash, description: tx.data })
     tx = await tx
-    await state.sendEvent("TRANSACTION_COMPLETED", {id: tx.hash, description: tx.data}, 60)
+    await state.dispatch("TRANSACTION_COMPLETED", { id: tx.hash, description: tx.data })
     return tx;
   } catch (error) {
-    await state.sendEvent('TRANSACTION_ERROR', error, 60)
+    await state.dispatch('TRANSACTION_ERROR', error)
   }
 }
 
@@ -80,16 +80,16 @@ async function getGravityContract(context: any) {
 
 async function createGravatar(_root: any, { options }: any, context: any) {
   const { displayName, imageUrl } = options
-  const state: ManagedState<CustomState, EventMap> = context.graph.state;
+  const state: StateUpdater<CustomState, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
   
   await sleep(2000)
-  if(context.fail){
+  if (context.fail) {
     throw new Error("Transaction Errored (Controlled Error Test Case)")
   }
 
   const txResult = await sendTx(gravity.createGravatar(displayName, imageUrl), state)
-  if(!txResult) {
+  if (!txResult) {
     throw new Error("WHOLE PROCESS FAILED")
   }
 
@@ -98,36 +98,36 @@ async function createGravatar(_root: any, { options }: any, context: any) {
 }
 
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
-  const state: ManagedState<CustomState, EventMap> = context.graph.state;
+  const state: StateUpdater<CustomState, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
   
   await sleep(2000)
-  if(context.fail){
+  if (context.fail) {
     throw new Error("Transaction Errored (Controlled Error Test Case)")
   }
 
   const txResult = await sendTx(gravity.updateGravatarName(displayName), state)
-  if(!txResult) {
+  if (!txResult) {
     throw new Error("WHOLE PROCESS FAILED")
   }
 
-  await state.sendEvent("CUSTOM_EVENT", {myValue: displayName}, 100)
+  await state.dispatch("CUSTOM_EVENT", { myValue: displayName })
 
   const { data } = await queryUserGravatar(context)
-  return data.gravatars[0];
+  return data.gravatars[0]
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
-  const state: ManagedState<CustomState, EventMap> = context.graph.state;
+  const state: StateUpdater<CustomState, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
-  
+
   await sleep(2000)
-  if(context.fail){
+  if (context.fail) {
     throw new Error("Transaction Errored (Controlled Error Test Case)")
   }
 
   await sendTx(gravity.updateGravatarImage(imageUrl), state)
-  
+
   const { data } = await queryUserGravatar(context)
   return data.gravatars[0]
 }
@@ -161,7 +161,7 @@ const config = {
   }
 }
 
-export type State = FullState<CustomState>
+export type State = CustomState
 
 export default {
   resolvers,

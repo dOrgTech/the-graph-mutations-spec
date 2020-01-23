@@ -13,20 +13,19 @@ import {
   createConfig
 } from './config'
 import {
-  ManagedState,
-  EventMap
+  StateUpdater,
+  EventTypeMap
 } from './mutationState'
 import { getUniqueMutations } from './utils'
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
 import { v4 } from 'uuid'
 import { BehaviorSubject, combineLatest } from 'rxjs'
-import { mergeMap, mergeAll, map } from 'rxjs/operators'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface CreateMutationsOptions<
   TState,
-  TEventMap extends EventMap,
+  TEventMap extends EventTypeMap,
   TConfig extends ConfigSetters
 > {
   mutations: MutationsModule<TState, TEventMap>,
@@ -38,7 +37,7 @@ interface CreateMutationsOptions<
 
 export const createMutations = <
   TState,
-  TEventMap extends EventMap,
+  TEventMap extends EventTypeMap,
   TConfig extends ConfigSetters
 >(
   options: CreateMutationsOptions<TState, TEventMap, TConfig>
@@ -89,7 +88,7 @@ export const createMutations = <
       // Generate a unique ID for this resolver execution
       let uuid = v4()
 
-      const state = new ManagedState<TState, TEventMap>(
+      const state = new StateUpdater<TState, TEventMap>(
         uuid, mutations.stateBuilder, rootObserver ? mutationObservers.shift() : undefined
       )
 

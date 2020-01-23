@@ -1,8 +1,10 @@
 import {
   EventPayload,
-  EventLog,
-  StateBuilder
+  StateBuilder,
+  Event
 } from './types'
+
+export type EventLog = Event[]
 
 export interface CoreState {
   events: EventLog

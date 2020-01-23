@@ -1,7 +1,8 @@
 import {
   EventPayload,
-  EventMap,
-  FullState,
+  EventTypeMap,
+  MutationEvents,
+  MutationState,
   InferEventPayload,
   StateBuilder
 } from './types'
@@ -14,19 +15,19 @@ import {
 import { BehaviorSubject } from 'rxjs'
 import cloneDeep from 'lodash/cloneDeep'
 
-class ManagedState<
+class StateUpdater<
   TState = { },
-  TEventMap extends EventMap = { }
+  TEventMap extends EventTypeMap = { }
 > {
 
-  private _state: FullState<TState>
+  private _state: MutationState<TState>
   private _observer?: BehaviorSubject<TState>
-  private _ext: StateBuilder<TState, TEventMap>
+  private _ext?: StateBuilder<TState, TEventMap>
   private _core: StateBuilder<CoreState, CoreEvents>
 
   constructor(
     uuid: string,
-    ext: StateBuilder<TState, TEventMap>,
+    ext?: StateBuilder<TState, TEventMap>,
     observer?: BehaviorSubject<TState>
   ) {
     this._observer = observer
@@ -35,14 +36,17 @@ class ManagedState<
 
     this._state = {
       ...this._core.getInitialState(uuid),
-      ...this._ext.getInitialState(uuid),
+      ...(this._ext ? this._ext.getInitialState(uuid) : { } as TState),
     }
   }
 
-  public async sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
+  public get current() {
+    return cloneDeep(this._state)
+  }
+
+  public async dispatch<TEvent extends keyof MutationEvents<TEventMap>>(
     event: TEvent,
-    payload: InferEventPayload<TEvent, CoreEvents & TEventMap>,
-    progress: number
+    payload: InferEventPayload<TEvent, MutationEvents<TEventMap>>
   ) {
 
     // Append the event
@@ -51,14 +55,11 @@ class ManagedState<
       payload
     })
 
-    //Update the progress
-    this._state.progress = progress;
-
     // Call all relevant reducers
     const coreReducers = this._core.reducers as any
     const coreReducer = this._core.reducer
-    const extReducers = this._ext.reducers as any
-    const extReducer = this._ext.reducer
+    const extReducers = this._ext?.reducers as any
+    const extReducer = this._ext?.reducer
 
     if (coreReducers && coreReducers[event] !== undefined) {
       const coreState = await coreReducers[event](cloneDeep(this._state), payload)
@@ -87,9 +88,10 @@ class ManagedState<
 
 export {
   EventPayload,
-  EventMap,
+  EventTypeMap,
+  MutationEvents,
   StateBuilder,
-  FullState,
-  ManagedState,
+  MutationState,
+  StateUpdater,
   CoreState
 }

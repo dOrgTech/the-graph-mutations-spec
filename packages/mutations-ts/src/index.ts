@@ -13,8 +13,8 @@ import {
   createConfig
 } from './config'
 import {
-  ManagedState,
-  EventMap
+  StateUpdater,
+  EventTypeMap
 } from './mutationState'
 import { DataSources } from './dataSources'
 import { localResolverExecutor } from './mutation-executor'
@@ -24,7 +24,7 @@ import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface CreateMutationsOptions<
   TState,
-  TEventMap extends EventMap,
+  TEventMap extends EventTypeMap,
   TConfig extends ConfigSetters
 > {
   mutations: MutationsModule<TState, TEventMap>,
@@ -36,7 +36,7 @@ interface CreateMutationsOptions<
 
 export const createMutations = <
   TState,
-  TEventMap extends EventMap,
+  TEventMap extends EventTypeMap,
   TConfig extends ConfigSetters
 >(
   options: CreateMutationsOptions<TState, TEventMap, TConfig>
@@ -79,7 +79,7 @@ export const createMutations = <
       const context = getContext()
       let stateObserver: BehaviorSubject<TState> = context.__stateObserver
 
-      const state = new ManagedState<TState, TEventMap>(
+      const state = new StateUpdater<TState, TEventMap>(
         uuid, mutations.stateBuilder, stateObserver
       )
 

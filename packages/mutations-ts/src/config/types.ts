@@ -17,5 +17,5 @@ export type ConfigValues<T> = {
 }
 
 export type ConfigSetters = {
-  [key: string]: ((value: any) => any) | ConfigSetters
+  [prop: string]: ((value: any) => any) | ConfigSetters
 }

@@ -6,6 +6,7 @@ import {
   ConfigGetters,
   ConfigSetters
 } from './config'
+
 import { ExecutionResult } from 'graphql/execution'
 import { DocumentNode } from 'graphql/language'
 import { GraphQLFieldResolver } from 'graphql'
@@ -32,7 +33,6 @@ export interface MutationQuery {
   extensions?: Record<string, any>
   setContext: (context: Record<string, any>) => Record<string, any>
   getContext: () => Record<string, any>
-  uuid: string
 }
 
 export type MutationResult = ExecutionResult

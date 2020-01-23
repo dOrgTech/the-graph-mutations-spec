@@ -1,3 +1,5 @@
+import { MutationStates } from '@graphprotocol/mutations-ts'
+
 import {
   MutationFunctionOptions,
   ExecutionResult,
@@ -5,7 +7,7 @@ import {
 } from '@apollo/react-common'
 
 interface MutationResultWithState<TState, TData = any> extends MutationResult<TData> {
-  state: TState
+  state: MutationStates<TState>
 }
 
 export type MutationTupleWithState<TState, TData, TVariables> = [

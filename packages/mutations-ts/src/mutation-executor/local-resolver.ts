@@ -1,15 +1,16 @@
 import {
+  MutationQuery,
+  MutationResult,
+  MutationResolvers
+} from '../types'
+import { hasDirectives } from '../utils'
+
+import {
   execute,
   makePromise
 } from 'apollo-link'
 import { withClientState } from 'apollo-link-state'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import {
-  MutationQuery,
-  MutationResult,
-  MutationResolvers
-} from '../types'
-import { hasDirectives } from './utils'
 
 export default (mutationQuery: MutationQuery, resolvers: MutationResolvers): Promise<MutationResult> => {
   // @client directive must be used

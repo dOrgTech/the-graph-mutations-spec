@@ -2,7 +2,8 @@ import {
   EventPayload,
   StateBuilder,
   MutationState,
-  StateUpdater
+  StateUpdater,
+  EventTypeMap
 } from "@graphprotocol/mutations"
 
 import gql from "graphql-tag"
@@ -13,7 +14,7 @@ interface CustomEvent extends EventPayload {
   myValue: string
 }
 
-type EventMap = {
+interface EventMap extends EventTypeMap {
   'CUSTOM_EVENT': CustomEvent
 }
 

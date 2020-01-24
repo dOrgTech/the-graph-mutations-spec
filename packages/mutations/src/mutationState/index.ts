@@ -1,4 +1,5 @@
 import {
+  Event,
   EventPayload,
   EventTypeMap,
   MutationEvents,
@@ -49,15 +50,17 @@ class StateUpdater<
   }
 
   public async dispatch<TEvent extends keyof MutationEvents<TEventMap>>(
-    event: TEvent,
+    eventName: TEvent,
     payload: InferEventPayload<TEvent, MutationEvents<TEventMap>>
   ) {
 
-    // Append the event
-    this._state.events.push({
-      name: event as string,
+    const event: Event = {
+      name: eventName as string,
       payload
-    })
+    }
+
+    // Append the event
+    this._state.events.push(event)
 
     // Call all relevant reducers
     const coreReducers = this._core.reducers as any
@@ -65,18 +68,18 @@ class StateUpdater<
     const extReducers = this._ext?.reducers as any
     const extReducer = this._ext?.reducer
 
-    if (coreReducers && coreReducers[event] !== undefined) {
-      const coreState = await coreReducers[event](cloneDeep(this._state), payload)
+    if (coreReducers && coreReducers[event.name] !== undefined) {
+      const coreState = await coreReducers[event.name](cloneDeep(this._state), payload)
       this._state = cloneDeep({...this._state, ...coreState})
     } else if (coreReducer) {
-      const coreState = await coreReducer(cloneDeep(this._state), event as string, payload)
+      const coreState = await coreReducer(cloneDeep(this._state), event)
       this._state = cloneDeep({...this._state, ...coreState})
     }
 
-    if (extReducers && extReducers[event] !== undefined) {
-      this._state = await extReducers[event](cloneDeep(this._state), payload)
+    if (extReducers && extReducers[event.name] !== undefined) {
+      this._state = await extReducers[event.name](cloneDeep(this._state), payload)
     } else if (extReducer) {
-      this._state = await extReducer(cloneDeep(this._state), event as string, payload)
+      this._state = await extReducer(cloneDeep(this._state), event)
     }
 
     // Publish the latest state

@@ -10,7 +10,10 @@ import {
 import {
   CoreEvents,
   CoreState,
-  coreStateBuilder
+  coreStateBuilder,
+  TransactionCompletedEvent,
+  TransactionCreatedEvent,
+  TransactionErrorEvent
 } from './core'
 
 import { BehaviorSubject } from 'rxjs'
@@ -95,5 +98,9 @@ export {
   MutationState,
   MutationStates,
   StateUpdater,
-  CoreState
+  CoreState,
+  CoreEvents,
+  TransactionCompletedEvent,
+  TransactionCreatedEvent,
+  TransactionErrorEvent
 }

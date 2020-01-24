@@ -42,6 +42,8 @@ async function queryUserGravatar(context: any) {
   const { client } = context
   const { ethereum } = context.graph.config
 
+  // TODO time travel query (specific block #)
+  // block: hash#?
   return await client.query({
     query: gql`
       query GetGravatars {
@@ -83,7 +85,7 @@ async function createGravatar(_root: any, { options }: any, context: any) {
   const { displayName, imageUrl } = options
   const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
-  
+
   await sleep(2000)
   if (context.fail) {
     throw new Error("Transaction Errored (Controlled Error Test Case)")

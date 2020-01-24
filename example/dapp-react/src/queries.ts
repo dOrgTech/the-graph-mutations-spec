@@ -45,7 +45,7 @@ export const UPDATE_GRAVATAR_IMAGE = gql`
 `
 
 export const TEST_TRIPLE_UPDATE = gql`
-  mutation updateGravatarName{
+  mutation updateGravatarName {
     updateGravatarName(displayName: "First") @client{
       id
       owner
@@ -66,6 +66,5 @@ export const TEST_TRIPLE_UPDATE = gql`
         displayName
         imageUrl
     }
-
   }
 `

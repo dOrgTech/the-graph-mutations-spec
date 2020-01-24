@@ -2,7 +2,6 @@ import React, {useState} from 'react'
 import {
   Card,
   CardContent,
-  CardActionArea,
   CardActions,
   CardMedia,
   Grid,
@@ -19,7 +18,7 @@ import { useMutation } from '@graphprotocol/mutations-apollo-react'
 const gravatarStyles = theme =>
   createStyles({
     actionArea: {
-      maxWidth: 400,
+      maxWidth: 300,
     },
     image: {
       height: 150,
@@ -38,83 +37,44 @@ const gravatarStyles = theme =>
     },
   })
 
-const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
+const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode}) => {
 
   const [name, setName] = useState('')
+
+  const [gravatar, setGravatar] = useState({
+    id,
+    displayName,
+    imageUrl,
+    owner
+  })
   
-  const [successUpdate, { state: successState, data: successData, loading: successLoading }] = useMutation(
+  const [executeUpdate, { loading, state: { updateGravatarName: mutationState } }] = useMutation(
     UPDATE_GRAVATAR_NAME,
     {
       client,
-      optimisticResponse: {
-        updateGravatarName: {
-          id, //Apollo updates cache based on this ID
-          imageUrl,
-          owner,
-          displayName: name,
-          __typename: "Gravatar"
-        }
-      },
-      context: {
-        fail: false
-      },
       variables: {
         id,
         displayName: name
+      },
+      onCompleted: ({updateGravatarName}) => {
+        setGravatar(updateGravatarName)
       },
       onError: (error) => {
         alert(error)
       }
     })
 
-    const [failUpdate, { state: failState }] = useMutation(
-      UPDATE_GRAVATAR_NAME,
-      {
-        client,
-        optimisticResponse: {
-          updateGravatarName: {
-            id, //Apollo updates cache based on this ID
-            imageUrl,
-            owner,
-            displayName: name,
-            __typename: "Gravatar"
-          }
-        },
-        context: {
-          fail: true
-        },
-        variables: {
-          id,
-          displayName: name
-        },
-        onError: (error) => {
-          alert(error)
-        }
-      })
-
-      const [multiUpdate, { state: multiState }] = useMutation(
-        TEST_TRIPLE_UPDATE,
-        {
-          client,
-          optimisticResponse: {
-            updateGravatarName: {
-              id, //Apollo updates cache based on this ID
-              imageUrl,
-              owner,
-              displayName: "Triple updating...",
-              __typename: "Gravatar"
-            }
-          },
-          context: {
-            fail: false
-          },
-          variables: {
-            id
-          },
-          onError: (error) => {
-            alert(error)
-          }
-        })
+  const [multiUpdate] = useMutation(
+    TEST_TRIPLE_UPDATE,
+    {
+      client,
+      variables: {
+        id
+      },
+      onError: (error) => {
+        alert(error)
+      }
+    })
 
   const handleNameChange = (event: any) => {
     setName(event.target.value)
@@ -123,40 +83,59 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client }) => {
   return (
   <Grid item>
     <Card>
-      <CardActionArea className={classes.actionArea}>
-        {imageUrl && (
-          <CardMedia className={classes.image} image={imageUrl} title={displayName} />
+      <div className={classes.actionArea}>
+        {gravatar.imageUrl && (
+          <CardMedia className={classes.image} image={gravatar.imageUrl} title={gravatar.displayName} />
         )}
         <CardContent>
           <Typography variant="h6" component="h3" className={classes.displayName}>
-            {displayName || '—'}
+            {gravatar.displayName || '—'}
           </Typography>
           <Typography color="textSecondary">ID</Typography>
           <Typography component="p" className={classes.id}>
-            {id}
+            {gravatar.id}
           </Typography>
           <Typography color="textSecondary">Owner</Typography>
           <Typography component="p" className={classes.owner}>
-            {owner}
+            {gravatar.owner}
           </Typography>
         </CardContent>
-        {((window as any).web3.currentProvider.selectedAddress === owner)? 
-          (<CardActions>
-            <Input
-              placeholder="Type new name..."
-              onChange={handleNameChange}></Input>
-            <Button size="small" color="primary" variant="outlined" onClick={() => successUpdate()}>
-              Success Test
-            </Button>
-            <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
-              Multi Test
-            </Button>
-            <Button size="small" color="secondary" variant="outlined" onClick={() => failUpdate()}>
-              Failure Test
-            </Button>
-          </CardActions>): null
+        {((window as any).web3.currentProvider.selectedAddress === gravatar.owner)?
+          devMode?
+          (
+            <CardActions>
+              <Input
+                placeholder="Type new name..."
+                onChange={handleNameChange}></Input>
+              <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
+                Update
+              </Button>
+              <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
+                Multi Query
+              </Button>
+            </CardActions>
+          )
+          : (
+            <CardActions>
+              <Input
+                placeholder="Type new name..."
+                onChange={handleNameChange}></Input>
+              <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
+                Update
+              </Button>
+            </CardActions>
+          ): null
         }
-      </CardActionArea>
+        {
+          loading && (window as any).web3.currentProvider.selectedAddress === gravatar.owner? (
+            <LinearProgress
+              variant="determinate"
+              value={mutationState && mutationState.progress? mutationState.progress : 0}
+            >
+            </LinearProgress>
+          ): null
+        }
+      </div>
     </Card>
   </Grid>
 )}
@@ -170,7 +149,7 @@ const gravatarsStyles = theme =>
     },
   })
 
-const Gravatars = ({ classes, gravatars, client }) => (
+const Gravatars = ({ classes, gravatars, client, devMode }) => (
   <Grid container direction="column" spacing={16}>
     <Grid item>
       <Typography variant="title" className={classes.title}>
@@ -180,7 +159,7 @@ const Gravatars = ({ classes, gravatars, client }) => (
     <Grid item>
       <Grid container direction="row" spacing={16}>
         {gravatars.map(gravatar => (
-          <StyledGravatar client={client} key={gravatar.id} {...gravatar} />
+          <StyledGravatar client={client} key={gravatar.id} {...gravatar} devMode={devMode} />
         ))}
       </Grid>
     </Grid>

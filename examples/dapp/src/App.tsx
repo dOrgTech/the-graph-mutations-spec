@@ -5,7 +5,7 @@ import { InMemoryCache } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { getMainDefinition } from 'apollo-utilities';
 import { useQuery } from '@apollo/react-hooks';
-import { cloneDeep } from 'lodash'
+import faker from 'faker'
 import {
   Grid,
   LinearProgress,
@@ -14,7 +14,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button
+  Button,
+  AppBar,
+  FormControlLabel,
+  Switch,
+  Toolbar,
+  IconButton
 } from '@material-ui/core'
 import './App.css'
 import Header from './components/Header'
@@ -29,6 +34,14 @@ import { useMutation } from '@graphprotocol/mutations-apollo-react'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
+}
+
+interface Gravatar {
+  id: string,
+  imageUrl: string,
+  owner: string,
+  displayName: string,
+  __typename: string
 }
 
 const nodeEndpoint = process.env.REACT_APP_GRAPHQL_ENDPOINT
@@ -84,7 +97,10 @@ function App() {
     showHelpDialog: false,
   })
 
-  const [gravatars, setGravatars] = React.useState([])
+  const [gravatars, setGravatars] = React.useState([] as Gravatar[])
+  const [devMode, setDevMode] = React.useState(false)
+  const alreadyCreated = !!gravatars.find((gravatar) => gravatar.owner === (window as any).web3.currentProvider.selectedAddress)
+  const randName = faker.name.findName()
 
   const toggleHelpDialog = () => {
     setState({ ...state, showHelpDialog: !state.showHelpDialog })
@@ -117,14 +133,14 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: "...", imageUrl: "..." }
+        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
       },
       optimisticResponse: {
         createGravatar: {
           id: "New",
-          imageUrl: "...",
+          imageUrl: "https://i.pravatar.cc/350?u="+randName,
           owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: "...",
+          displayName: randName,
           __typename: "Gravatar"
         }
       },
@@ -144,7 +160,8 @@ function App() {
         setGravatars(data.gravatars)
       },
       onError: (error) => {
-        console.log(error)
+        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
+        alert(error)
       }
     })
 
@@ -154,14 +171,14 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: "...", imageUrl: "..." }
+        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
       },
       optimisticResponse: {
         createGravatar: {
           id: "New",
-          imageUrl: "...",
+          imageUrl: "https://i.pravatar.cc/350?u="+randName,
           owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: "...",
+          displayName: randName,
           __typename: "Gravatar"
         }
       },
@@ -184,7 +201,7 @@ function App() {
         setGravatars(data.gravatars)
       },
       onError: (error) => {
-        setGravatars(gravatars.splice(0, gravatars.length - 1))
+        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     })
@@ -195,13 +212,13 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: "...", imageUrl: "..." }
+        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
       },
       optimisticResponse: {
         createGravatar: {
           id: "New",
           owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: "...",
+          displayName: randName,
           __typename: "Gravatar"
         }
       },
@@ -221,7 +238,7 @@ function App() {
         setGravatars(data.gravatars)
       },
       onError: (error) => {
-        setGravatars(gravatars.splice(0, gravatars.length - 1))
+        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     })
@@ -232,13 +249,13 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: "...", imageUrl: "..." }
+        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
       },
       optimisticResponse: {
         createGravatar: {
           id: "New",
           owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: "...",
+          displayName: randName,
           __typename: "Gravatar"
         }
       },
@@ -261,15 +278,27 @@ function App() {
         setGravatars(data.gravatars)
       },
       onError: (error) => {
-        setGravatars(gravatars.splice(0, gravatars.length - 1))
+        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     })
 
   return (
+    <>
+    <AppBar color="primary" position="static">
+      <Toolbar>
+        <IconButton color="primary" aria-label="menu">
+          <Header onHelp={toggleHelpDialog} />
+        </IconButton>
+        <FormControlLabel
+          control={<Switch checked={devMode} onChange={()=>{setDevMode(!devMode)}} aria-label="Dev mode switch" />}
+          label="Developer Mode"
+        />
+      </Toolbar>
+    </AppBar>
     <div className="App">
       <Grid container direction="column">
-        <Header onHelp={toggleHelpDialog} />
+        Filter: 
         <Filter
           orderBy={orderBy}
           withImage={withImage}
@@ -283,13 +312,18 @@ function App() {
           }
         />
         <Grid item>
+          {!alreadyCreated? (
+            <Button size="large" color="primary" variant="outlined" onClick={() => executeCreate()}>
+              Create New Random Gravatar
+          </Button>
+          ): "A Gravatar with this address has already been created"}
           <Grid container>
             {loading ? (
               <LinearProgress variant="query" style={{ width: '100%' }} />
             ) : error ? (
               <CustomError error={error} />
             ) : (
-                  <Gravatars client={client} gravatars={gravatars} />
+                  <Gravatars client={client} gravatars={gravatars} devMode={devMode} />
                 )
             }
           </Grid>
@@ -318,21 +352,26 @@ function App() {
         </DialogActions>
       </Dialog>
       <br></br>
-      <Grid container direction="column">
-        <Button size="small" color="primary" variant="outlined" onClick={() => executeCreate()}>
-          Create Gravatar Success Test (Full Optimistic Data)
-        </Button>
-        <Button size="small" color="secondary" variant="outlined" onClick={() => failExecuteCreate()}>
-          Create Gravatar Failure Test (Full Optimistic Data)
-        </Button>
-        <Button size="small" color="primary" variant="outlined" onClick={() => partialDataSuccess()}>
-          Create Gravatar Success Test (Partial Optimistic Data)
-        </Button>
-        <Button size="small" color="secondary" variant="outlined" onClick={() => partialDataFailure()}>
-          Create Gravatar Failure Test (Partial Optimistic Data)
-        </Button>
-      </Grid>
+      {devMode? 
+        !alreadyCreated?
+          (<Grid container direction="column">
+            <Button size="small" color="primary" variant="outlined" onClick={() => executeCreate()}>
+              Create Gravatar Success Test (Full Optimistic Data)
+            </Button>
+            <Button size="small" color="secondary" variant="outlined" onClick={() => failExecuteCreate()}>
+              Create Gravatar Failure Test (Full Optimistic Data)
+            </Button>
+            <Button size="small" color="primary" variant="outlined" onClick={() => partialDataSuccess()}>
+              Create Gravatar Success Test (Partial Optimistic Data)
+            </Button>
+            <Button size="small" color="secondary" variant="outlined" onClick={() => partialDataFailure()}>
+              Create Gravatar Failure Test (Partial Optimistic Data)
+            </Button>
+          </Grid>) 
+          : "A Gravatar with this address has already been created"
+            : null}
     </div>
+    </>
   )
 }
 

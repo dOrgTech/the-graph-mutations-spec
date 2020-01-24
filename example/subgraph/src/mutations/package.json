@@ -7,7 +7,7 @@
     "build": "yarn build:package && yarn build:bundle",
     "build:bundle": "rimraf ./bundle && webpack",
     "build:package": "rimraf ./dist && tsc --outDir ./dist && rimraf ./package && mkdir ./package && cp -r ./dist ./package/dist && cp package.json ./package && cp -r ./src ./package/src",
-    "verify": "es-check es6 ./bundle/index.js"
+    "verify": "es-check es5 ./bundle/index.js"
   },
   "dependencies": {
     "ethers": "^4.0.40",

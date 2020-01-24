@@ -1,24 +1,23 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/index",
-  target: "node",
+  entry: {
+    app: "./src/index.ts"
+  },
   output: {
-    library: 'Resolvers',
     filename: "index.js",
     path: path.resolve(__dirname, "bundle"),
-    libraryTarget: 'umd',
-    globalObject: "this"
+    globalObject: "this",
+    libraryTarget: "commonjs"
   },
-  resolve: {
-    extensions: ["*", ".json", ".ts", ".js"]
-  },
+  target: "node",
+  mode: "development",
   module: {
     rules: [
       // note that babel-loader is configured to run after ts-loader
       {
         test: /\.(ts)$/,
-        exclude: /node_modules/,
+        include: path.resolve(__dirname, "./src"),
         use: [
           {
             loader: "babel-loader",

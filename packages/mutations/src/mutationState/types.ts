@@ -32,12 +32,12 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap = { }> {
 export interface EventPayload { }
 
 export interface Event {
-  event: string
+  name: string
   payload: EventPayload
 }
 
 export interface EventTypeMap {
-  [event: string]: EventPayload
+  [eventName: string]: EventPayload
 }
 
 export type InferEventPayload<TEvent extends keyof TEvents, TEvents extends EventTypeMap> =

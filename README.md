@@ -46,7 +46,7 @@ Run these commands from the root directory:
   * `yarn`
 * Build all packages  
   * `yarn build:packages`  
-* Build the example  
+* Build the example mutations & subgraph  
   * `yarn build:example`  
 * (CMD 1) Start the environment  
   * `yarn start:subgraph`  

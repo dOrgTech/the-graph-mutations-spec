@@ -55,7 +55,7 @@ class StateUpdater<
 
     // Append the event
     this._state.events.push({
-      event: event as string,
+      name: event as string,
       payload
     })
 

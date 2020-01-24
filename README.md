@@ -32,7 +32,13 @@ Example mutation integration into an existing subgraph & dApp.
 A version of the `graph-cli` that supports mutations.  
 
 ## Setup & Run
-In the root directory...
+Prerequisites:  
+* `git`
+* `nvm`
+* `yarn`
+* `docker-compose`
+
+Run these commands from the root directory:
 
 * Install all dependencies  
   * `nvm install $(cat .nvmrc)`  

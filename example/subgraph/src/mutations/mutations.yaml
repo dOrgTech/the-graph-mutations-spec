@@ -4,4 +4,4 @@ schema:
   file: ./schema.graphql
 resolvers:
   kind: javascript
-  file: ./dist/index.js
+  file: ./bundle/index.js

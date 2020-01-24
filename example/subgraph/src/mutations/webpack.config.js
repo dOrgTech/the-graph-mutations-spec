@@ -6,7 +6,7 @@ module.exports = {
   output: {
     library: 'Resolvers',
     filename: "index.js",
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "bundle"),
     libraryTarget: 'umd',
     globalObject: "this"
   },
@@ -30,7 +30,12 @@ module.exports = {
             }
           },
           {
-            loader: "ts-loader"
+            loader: "ts-loader",
+            options: {
+              compilerOptions: {
+                outDir: path.resolve(__dirname, "bundle")
+              }
+            }
           }
         ]
       }

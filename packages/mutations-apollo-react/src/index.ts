@@ -1,4 +1,7 @@
-import { MutationTupleWithState } from './types'
+import {
+  MutationComponentOptionsWithState,
+  MutationTupleWithState
+} from './types'
 import { useObservable } from './utils'
 import {
   CoreState,
@@ -10,7 +13,7 @@ import {
 } from 'react'
 import {
   useMutation as apolloUseMutation,
-  MutationHookOptions,
+  MutationHookOptions
 } from '@apollo/react-hooks'
 import { OperationVariables } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
@@ -49,4 +52,15 @@ export const useMutation = <
       state
     }
   ]
+}
+
+export const Mutation = <
+  TState = CoreState,
+  TData = any,
+  TVariables = OperationVariables
+>(
+  props: MutationComponentOptionsWithState<TState, TData, TVariables>
+) => {
+  const [runMutation, result] = useMutation<TState>(props.mutation, props)
+  return props.children ? props.children(runMutation, result) : null
 }

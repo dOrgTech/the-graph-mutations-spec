@@ -24,8 +24,7 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap = { }> {
   // Catch-All Reducer
   reducer?: (
     state: MutationState<TState>,
-    event: string,
-    payload: any
+    event: Event
   ) => Promise<MutationState<TState>>,
 }
 

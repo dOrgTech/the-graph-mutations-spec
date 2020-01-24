@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "ethers": "^4.0.40",
-    "graphql-tag": "^2.10.1",
-    "ipfs-http-client": "^34.0.0"
+    "graphql-tag": "^2.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.7.5",

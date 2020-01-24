@@ -75,7 +75,7 @@ export const createMutations = <
           mutationObservers.push(new BehaviorSubject<TState>({} as TState));
         }
 
-        combineLatest(mutationObservers).subscribe((values: TState[])=>{
+        combineLatest(mutationObservers).subscribe((values: TState[]) => {
           const result: {[key: string]: TState} = {}
 
           values.forEach((value, index) => {

@@ -63,9 +63,6 @@ const mutations = createMutations({
       await ethereum.enable()
       return (window as any).web3.currentProvider
     },
-    ipfs: () => {
-      return process.env.REACT_APP_IPFS_PROVIDER
-    },
     property: {
       a: "hey",
       b: "hi"

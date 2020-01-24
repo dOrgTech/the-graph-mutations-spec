@@ -7,7 +7,6 @@ import {
 
 import gql from "graphql-tag"
 import { ethers } from "ethers"
-import IPFSClient from "ipfs-http-client"
 import { Transaction } from "ethers/utils"
 
 interface CustomEvent extends EventPayload {
@@ -146,15 +145,6 @@ const resolvers = {
 const config = {
   ethereum: (provider: any) => {
     return new ethers.providers.Web3Provider(provider)
-  },
-  ipfs: (provider: string) => {
-    const url = new URL(provider)
-    return IPFSClient({
-      protocol: url.protocol.replace(/[:]+$/, ''),
-      host: url.hostname,
-      port: url.port,
-      'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/',
-    })
   },
   // Example of a custom configuration property
   property: {

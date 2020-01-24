@@ -20,7 +20,6 @@ import {
   Toolbar,
   IconButton
 } from '@material-ui/core'
-import faker from 'faker/locale/en_US'
 import './App.css'
 import Header from './components/Header'
 import CustomError from './components/Error'
@@ -31,6 +30,7 @@ import { CREATE_GRAVATAR, GRAVATARS_QUERY } from './queries'
 import gravatarMutations from 'example-mutations'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
+import { getRandomProfilePic, getRandomName } from './utils'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
@@ -90,27 +90,24 @@ interface Gravatar {
 
 function App() {
 
-  const [state, setState] = React.useState({
-    withImage: false,
-    withName: false,
-    orderBy: 'displayName',
-    showHelpDialog: false,
-  })
-
+  const [withImage, setWithImage] = React.useState(false)
+  const [withName, setWithName] = React.useState(false)
+  const [orderBy, setOrderBy] = React.useState('displayName')
+  const [showHelpDialog, setShowHelpDialog] = React.useState(false)
   const [gravatars, setGravatars] = React.useState([] as Gravatar[])
   const [devMode, setDevMode] = React.useState(false)
+
   const alreadyCreated = !!gravatars.find((gravatar) => gravatar.owner === (window as any).web3.currentProvider.selectedAddress)
-  const randName = faker.name.findName()
+  const randName = getRandomName()
+  const randPic = getRandomProfilePic(randName)
 
   const toggleHelpDialog = () => {
-    setState({ ...state, showHelpDialog: !state.showHelpDialog })
+    setShowHelpDialog(!showHelpDialog)
   }
 
   const gotoQuickStartGuide = () => {
     window.location.href = 'https://thegraph.com/docs/quick-start'
   }
-
-  const { withImage, withName, orderBy, showHelpDialog } = state
 
   const { data, error, loading } = useQuery(GRAVATARS_QUERY, {
     client,
@@ -133,12 +130,12 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
+        options: { displayName: randName, imageUrl: randPic }
       },
       optimisticResponse: {
         createGravatar: {
           id: "New",
-          imageUrl: "https://i.pravatar.cc/350?u="+randName,
+          imageUrl: randPic,
           owner: (window as any).web3.currentProvider.selectedAddress,
           displayName: randName,
           __typename: "Gravatar"
@@ -175,12 +172,12 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
+        options: { displayName: randName, imageUrl: randPic }
       },
       optimisticResponse: {
         createGravatar: {
           id: "New",
-          imageUrl: "https://i.pravatar.cc/350?u="+randName,
+          imageUrl: randPic,
           owner: (window as any).web3.currentProvider.selectedAddress,
           displayName: randName,
           __typename: "Gravatar"
@@ -220,7 +217,7 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
+        options: { displayName: randName, imageUrl: randPic }
       },
       optimisticResponse: {
         createGravatar: {
@@ -261,7 +258,7 @@ function App() {
     {
       client,
       variables: {
-        options: { displayName: randName, imageUrl: "https://i.pravatar.cc/350?u="+randName }
+        options: { displayName: randName, imageUrl: randPic }
       },
       optimisticResponse: {
         createGravatar: {
@@ -319,12 +316,12 @@ function App() {
           orderBy={orderBy}
           withImage={withImage}
           withName={withName}
-          onOrderBy={(field: any) => setState({ ...state, orderBy: field })}
+          onOrderBy={(field: any) => setOrderBy(field)}
           onToggleWithImage={() =>
-            setState({ ...state, withImage: !state.withImage })
+            setWithImage(!withImage)
           }
           onToggleWithName={() =>
-            setState({ ...state, withName: !state.withName })
+            setWithName(!withName)
           }
         />
         <Grid item>

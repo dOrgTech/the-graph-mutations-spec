@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 contract GravatarRegistry {
   event NewGravatar(uint id, address owner, string displayName, string imageUrl);
+  event DeleteGravatar(uint id, address owner);
   event UpdatedGravatar(uint id, address owner, string displayName, string imageUrl);
 
   struct Gravatar {
@@ -48,6 +49,15 @@ contract GravatarRegistry {
 
     gravatars[id].imageUrl =  _imageUrl;
     emit UpdatedGravatar(id, msg.sender, gravatars[id].displayName, _imageUrl);
+  }
+
+  function deleteGravatar() public {
+    require(ownerToGravatar[msg.sender] != 0);
+    uint id = ownerToGravatar[msg.sender];
+    delete ownerToGravatar[msg.sender];
+    delete gravatarToOwner[id];
+
+    emit DeleteGravatar(id, msg.sender);
   }
 
   // the gravatar at position 0 of gravatars[]

@@ -21,11 +21,11 @@ services:
       RUST_LOG: info
       RUST_BACKTRACE: 1
   ipfs:
-    image: ipfs/go-ipfs
+    build: docker/ipfs
     ports:
       - '5001:5001'
-    volumes:
-      - ./data/ipfs:/data/ipfs
+    logging:
+      driver: 'none'
   postgres:
     image: postgres
     ports:

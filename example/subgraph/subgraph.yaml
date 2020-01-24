@@ -10,7 +10,7 @@ dataSources:
     name: Gravity
     network: private
     source:
-      address: "0xD86C8F0327494034F60e25074420BcCF560D5610"
+      address: "0xB9bdBAEc07751F6d54d19A6B9995708873F3DE18"
       abi: Gravity
     mapping:
       kind: ethereum/events
@@ -20,10 +20,12 @@ dataSources:
         - Gravatar
       abis:
         - name: Gravity
-          file: ./abis/Gravity.json
+          file: ./abis/contracts_Gravity_sol_GravatarRegistry.abi
       eventHandlers:
         - event: NewGravatar(uint256,address,string,string)
           handler: handleNewGravatar
+        - event: DeleteGravatar(uint256,address)
+          handler: handleDeleteGravatar
         - event: UpdatedGravatar(uint256,address,string,string)
           handler: handleUpdatedGravatar
       file: ./src/mapping.ts

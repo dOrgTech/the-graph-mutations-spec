@@ -8,6 +8,8 @@ type Mutation {
     options: GravatarOptions!
   ): Gravatar
 
+  deleteGravatar: Boolean!
+
   updateGravatarName(
     displayName: String!
   ): Gravatar

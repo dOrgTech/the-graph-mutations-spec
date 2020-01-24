@@ -1,4 +1,5 @@
-import { NewGravatar, UpdatedGravatar } from '../generated/Gravity/Gravity'
+import { store } from '@graphprotocol/graph-ts';
+import { NewGravatar, DeleteGravatar, UpdatedGravatar } from '../generated/Gravity/Gravity'
 import { Gravatar } from '../generated/schema'
 
 export function handleNewGravatar(event: NewGravatar): void {
@@ -7,6 +8,11 @@ export function handleNewGravatar(event: NewGravatar): void {
   gravatar.displayName = event.params.displayName
   gravatar.imageUrl = event.params.imageUrl
   gravatar.save()
+}
+
+export function handleDeleteGravatar(event: DeleteGravatar): void {
+  let id = event.params.id.toHex()
+  store.remove("Gravatar", id.toString())
 }
 
 export function handleUpdatedGravatar(event: UpdatedGravatar): void {

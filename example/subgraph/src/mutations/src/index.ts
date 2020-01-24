@@ -99,10 +99,18 @@ async function createGravatar(_root: any, { options }: any, context: any) {
   return data.gravatars[0]
 }
 
+async function deleteGravatar(_root: any, { }: any, context: any) {
+  const state: StateUpdater<State, EventMap> = context.graph.state;
+  const gravity = await getGravityContract(context)
+
+  await sendTx(gravity.deleteGravatar(), state)
+  return true
+}
+
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
   const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
-  
+
   await sleep(2000)
   if (context.fail) {
     throw new Error("Transaction Errored (Controlled Error Test Case)")
@@ -137,6 +145,7 @@ async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) 
 const resolvers = {
   Mutation: {
     createGravatar,
+    deleteGravatar,
     updateGravatarName,
     updateGravatarImage
   }

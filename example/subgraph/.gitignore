@@ -63,5 +63,4 @@ typings/
 build
 generated
 bin
-abis/*.abi
 data

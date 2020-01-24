@@ -17,7 +17,8 @@
     "build:example": "yarn build:example:mutations && yarn build:example:subgraph",
     "build:example:subgraph": "lerna exec --scope example-subgraph -- yarn build",
     "build:example:mutations": "lerna exec --scope example-mutations -- yarn build",
-    "env:start": "yarn build:packages && ",
+    "start:subgraph": "lerna exec --scope example-subgraph -- yarn start",
+    "start:dapp": "lerna exec --scope example-dapp-react -- yarn start",
     "preinstall": "([ ! -d graph-cli ] && git clone --branch mutations-build https://github.com/dOrgTech/graph-cli) || true"
   },
   "devDependencies": {

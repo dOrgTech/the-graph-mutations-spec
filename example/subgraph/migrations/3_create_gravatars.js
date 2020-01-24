@@ -1,14 +1,26 @@
-const fs = require("fs")
+const fs = require('fs')
+const yaml = require('yaml')
 const GravatarRegistry = artifacts.require('./GravatarRegistry.sol')
 
 module.exports = async function(deployer) {
   const registry = await GravatarRegistry.deployed()
 
-  console.log('Account address:', registry.address)
+  console.log('Registry address:', registry.address)
+
+  let manifest = yaml.parse(fs.readFileSync(__dirname + '/../subgraph.yaml', 'utf-8'))
+
+  for (let i = 0; i < manifest.dataSources.length; ++i) {
+    const dataSource = manifest.dataSources[i]
+
+    if (dataSource.name === "Gravity") {
+      dataSource.source.address = registry.address
+      break
+    }
+  }
 
   fs.writeFileSync(
-    __dirname + "/../build/address.json",
-    JSON.stringify({ address: registry.address })
+    __dirname + '/../subgraph.yaml',
+    yaml.stringify(manifest)
   )
 
   let accounts = await web3.eth.getAccounts()

@@ -1,5 +1,5 @@
 {
-  "name": "@graphprotocol/mutations-ts",
+  "name": "@graphprotocol/mutations",
   "version": "0.0.0",
   "description": "TODO",
   "main": "dist/index.js",

@@ -3,7 +3,7 @@ import {
   StateBuilder,
   MutationState,
   StateUpdater
-} from "@graphprotocol/mutations-ts"
+} from "@graphprotocol/mutations"
 
 import gql from "graphql-tag"
 import { ethers } from "ethers"

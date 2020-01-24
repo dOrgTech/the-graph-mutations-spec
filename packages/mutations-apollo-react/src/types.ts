@@ -1,4 +1,4 @@
-import { MutationStates } from '@graphprotocol/mutations-ts'
+import { MutationStates } from '@graphprotocol/mutations'
 
 import {
   MutationFunctionOptions,

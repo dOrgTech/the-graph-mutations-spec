@@ -13,7 +13,7 @@
     ]
   },
   "scripts": {
-    "build:packages": "lerna exec --scope @graphprotocol/mutations-* -- yarn build",
+    "build:packages": "lerna exec --scope @graphprotocol/mutations* -- yarn build",
     "build:example": "yarn build:example:mutations && yarn build:example:subgraph",
     "build:example:subgraph": "lerna exec --scope example-subgraph -- yarn build",
     "build:example:mutations": "lerna exec --scope example-mutations -- yarn build",

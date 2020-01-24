@@ -3,7 +3,7 @@ import { useObservable } from './utils'
 import {
   CoreState,
   MutationStates
-} from '@graphprotocol/mutations-ts'
+} from '@graphprotocol/mutations'
 
 import {
   useState

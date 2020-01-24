@@ -28,7 +28,7 @@ import Filter from './components/Filter'
 import { CREATE_GRAVATAR, GRAVATARS_QUERY } from './queries'
 
 import gravatarMutations from 'example-mutations'
-import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
+import { createMutations, createMutationsLink } from '@graphprotocol/mutations'
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
 import { getRandomProfilePic, getRandomName } from './utils'
 import DevTests from './components/DevTests'

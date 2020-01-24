@@ -10,8 +10,8 @@ This monorepo contains an e2e prototype, showing how mutations can be added to T
 
 [`./packages`](./packages)  
 Runtime packages for mutation & dApp developer.  
-  * [`mutations-ts`](./packages/mutations-ts)  
-  Typescript API used within mutation javascript modules & dApps that use mutations. This API includes functions, classes, and interfaces to support:  
+  * [`mutations`](./packages/mutations)  
+  Javascript API used within mutation modules & dApps. This API includes functions, classes, and interfaces to support:  
     * Mutation Resolvers  
     * Mutation Context  
     * Mutation State  

@@ -31,6 +31,7 @@ import gravatarMutations from 'example-mutations'
 import { createMutations, createMutationsLink } from '@graphprotocol/mutations-ts'
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
 import { getRandomProfilePic, getRandomName } from './utils'
+import DevTests from './components/DevTests'
 
 if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
   throw new Error('REACT_APP_GRAPHQL_ENDPOINT environment variable not defined')
@@ -38,6 +39,14 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
 
 const nodeEndpoint = process.env.REACT_APP_GRAPHQL_ENDPOINT
 const queryLink = createHttpLink({ uri: `${nodeEndpoint}/subgraphs/name/example` })
+
+interface Gravatar {
+  id: string,
+  imageUrl: string,
+  owner: string,
+  displayName: string,
+  __typename: string
+}
 
 const mutations = createMutations({
   mutations: gravatarMutations,
@@ -80,14 +89,6 @@ const client = new ApolloClient({
   cache: new InMemoryCache()
 })
 
-interface Gravatar {
-  id: string,
-  imageUrl: string,
-  owner: string,
-  displayName: string,
-  __typename: string
-}
-
 function App() {
 
   const [withImage, setWithImage] = React.useState(false)
@@ -124,7 +125,6 @@ function App() {
     setGravatars(data.gravatars)
   }
 
-  // FULL DATA SUCCESS TEST CASE
   const [executeCreate] = useMutation(
     CREATE_GRAVATAR,
     {
@@ -140,136 +140,6 @@ function App() {
           displayName: randName,
           __typename: "Gravatar"
         }
-      },
-      update: (proxy, result) => {
-        const data: any = proxy.readQuery({
-          query: GRAVATARS_QUERY,
-          variables: {
-            where: {
-              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
-              ...(withName ? { displayName_not: '' } : {}),
-            },
-            orderBy: orderBy,
-          }
-        }, true)
-
-        if (result.data && result.data.createGravatar) {
-          data.gravatars.push(result.data.createGravatar)
-        }
-
-        setGravatars(data.gravatars)
-      },
-      onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
-        alert(error)
-      }
-    }
-  )
-
-  //FULL DATA FAILURE TEST CASE
-  const [failExecuteCreate] = useMutation(
-    CREATE_GRAVATAR,
-    {
-      client,
-      variables: {
-        options: { displayName: randName, imageUrl: randPic }
-      },
-      optimisticResponse: {
-        createGravatar: {
-          id: "New",
-          imageUrl: randPic,
-          owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: randName,
-          __typename: "Gravatar"
-        }
-      },
-      context: {
-        fail: true
-      },
-      update: (proxy, result) => {
-        const data: any = proxy.readQuery({
-          query: GRAVATARS_QUERY,
-          variables: {
-            where: {
-              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
-              ...(withName ? { displayName_not: '' } : {}),
-            },
-            orderBy: orderBy,
-          }
-        }, true)
-
-        if (result.data && result.data.createGravatar) {
-          data.gravatars.push(result.data.createGravatar)
-        }
-
-        setGravatars(data.gravatars)
-      },
-      onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
-        alert(error)
-      }
-    }
-  )
-
-  //PARTIAL DATA SUCCESS TEST CASE (IMAGE URL MISSING)
-  const [partialDataSuccess] = useMutation(
-    CREATE_GRAVATAR,
-    {
-      client,
-      variables: {
-        options: { displayName: randName, imageUrl: randPic }
-      },
-      optimisticResponse: {
-        createGravatar: {
-          id: "New",
-          owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: randName,
-          __typename: "Gravatar"
-        }
-      },
-      update: (proxy, result) => {
-        const data: any = proxy.readQuery({
-          query: GRAVATARS_QUERY,
-          variables: {
-            where: {
-              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
-              ...(withName ? { displayName_not: '' } : {}),
-            },
-            orderBy: orderBy,
-          }
-        }, true)
-
-        if (result.data && result.data.createGravatar) {
-          data.gravatars.push(result.data.createGravatar)
-        }
-
-        setGravatars(data.gravatars)
-      },
-      onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
-        alert(error)
-      }
-    }
-  )
-
-  //PARTIAL DATA FAILURE TEST CASE (IMAGE URL MISSING)
-  const [partialDataFailure] = useMutation(
-    CREATE_GRAVATAR,
-    {
-      client,
-      variables: {
-        options: { displayName: randName, imageUrl: randPic }
-      },
-      optimisticResponse: {
-        createGravatar: {
-          id: "New",
-          owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: randName,
-          __typename: "Gravatar"
-        }
-      },
-      context: {
-        fail: true
       },
       update: (proxy, result) => {
         const data: any = proxy.readQuery({
@@ -360,27 +230,14 @@ function App() {
             Nah, I'm good
             </Button>
           <Button onClick={gotoQuickStartGuide} color="primary" autoFocus>
-            Yes, pease
+            Yes, please
             </Button>
         </DialogActions>
       </Dialog>
       <br></br>
       {devMode? 
         !alreadyCreated?
-          (<Grid container direction="column">
-            <Button size="small" color="primary" variant="outlined" onClick={() => executeCreate()}>
-              Create Gravatar Success Test (Full Optimistic Data)
-            </Button>
-            <Button size="small" color="secondary" variant="outlined" onClick={() => failExecuteCreate()}>
-              Create Gravatar Failure Test (Full Optimistic Data)
-            </Button>
-            <Button size="small" color="primary" variant="outlined" onClick={() => partialDataSuccess()}>
-              Create Gravatar Success Test (Partial Optimistic Data)
-            </Button>
-            <Button size="small" color="secondary" variant="outlined" onClick={() => partialDataFailure()}>
-              Create Gravatar Failure Test (Partial Optimistic Data)
-            </Button>
-          </Grid>) 
+          <DevTests client={client} randName={randName} randPic={randPic} gravatarState={[gravatars, setGravatars]} options={{withImage, withName, orderBy}} />
           : "A Gravatar with this address has already been created"
             : null}
     </div>

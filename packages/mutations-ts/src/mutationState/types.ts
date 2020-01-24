@@ -1,14 +1,32 @@
-import { CoreEvents } from './core'
+import {
+  CoreEvents,
+  CoreState
+} from './core'
 
-export interface StateBuilder<TState, TEventMap extends EventMap = { }> {
-  getInitialState(): TState
+export type MutationState<TState> = CoreState & TState
+
+// A collection of mutation states
+export type MutationStates<TState> = {
+  [mutation: string]: TState
+}
+
+export type MutationEvents<TEventMap> = CoreEvents & TEventMap
+
+export interface StateBuilder<TState, TEventMap extends EventTypeMap = { }> {
+  getInitialState(uuid: string): TState,
+  // Event Specific Reducers
   reducers?: {
-    [TEvent in keyof (TEventMap & CoreEvents)]?: (
-      state: TState,
+    [TEvent in keyof MutationEvents<TEventMap>]?: (
+      state: MutationState<TState>,
       payload: InferEventPayload<TEvent, TEventMap>
-    ) => void
-  }
-  reducer?: (state: TState, event: string, payload: any) => void
+    ) => Promise<MutationState<TState>>
+  },
+  // Catch-All Reducer
+  reducer?: (
+    state: MutationState<TState>,
+    event: string,
+    payload: any
+  ) => Promise<MutationState<TState>>,
 }
 
 export interface EventPayload { }
@@ -18,13 +36,10 @@ export interface Event {
   payload: EventPayload
 }
 
-export type EventLog = Event[]
-
-export type EventMap = {
+export interface EventTypeMap {
   [event: string]: EventPayload
 }
 
-export type InferEventPayload<TEvent extends keyof (CoreEvents & TEvents), TEvents extends EventMap> =
-  TEvent extends keyof CoreEvents ? CoreEvents[TEvent] :
+export type InferEventPayload<TEvent extends keyof TEvents, TEvents extends EventTypeMap> =
   TEvent extends keyof TEvents ? TEvents[TEvent] :
   any

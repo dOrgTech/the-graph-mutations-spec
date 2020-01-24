@@ -1,5 +1,8 @@
 import { DataSource } from './dataSource'
-import { getDataSource } from './utils'
+import {
+  getDataSource,
+  getContractAbis
+} from './utils'
 
 import { HttpLink } from 'apollo-link-http'
 const ipfsHttpClient = require('ipfs-http-client')
@@ -43,7 +46,18 @@ export class DataSources {
       throw new Error(`Error fetching dataSource from subgraph '${this._subgraph}' with name '${name}'`)
     }
 
-    const abi = data.subgraphs[0].currentVersion.deployment.manifest.dataSources[0].source.abi
+    const abiName = data.subgraphs[0].currentVersion.deployment.manifest.dataSources[0].source.abi
+
+    const result = await getContractAbis(
+      this._metadataLink, abiName
+    )
+
+    if (!result.data || result.data.ethereumContractAbis.length === 0) {
+    throw new Error(`Error fetching ethereum contract abis with name '${abiName}'`)
+  }
+
+    const abi = result.data.ethereumContractAbis[0].file;
+
     const resp = await this._ipfs.get(abi)
 
     if (resp.length === 0) {

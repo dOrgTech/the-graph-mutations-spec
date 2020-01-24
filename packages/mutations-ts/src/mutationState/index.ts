@@ -1,31 +1,37 @@
 import {
   EventPayload,
-  EventMap,
+  EventTypeMap,
+  MutationEvents,
+  MutationState,
+  MutationStates,
   InferEventPayload,
   StateBuilder
 } from './types'
 import {
   CoreEvents,
   CoreState,
-  FullState,
-  coreStateBuilder
+  coreStateBuilder,
+  TransactionCompletedEvent,
+  TransactionCreatedEvent,
+  TransactionErrorEvent
 } from './core'
 
 import { BehaviorSubject } from 'rxjs'
 import cloneDeep from 'lodash/cloneDeep'
 
-class ManagedState<
+class StateUpdater<
   TState = { },
-  TEventMap extends EventMap = { }
+  TEventMap extends EventTypeMap = { }
 > {
 
-  private _state: FullState<TState>
+  private _state: MutationState<TState>
   private _observer?: BehaviorSubject<TState>
-  private _ext: StateBuilder<TState, TEventMap>
+  private _ext?: StateBuilder<TState, TEventMap>
   private _core: StateBuilder<CoreState, CoreEvents>
 
   constructor(
-    ext: StateBuilder<TState, TEventMap>,
+    uuid: string,
+    ext?: StateBuilder<TState, TEventMap>,
     observer?: BehaviorSubject<TState>
   ) {
     this._observer = observer
@@ -33,23 +39,18 @@ class ManagedState<
     this._core = coreStateBuilder
 
     this._state = {
-      ...this._core.getInitialState(),
-      ...this._ext.getInitialState()
+      ...this._core.getInitialState(uuid),
+      ...(this._ext ? this._ext.getInitialState(uuid) : { } as TState),
     }
   }
 
-  public getState(): FullState<TState> {
+  public get current() {
     return cloneDeep(this._state)
   }
 
-  public setState(value: FullState<TState>) {
-    this._state = cloneDeep(value)
-    this.publish()
-  }
-
-  public sendEvent<TEvent extends keyof (CoreEvents & TEventMap)>(
+  public async dispatch<TEvent extends keyof MutationEvents<TEventMap>>(
     event: TEvent,
-    payload: InferEventPayload<TEvent, TEventMap>
+    payload: InferEventPayload<TEvent, MutationEvents<TEventMap>>
   ) {
 
     // Append the event
@@ -61,19 +62,21 @@ class ManagedState<
     // Call all relevant reducers
     const coreReducers = this._core.reducers as any
     const coreReducer = this._core.reducer
-    const extReducers = this._ext.reducers as any
-    const extReducer = this._core.reducer
+    const extReducers = this._ext?.reducers as any
+    const extReducer = this._ext?.reducer
 
     if (coreReducers && coreReducers[event] !== undefined) {
-      coreReducers[event](this._state, payload)
+      const coreState = await coreReducers[event](cloneDeep(this._state), payload)
+      this._state = cloneDeep({...this._state, ...coreState})
     } else if (coreReducer) {
-      coreReducer(this._state, event as string, payload)
+      const coreState = await coreReducer(cloneDeep(this._state), event as string, payload)
+      this._state = cloneDeep({...this._state, ...coreState})
     }
 
     if (extReducers && extReducers[event] !== undefined) {
-      extReducers[event](payload)
+      this._state = await extReducers[event](cloneDeep(this._state), payload)
     } else if (extReducer) {
-      extReducer(this._state, event as string, payload)
+      this._state = await extReducer(cloneDeep(this._state), event as string, payload)
     }
 
     // Publish the latest state
@@ -82,14 +85,22 @@ class ManagedState<
 
   private publish() {
     if (this._observer) {
-      this._observer.next(this.getState())
+      this._observer.next(cloneDeep(this._state))
     }
   }
 }
 
 export {
   EventPayload,
+  EventTypeMap,
+  MutationEvents,
   StateBuilder,
-  CoreState as MutationState,
-  ManagedState
+  MutationState,
+  MutationStates,
+  StateUpdater,
+  CoreState,
+  CoreEvents,
+  TransactionCompletedEvent,
+  TransactionCreatedEvent,
+  TransactionErrorEvent
 }

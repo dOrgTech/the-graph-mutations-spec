@@ -1,0 +1,20 @@
+input GravatarOptions {
+  displayName: String!
+  imageUrl: String!
+}
+
+type Mutation {
+  createGravatar(
+    options: GravatarOptions!
+  ): Gravatar
+
+  deleteGravatar: Boolean!
+
+  updateGravatarName(
+    displayName: String!
+  ): Gravatar
+
+  updateGravatarImage(
+    imageUrl: String!
+  ): Gravatar
+}

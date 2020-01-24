@@ -1,45 +1,55 @@
 import {
   EventPayload,
-  EventLog,
-  StateBuilder
+  StateBuilder,
+  Event
 } from './types'
 
-export interface CoreState {
-  progress: Number
-  events: EventLog
-}
+export type EventLog = Event[]
 
-export type FullState<TState> = CoreState & TState
+export interface CoreState {
+  events: EventLog
+  uuid: string
+  progress: number
+}
 
 export type CoreEvents = {
-  'TRANSACTION_SENT': TransactionSent,
-  'TRANSACTION_ERROR': TransactionError
+  'TRANSACTION_CREATED': TransactionCreatedEvent
+  'TRANSACTION_COMPLETED': TransactionCompletedEvent
+  'TRANSACTION_ERROR': TransactionErrorEvent
 }
 
-export interface TransactionSent extends EventPayload {
-  hash: string
-  to: string
-  value: string
+export interface TransactionCreatedEvent extends EventPayload {
+  id: string,
+  description: string
 }
 
-export interface TransactionError extends EventPayload {
-  hash: string
+export interface TransactionCompletedEvent extends EventPayload {
+  id: string,
+  description: string
+}
+
+export interface TransactionErrorEvent extends EventPayload {
+  id: string
   error: Error
 }
 
 export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
-  getInitialState(): CoreState {
+  getInitialState(uuid: string): CoreState {
     return {
+      events: [],
       progress: 0,
-      events: []
+      uuid
     }
   },
   reducers: {
-    'TRANSACTION_SENT': (state: CoreState, payload: TransactionSent) => {
-      
+    'TRANSACTION_CREATED': async (state: CoreState, payload: TransactionCreatedEvent) => {
+      return state;
     },
-    'TRANSACTION_ERROR': (state: CoreState, payload: TransactionError) => {
-      
+    'TRANSACTION_COMPLETED': async (state: CoreState, payload: TransactionCreatedEvent) => {
+      return state;
+    },
+    'TRANSACTION_ERROR': async (state: CoreState, payload: TransactionErrorEvent) => {
+      return state;
     }
   }
 }

@@ -97,14 +97,18 @@ async function createGravatar(_root: any, { options }: any, context: any) {
   }
 
   const { data } = await queryUserGravatar(context)
-  return data.gravatars[0]
+  return null
 }
 
 async function deleteGravatar(_root: any, { }: any, context: any) {
   const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
 
-  await sendTx(gravity.deleteGravatar(), state)
+  const txResult = await sendTx(gravity.deleteGravatar(), state)
+
+  if (!txResult) {
+    throw new Error("Error deleting gravatar")
+  }
   return true
 }
 

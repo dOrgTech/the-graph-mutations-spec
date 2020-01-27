@@ -44,6 +44,12 @@ export const UPDATE_GRAVATAR_IMAGE = gql`
   }
 `
 
+export const DELETE_GRAVATAR = gql`
+  mutation deleteGravatar {
+    deleteGravatar @client
+  }
+`
+
 export const TEST_TRIPLE_UPDATE = gql`
   mutation updateGravatarName {
     updateGravatarName(displayName: "First") @client{

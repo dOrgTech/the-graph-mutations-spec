@@ -97,7 +97,7 @@ async function createGravatar(_root: any, { options }: any, context: any) {
   }
 
   const { data } = await queryUserGravatar(context)
-  return data.gravatars[0]
+  return null
 }
 
 async function deleteGravatar(_root: any, { }: any, context: any) {

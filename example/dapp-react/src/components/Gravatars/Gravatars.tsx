@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -38,7 +38,7 @@ const gravatarStyles = theme =>
     },
   })
 
-const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode}) => {
+const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode }) => {
 
   const [name, setName] = useState('')
 
@@ -69,8 +69,8 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode})
         }, true))
 
         if (result.data && result.data.updateGravatar) {
-          for(let i = 0; i < data.gravatars.length; i++){
-            if(data.gravatars[i].owner === owner){
+          for (let i = 0; i < data.gravatars.length; i++) {
+            if (data.gravatars[i].owner === owner) {
               data.gravatars[i] = result.data.updateGravatar;
               break;
             }
@@ -163,35 +163,39 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode})
               {owner}
             </Typography>
           </CardContent>
+          <CardActions>
           {((window as any).web3.currentProvider.selectedAddress === owner) ?
             devMode ?
-              (
-                <CardActions>
-                  <Input
-                    placeholder="Type new name..."
-                    onChange={handleNameChange}></Input>
-                  <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
-                    Update
-              </Button>
-                  <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
-                    Multi Query
-              </Button>
-                </CardActions>
+              (<>
+                <Input
+                  placeholder="Name..."
+                  onChange={handleNameChange}></Input>
+                <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
+                  Update
+                </Button>
+                <Button size="small" color="secondary" variant="outlined" onClick={() => executeDelete()}>
+                  Delete
+                </Button>
+                <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
+                  Multi Query
+                </Button>
+              </>
               )
               : (
-                <CardActions>
+                <>
                   <Input
-                    placeholder="Type new name..."
+                    placeholder="Name..."
                     onChange={handleNameChange}></Input>
                   <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
                     Update
-              </Button>
+                  </Button>
                   <Button size="small" color="secondary" variant="outlined" onClick={() => executeDelete()}>
                     Delete
-              </Button>
-                </CardActions>
+                  </Button>
+                </>
               ) : null
           }
+          </CardActions>
           {
             loading && (window as any).web3.currentProvider.selectedAddress === owner ? (
               <LinearProgress

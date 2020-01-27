@@ -129,6 +129,15 @@ function App() {
       variables: {
         options: { displayName: randName, imageUrl: randPic }
       },
+      refetchQueries: [
+        {
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: { },
+            orderBy: "displayName"
+          }
+        }
+      ],
       optimisticResponse: {
         createGravatar: {
           id: "0xa",
@@ -142,7 +151,10 @@ function App() {
         const data: any = cloneDeep(proxy.readQuery({
           query: GRAVATARS_QUERY,
           variables: {
-            where: { },
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
             orderBy: "displayName",
           }
         }, true))
@@ -236,11 +248,11 @@ function App() {
         </DialogActions>
       </Dialog>
       <br></br>
-      {/* {devMode? 
+      {devMode? 
         !alreadyCreated?
-          <DevTests client={client} randName={randName} randPic={randPic} gravatarState={[gravatars, setGravatars]} options={{withImage, withName, orderBy}} />
+          <DevTests client={client} randName={randName} randPic={randPic} options={{withImage, withName, orderBy}} />
           : "A Gravatar with this address has already been created"
-            : null} */}
+            : null}
     </div>
     </>
   )

@@ -1,4 +1,5 @@
 import React from 'react'
+import { cloneDeep } from 'lodash'
 import {
   Grid,
   Button
@@ -8,10 +9,9 @@ import { CREATE_GRAVATAR, GRAVATARS_QUERY } from '../../queries'
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
 
 
-const DevTests = ({ randName, randPic, client, gravatarState, options }) => {
+const DevTests = ({ randName, randPic, client, options }) => {
 
   const { withImage, withName, orderBy } = options
-  const [gravatars, setGravatars] = gravatarState
 
   //FULL DATA FAILURE TEST CASE
   const [failExecuteCreate] = useMutation(
@@ -21,6 +21,18 @@ const DevTests = ({ randName, randPic, client, gravatarState, options }) => {
       variables: {
         options: { displayName: randName, imageUrl: randPic }
       },
+      refetchQueries: [
+        {
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
+            orderBy: "displayName"
+          }
+        }
+      ],
       optimisticResponse: {
         createGravatar: {
           id: "New",
@@ -34,25 +46,34 @@ const DevTests = ({ randName, randPic, client, gravatarState, options }) => {
         fail: true
       },
       update: (proxy, result) => {
-        const data: any = proxy.readQuery({
+        const data: any = cloneDeep(proxy.readQuery({
           query: GRAVATARS_QUERY,
           variables: {
             where: {
               ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
               ...(withName ? { displayName_not: '' } : {}),
             },
-            orderBy: orderBy,
+            orderBy: "displayName",
           }
-        }, true)
+        }, true))
 
         if (result.data && result.data.createGravatar) {
           data.gravatars.push(result.data.createGravatar)
         }
 
-        setGravatars(data.gravatars)
+        proxy.writeQuery({
+          query: GRAVATARS_QUERY, 
+          data,
+          variables: {
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
+            orderBy: "displayName",
+          }
+        })
       },
       onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     }
@@ -66,34 +87,56 @@ const DevTests = ({ randName, randPic, client, gravatarState, options }) => {
       variables: {
         options: { displayName: randName, imageUrl: randPic }
       },
-      optimisticResponse: {
-        createGravatar: {
-          id: "New",
-          owner: (window as any).web3.currentProvider.selectedAddress,
-          displayName: randName,
-          __typename: "Gravatar"
-        }
-      },
-      update: (proxy, result) => {
-        const data: any = proxy.readQuery({
+      refetchQueries: [
+        {
           query: GRAVATARS_QUERY,
           variables: {
             where: {
               ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
               ...(withName ? { displayName_not: '' } : {}),
             },
-            orderBy: orderBy,
+            orderBy: "displayName"
           }
-        }, true)
+        }
+      ],
+      optimisticResponse: {
+        createGravatar: {
+          id: "New",
+          owner: (window as any).web3.currentProvider.selectedAddress,
+          displayName: randName,
+          imageUrl: '',
+          __typename: "Gravatar"
+        }
+      },
+      update: (proxy, result) => {
+        const data: any = cloneDeep(proxy.readQuery({
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
+            orderBy: "displayName",
+          }
+        }, true))
 
         if (result.data && result.data.createGravatar) {
           data.gravatars.push(result.data.createGravatar)
         }
 
-        setGravatars(data.gravatars)
+        proxy.writeQuery({
+          query: GRAVATARS_QUERY, 
+          data,
+          variables: {
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
+            orderBy: "displayName",
+          }
+        })
       },
       onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     }
@@ -107,11 +150,24 @@ const DevTests = ({ randName, randPic, client, gravatarState, options }) => {
       variables: {
         options: { displayName: randName, imageUrl: randPic }
       },
+      refetchQueries: [
+        {
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
+            orderBy: "displayName"
+          }
+        }
+      ],
       optimisticResponse: {
         createGravatar: {
           id: "New",
           owner: (window as any).web3.currentProvider.selectedAddress,
           displayName: randName,
+          imageUrl: '',
           __typename: "Gravatar"
         }
       },
@@ -119,25 +175,34 @@ const DevTests = ({ randName, randPic, client, gravatarState, options }) => {
         fail: true
       },
       update: (proxy, result) => {
-        const data: any = proxy.readQuery({
+        const data: any = cloneDeep(proxy.readQuery({
           query: GRAVATARS_QUERY,
           variables: {
             where: {
               ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
               ...(withName ? { displayName_not: '' } : {}),
             },
-            orderBy: orderBy,
+            orderBy: "displayName",
           }
-        }, true)
+        }, true))
 
         if (result.data && result.data.createGravatar) {
           data.gravatars.push(result.data.createGravatar)
         }
 
-        setGravatars(data.gravatars)
+        proxy.writeQuery({
+          query: GRAVATARS_QUERY, 
+          data,
+          variables: {
+            where: {
+              ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
+              ...(withName ? { displayName_not: '' } : {}),
+            },
+            orderBy: "displayName",
+          }
+        })
       },
       onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     }

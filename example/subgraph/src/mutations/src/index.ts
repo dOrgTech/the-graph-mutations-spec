@@ -1,5 +1,9 @@
 import {
+  ConfigGenerator,
   ConfigGenerators,
+  MutationResolvers,
+  MutationResolver,
+  MutationsModule,
   EventPayload,
   EventTypeMap,
   MutationState,
@@ -153,7 +157,7 @@ const resolvers = {
   }
 }
 
-const config: ConfigGenerators = {
+const config = {
   ethereum: (provider: any) => {
     return new ethers.providers.Web3Provider(provider)
   },

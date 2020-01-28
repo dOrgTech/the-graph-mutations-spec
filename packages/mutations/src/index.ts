@@ -38,7 +38,7 @@ interface CreateMutationsOptions<
   mutationExecutor?: MutationExecutor
 }
 
-export const createMutations = <
+const createMutations = <
   TConfig extends ConfigGenerators,
   TState = CoreState,
   TEventMap extends EventTypeMap = { },
@@ -148,7 +148,7 @@ export const createMutations = <
   }
 }
 
-export const createMutationsLink = <TConfig extends ConfigGenerators>(
+const createMutationsLink = <TConfig extends ConfigGenerators>(
   { mutations }: { mutations: Mutations<TConfig> }
 ): ApolloLink => {
   return new ApolloLink((operation: Operation) =>
@@ -170,8 +170,32 @@ export const createMutationsLink = <TConfig extends ConfigGenerators>(
   )
 }
 
-export * from './config'
-export * from './dataSources'
-export * from './mutationExecutors'
-export * from './mutationState'
-export * from './types'
+export {
+  createMutations,
+  createMutationsLink,
+
+  // mutationExecutors
+  executors,
+  MutationExecutor
+}
+
+export {
+  CoreState,
+  CoreEvents,
+  Event,
+  EventTypeMap,
+  EventPayload,
+  MutationState,
+  StateBuilder,
+  TransactionCompletedEvent,
+  TransactionCreatedEvent,
+  TransactionErrorEvent
+} from './mutationState'
+
+export {
+
+} from './dataSources'
+
+export {
+
+} from './types'

@@ -7,7 +7,7 @@ import {
 import { HttpLink } from 'apollo-link-http'
 const ipfsHttpClient = require('ipfs-http-client')
 
-export class DataSources {
+class DataSources {
 
   private _subgraph: string
   private _metadataLink: HttpLink
@@ -82,5 +82,6 @@ export class DataSources {
 }
 
 export {
-  DataSource
+  DataSource,
+  DataSources
 }

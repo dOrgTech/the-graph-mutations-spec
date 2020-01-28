@@ -188,15 +188,8 @@ export {
   MutationState,
   ProgressUpdateEvent,
   StateBuilder,
+  StateUpdater,
   TransactionCompletedEvent,
   TransactionCreatedEvent,
   TransactionErrorEvent
 } from './mutationState'
-
-export {
-
-} from './dataSources'
-
-export {
-
-} from './types'

@@ -1,9 +1,4 @@
 import {
-  ConfigGenerator,
-  ConfigGenerators,
-  MutationResolvers,
-  MutationResolver,
-  MutationsModule,
   EventPayload,
   EventTypeMap,
   MutationState,

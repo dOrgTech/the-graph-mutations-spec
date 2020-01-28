@@ -1,6 +1,7 @@
 import localResolver from './localResolver'
+import { MutationExecutors } from './types'
 
-const executors = {
+const executors: MutationExecutors = {
   localResolver
 }
 

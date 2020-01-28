@@ -32,7 +32,6 @@ const stateBuilder: StateBuilder<State, EventMap> = {
   },
   reducers: {
     "CUSTOM_EVENT": async (state: MutationState<State>, payload: CustomEvent) => {
-      state.myValue = payload.myValue;
       return {
         myValue: 'true'
       }
@@ -117,9 +116,10 @@ async function deleteGravatar(_root: any, { }: any, context: any) {
 async function updateGravatarName(_root: any, { displayName }: any, context: any) {
   const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
+  console.log(context)
 
-  await state.dispatch("PROGRESS_UPDATE", {value: 50})
-  await state.dispatch("CUSTOM_EVENT", { myValue: "test"})
+  await state.dispatch("PROGRESS_UPDATE", { value: 50 })
+  await state.dispatch("CUSTOM_EVENT", { myValue: "test" })
 
   await sleep(2000)
   if (context.fail) {

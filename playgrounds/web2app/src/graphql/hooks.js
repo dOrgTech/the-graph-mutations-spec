@@ -6,7 +6,9 @@ import MutationState from '../class/MutationState.class';
 const useObservable = (observable, setter) => {
     useEffect(() => {
         let subscription = observable.subscribe(result => {
-            if(result) setter(result.findByHash("86453").progress)
+            if (result) {
+                setter(result.findByHash("86453").progress)
+            }
         })
         return () => subscription.unsubscribe();
     }, [observable, setter])

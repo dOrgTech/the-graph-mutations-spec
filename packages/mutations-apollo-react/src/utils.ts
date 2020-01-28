@@ -7,7 +7,9 @@ export const useObservable = <TState>(
 ) => {
   useEffect(() => {
     let subscription = observable.subscribe(result => {
-      if (result) setter(result)
+      if (result) {
+        setter(result)
+      }
     })
     return () => subscription.unsubscribe()
   }, [observable, setter])

@@ -1,14 +1,14 @@
 import {
   EventPayload,
-  StateBuilder,
+  EventTypeMap,
   MutationState,
-  StateUpdater,
-  EventTypeMap
+  StateBuilder,
+  StateUpdater
 } from "@graphprotocol/mutations"
 
-import gql from "graphql-tag"
-import { ethers } from "ethers"
-import { Transaction } from "ethers/utils"
+import gql from 'graphql-tag'
+import { ethers } from 'ethers'
+import { Transaction } from 'ethers/utils'
 
 interface CustomEvent extends EventPayload {
   myValue: string
@@ -31,9 +31,10 @@ const stateBuilder: StateBuilder<State, EventMap> = {
     }
   },
   reducers: {
-    "CUSTOM_EVENT": async (state: MutationState<State>, payload: CustomEvent) => {
-      state.myValue = payload.myValue;
-      return state
+    'CUSTOM_EVENT': async (state: MutationState<State>, payload: CustomEvent) => {
+      return {
+        myValue: 'true'
+      }
     }
   }
 }
@@ -44,25 +45,35 @@ async function queryUserGravatar(context: any) {
 
   // TODO time travel query (specific block #)
   // block: hash#?
-  return await client.query({
-    query: gql`
-      query GetGravatars {
-        gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
-          id
-          owner
-          displayName
-          imageUrl
-        }
-      }`
+  for (let i = 0; i < 20; ++i) {
+    const { data } = await client.query({
+      query: gql`
+        query GetGravatars {
+          gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
+            id
+            owner
+            displayName
+            imageUrl
+          }
+        }`
+      }
+    )
+
+    if (data === null) {
+      await sleep(500)
+    } else {
+      return data.gravatars[0]
     }
-  )
+  }
+
+  return null
 }
 
 async function sendTx(tx: Transaction, state: StateUpdater<State, EventMap>) {
   try {
-    await state.dispatch("TRANSACTION_CREATED", { id: tx.hash, description: tx.data })
+    await state.dispatch('TRANSACTION_CREATED', { id: tx.hash, description: tx.data })
     tx = await tx
-    await state.dispatch("TRANSACTION_COMPLETED", { id: tx.hash, description: tx.data })
+    await state.dispatch('TRANSACTION_COMPLETED', { id: tx.hash, description: tx.data })
     return tx;
   } catch (error) {
     await state.dispatch('TRANSACTION_ERROR', error)
@@ -88,16 +99,15 @@ async function createGravatar(_root: any, { options }: any, context: any) {
 
   await sleep(2000)
   if (context.fail) {
-    throw new Error("Transaction Errored (Controlled Error Test Case)")
+    throw new Error('Transaction Errored (Controlled Error Test Case)')
   }
 
   const txResult = await sendTx(gravity.createGravatar(displayName, imageUrl), state)
   if (!txResult) {
-    throw new Error("WHOLE PROCESS FAILED")
+    throw new Error('WHOLE PROCESS FAILED')
   }
 
-  const { data } = await queryUserGravatar(context)
-  return null
+  return await queryUserGravatar(context)
 }
 
 async function deleteGravatar(_root: any, { }: any, context: any) {
@@ -107,7 +117,7 @@ async function deleteGravatar(_root: any, { }: any, context: any) {
   const txResult = await sendTx(gravity.deleteGravatar(), state)
 
   if (!txResult) {
-    throw new Error("Error deleting gravatar")
+    throw new Error('Error deleting gravatar')
   }
   return true
 }
@@ -116,20 +126,22 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
   const state: StateUpdater<State, EventMap> = context.graph.state;
   const gravity = await getGravityContract(context)
 
+  await state.dispatch('PROGRESS_UPDATE', { value: 50 })
+  await state.dispatch('CUSTOM_EVENT', { myValue: 'test' })
+
   await sleep(2000)
   if (context.fail) {
-    throw new Error("Transaction Errored (Controlled Error Test Case)")
+    throw new Error('Transaction Errored (Controlled Error Test Case)')
   }
 
   const txResult = await sendTx(gravity.updateGravatarName(displayName), state)
   if (!txResult) {
-    throw new Error("WHOLE PROCESS FAILED")
+    throw new Error('WHOLE PROCESS FAILED')
   }
 
-  await state.dispatch("CUSTOM_EVENT", { myValue: displayName })
+  await state.dispatch('CUSTOM_EVENT', { myValue: displayName })
 
-  const { data } = await queryUserGravatar(context)
-  return data.gravatars[0]
+  return await queryUserGravatar(context)
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
@@ -138,13 +150,12 @@ async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) 
 
   await sleep(2000)
   if (context.fail) {
-    throw new Error("Transaction Errored (Controlled Error Test Case)")
+    throw new Error('Transaction Errored (Controlled Error Test Case)')
   }
 
   await sendTx(gravity.updateGravatarImage(imageUrl), state)
 
-  const { data } = await queryUserGravatar(context)
-  return data.gravatars[0]
+  return await queryUserGravatar(context)
 }
 
 const resolvers = {

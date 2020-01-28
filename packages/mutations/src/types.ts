@@ -3,8 +3,8 @@ import {
   StateBuilder
 } from './mutationState'
 import {
-  ConfigGetters,
-  ConfigSetters
+  ConfigGenerators,
+  ConfigArguments
 } from './config'
 
 import { ExecutionResult } from 'graphql/execution'
@@ -12,11 +12,12 @@ import { DocumentNode } from 'graphql/language'
 import { GraphQLFieldResolver } from 'graphql'
 
 export interface MutationsModule<
+  TConfig extends ConfigGenerators,
   TState,
   TEventMap extends EventTypeMap
 > {
   resolvers: MutationResolvers,
-  config: ConfigSetters,
+  config: TConfig,
   stateBuilder?: StateBuilder<TState, TEventMap>
 }
 
@@ -37,9 +38,7 @@ export interface MutationQuery {
 
 export type MutationResult = ExecutionResult
 
-export type MutationExecutor = (query: MutationQuery, resolvers: MutationResolvers) => Promise<MutationResult>
-
-export interface Mutations<TConfig extends ConfigSetters> {
+export interface Mutations<TConfig extends ConfigGenerators> {
   execute: (query: MutationQuery) => Promise<MutationResult>
-  configure: (config: ConfigGetters<TConfig>) => void
+  configure: (config: ConfigArguments<TConfig>) => void
 }

@@ -2,46 +2,48 @@ import {
   Mutations,
   MutationsModule,
   MutationQuery,
-  MutationResult,
-  MutationExecutor,
+  MutationResult
 } from './types'
 import {
-  ConfigSetters,
-  ConfigGetters,
-  ConfigValues,
-  validateConfig,
-  createConfig
+  ConfigGenerators,
+  ConfigArguments,
+  ConfigProperties
 } from './config'
 import {
+  validateConfig,
+  createConfig
+} from './config/utils'
+import {
   StateUpdater,
-  EventTypeMap
+  EventTypeMap,
+  CoreState
 } from './mutationState'
 import { getUniqueMutations } from './utils'
 import { DataSources } from './dataSources'
-import { localResolverExecutor } from './mutation-executor'
+import executors, { MutationExecutor } from './mutationExecutors'
 
 import { v4 } from 'uuid'
 import { BehaviorSubject, combineLatest } from 'rxjs'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface CreateMutationsOptions<
+  TConfig extends ConfigGenerators,
   TState,
-  TEventMap extends EventTypeMap,
-  TConfig extends ConfigSetters
+  TEventMap extends EventTypeMap
 > {
-  mutations: MutationsModule<TState, TEventMap>,
+  mutations: MutationsModule<TConfig, TState, TEventMap>,
   subgraph: string,
   node: string,
-  config: ConfigGetters<TConfig>
+  config: ConfigArguments<TConfig>
   mutationExecutor?: MutationExecutor
 }
 
-export const createMutations = <
-  TState,
-  TEventMap extends EventTypeMap,
-  TConfig extends ConfigSetters
+const createMutations = <
+  TConfig extends ConfigGenerators,
+  TState = CoreState,
+  TEventMap extends EventTypeMap = { },
 >(
-  options: CreateMutationsOptions<TState, TEventMap, TConfig>
+  options: CreateMutationsOptions<TConfig, TState, TEventMap>
 ): Mutations<TConfig> => {
 
   const { mutations, subgraph, node, config, mutationExecutor } = options
@@ -50,11 +52,11 @@ export const createMutations = <
   validateConfig(config, mutations.config)
 
   // One config instance for all mutation executions
-  let configInstance: ConfigValues<TConfig> | undefined = undefined
+  let configProperties: ConfigProperties<TConfig> | undefined = undefined
 
   // One datasources instance for all mutation executions
   const dataSources = new DataSources(
-    subgraph, node, "http://localhost:5001" 
+    subgraph, node, 'http://localhost:5001'
   )
 
   // Wrap the resolvers and add a mutation state instance to the context
@@ -70,7 +72,7 @@ export const createMutations = <
       const mutationObservers: BehaviorSubject<TState>[] = context.graph.__mutationObservers
       const mutationsCalled = context.graph.__mutationsCalled
 
-      if (rootObserver && mutationObservers.length === 0){
+      if (rootObserver && mutationObservers.length === 0) {
         for (const mutation of mutationsCalled) {
           mutationObservers.push(new BehaviorSubject<TState>({} as TState));
         }
@@ -108,8 +110,8 @@ export const createMutations = <
 
       // Create the config instance during
       // the first mutation execution
-      if (!configInstance) {
-        configInstance = await createConfig(
+      if (!configProperties) {
+        configProperties = await createConfig(
           config,
           mutations.config
         )
@@ -120,7 +122,7 @@ export const createMutations = <
       // Set the context
       setContext({
         graph: {
-          config: configInstance,
+          config: configProperties,
           dataSources,
           __rootObserver: context.graph ? context.graph.__stateObserver : undefined,
           __mutationObservers: [],
@@ -134,19 +136,19 @@ export const createMutations = <
           mutationQuery, mutations.resolvers
         )
       } else {
-        return await localResolverExecutor(
+        return await executors.localResolver(
           mutationQuery, mutations.resolvers
         )
       }
     },
-    configure: async (config: ConfigGetters<TConfig>) => {
+    configure: async (config: ConfigArguments<TConfig>) => {
       validateConfig(config, mutations.config)
-      configInstance = await createConfig(config, mutations.config)
+      configProperties = await createConfig(config, mutations.config)
     }
   }
 }
 
-export const createMutationsLink = <TConfig extends ConfigSetters>(
+const createMutationsLink = <TConfig extends ConfigGenerators>(
   { mutations }: { mutations: Mutations<TConfig> }
 ): ApolloLink => {
   return new ApolloLink((operation: Operation) =>
@@ -168,4 +170,26 @@ export const createMutationsLink = <TConfig extends ConfigSetters>(
   )
 }
 
-export * from './mutationState'
+export {
+  createMutations,
+  createMutationsLink,
+
+  // mutationExecutors
+  executors,
+  MutationExecutor
+}
+
+export {
+  CoreState,
+  CoreEvents,
+  Event,
+  EventTypeMap,
+  EventPayload,
+  MutationState,
+  ProgressUpdateEvent,
+  StateBuilder,
+  StateUpdater,
+  TransactionCompletedEvent,
+  TransactionCreatedEvent,
+  TransactionErrorEvent
+} from './mutationState'

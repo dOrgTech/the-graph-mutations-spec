@@ -1,3 +1,4 @@
+import { MutationExecutor } from './types'
 import {
   MutationQuery,
   MutationResult,
@@ -12,7 +13,11 @@ import {
 import { withClientState } from 'apollo-link-state'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 
-export default (mutationQuery: MutationQuery, resolvers: MutationResolvers): Promise<MutationResult> => {
+const localResolver: MutationExecutor = (
+  mutationQuery: MutationQuery,
+  resolvers: MutationResolvers
+): Promise<MutationResult> => {
+
   // @client directive must be used
   if (!hasDirectives(['client'], mutationQuery.query)) {
     throw new Error(`Mutation '${mutationQuery.operationName}' is missing client directive`)
@@ -43,3 +48,5 @@ export default (mutationQuery: MutationQuery, resolvers: MutationResolvers): Pro
     })
   )
 }
+
+export default localResolver

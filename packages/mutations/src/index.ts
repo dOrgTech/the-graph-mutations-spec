@@ -186,6 +186,7 @@ export {
   EventTypeMap,
   EventPayload,
   MutationState,
+  ProgressUpdateEvent,
   StateBuilder,
   TransactionCompletedEvent,
   TransactionCreatedEvent,

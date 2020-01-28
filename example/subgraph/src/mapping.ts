@@ -12,7 +12,7 @@ export function handleNewGravatar(event: NewGravatar): void {
 
 export function handleDeleteGravatar(event: DeleteGravatar): void {
   let id = event.params.id.toHex()
-  store.remove("Gravatar", id.toString())
+  store.remove('Gravatar', id.toString())
 }
 
 export function handleUpdatedGravatar(event: UpdatedGravatar): void {

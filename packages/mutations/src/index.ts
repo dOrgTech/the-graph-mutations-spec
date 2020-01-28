@@ -56,7 +56,7 @@ const createMutations = <
 
   // One datasources instance for all mutation executions
   const dataSources = new DataSources(
-    subgraph, node, "http://localhost:5001" 
+    subgraph, node, 'http://localhost:5001'
   )
 
   // Wrap the resolvers and add a mutation state instance to the context
@@ -72,7 +72,7 @@ const createMutations = <
       const mutationObservers: BehaviorSubject<TState>[] = context.graph.__mutationObservers
       const mutationsCalled = context.graph.__mutationsCalled
 
-      if (rootObserver && mutationObservers.length === 0){
+      if (rootObserver && mutationObservers.length === 0) {
         for (const mutation of mutationsCalled) {
           mutationObservers.push(new BehaviorSubject<TState>({} as TState));
         }
@@ -186,6 +186,7 @@ export {
   EventTypeMap,
   EventPayload,
   MutationState,
+  ProgressUpdateEvent,
   StateBuilder,
   TransactionCompletedEvent,
   TransactionCreatedEvent,

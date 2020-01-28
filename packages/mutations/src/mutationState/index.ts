@@ -13,7 +13,7 @@ import {
 } from './core'
 
 import { BehaviorSubject } from 'rxjs'
-import cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep, merge } from 'lodash'
 
 class StateUpdater<
   TState,
@@ -64,17 +64,19 @@ class StateUpdater<
     const extReducer = this._ext?.reducer
 
     if (coreReducers && coreReducers[event.name] !== undefined) {
-      const coreState = await coreReducers[event.name](cloneDeep(this._state), payload)
-      this._state = cloneDeep({...this._state, ...coreState})
+      const coreStatePartial = await coreReducers[event.name](cloneDeep(this._state), payload)
+      this._state = merge(this._state, coreStatePartial)
     } else if (coreReducer) {
-      const coreState = await coreReducer(cloneDeep(this._state), event)
-      this._state = cloneDeep({...this._state, ...coreState})
+      const coreStatePartial = await coreReducer(cloneDeep(this._state), event)
+      this._state = merge(this._state, coreStatePartial)
     }
 
     if (extReducers && extReducers[event.name] !== undefined) {
-      this._state = await extReducers[event.name](cloneDeep(this._state), payload)
+      const extStatePartial = await extReducers[event.name](cloneDeep(this._state), payload)
+      this._state = merge(this._state, extStatePartial)
     } else if (extReducer) {
-      this._state = await extReducer(cloneDeep(this._state), event)
+      const extStatePartial = await extReducer(cloneDeep(this._state), event)
+      this._state = merge(this._state, extStatePartial)
     }
 
     // Publish the latest state

@@ -19,7 +19,7 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
     [TEvent in keyof MutationEvents<TEventMap>]?: (
       state: MutationState<TState>,
       payload: InferEventPayload<TEvent, TEventMap>
-    ) => Promise<MutationState<TState>>
+    ) => Promise<Partial<MutationState<TState>>>
   },
   // Catch-All Reducer
   reducer?: (

@@ -6,7 +6,7 @@ import { useObservable } from './utils'
 import {
   CoreState,
   MutationStates
-} from '@graphprotocol/mutations'
+} from '@graphprotocol/mutations/dist/mutationState'
 
 import {
   useState

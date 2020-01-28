@@ -118,7 +118,7 @@ function App() {
     }
   })
 
-  if(data && data.gravatars){
+  if (data && data.gravatars){
     alreadyCreated = !!data.gravatars.find((gravatar) => gravatar.owner === (window as any).web3.currentProvider.selectedAddress)
   }
 

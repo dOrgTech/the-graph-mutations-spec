@@ -1,4 +1,4 @@
-import { MutationStates } from '@graphprotocol/mutations'
+import { MutationStates } from '@graphprotocol/mutations/dist/mutationState'
 
 import {
   BaseMutationOptions,

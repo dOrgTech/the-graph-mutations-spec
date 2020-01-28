@@ -21,8 +21,8 @@ import { BehaviorSubject } from 'rxjs'
 import cloneDeep from 'lodash/cloneDeep'
 
 class StateUpdater<
-  TState = { },
-  TEventMap extends EventTypeMap = { }
+  TState,
+  TEventMap extends EventTypeMap
 > {
 
   private _state: MutationState<TState>

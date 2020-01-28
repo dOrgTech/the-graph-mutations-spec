@@ -1,7 +1,7 @@
 import {
-  ConfigGetters,
-  ConfigSetters,
-  ConfigValues
+  ConfigGenerators,
+  ConfigArguments,
+  ConfigProperties
 } from './types'
 
 const isPromise = (test: any) => typeof test.then === "function"
@@ -15,54 +15,53 @@ const callFunc = async (func: any) => {
 }
 
 const initConfig = async (
-  config: any,
-  getters: any,
-  setters: any
+  properties: any,
+  args: any,
+  generators: any
 ) => {
-  const keys = Object.keys(setters)
+  const keys = Object.keys(generators)
   for (let key of keys) {
-    if (typeof getters === "function") {
-      getters = await callFunc(getters)
+    if (typeof args === "function") {
+      args = await callFunc(args)
     }
 
-    const getter = getters[key]
-    const setter = setters[key]
+    const generator = generators[key]
+    let arg = args[key]
 
-    if (typeof setter === "function") {
-      let value = getter
-      if (typeof getter === "function") {
-        value = await callFunc(getter)
+    if (typeof generator === "function") {
+      if (typeof arg === "function") {
+        arg = await callFunc(arg)
       }
-      config[key] = setter(value)
+      properties[key] = generator(arg)
     } else {
-      config[key] = { }
-      initConfig(config[key], getters[key], setters[key])
+      properties[key] = { }
+      initConfig(properties[key], args[key], generators[key])
     }
   }
 }
 
-export const createConfig = async <TConfig extends ConfigSetters>(
-  getters: ConfigGetters<TConfig>,
-  setters: ConfigSetters
-): Promise<ConfigValues<TConfig>> => {
+export const createConfig = async <TConfig extends ConfigGenerators>(
+  args: ConfigArguments<TConfig>,
+  generators: ConfigGenerators
+): Promise<ConfigProperties<TConfig>> => {
   const config = { }
-  await initConfig(config, getters, setters)
-  return config as ConfigValues<TConfig>
+  await initConfig(config, args, generators)
+  return config as ConfigProperties<TConfig>
 }
 
-export const validateConfig = (getters: any, setters: any) => {
-  Object.keys(setters).forEach(key => {
-    if (getters[key] === undefined) {
+export const validateConfig = (args: any, generators: any) => {
+  Object.keys(generators).forEach(key => {
+    if (args[key] === undefined) {
       throw Error(`Failed to find mutation configuration value for the property ${key}.`)
     }
 
-    if (typeof setters[key] === "object") {
-      if (typeof getters[key] === "function") {
+    if (typeof generators[key] === "object") {
+      if (typeof args[key] === "function") {
         // we return here, as we can't validate at runtime that
         // the function will return the shape we're looking for
         return
       }
-      validateConfig(getters[key], setters[key])
+      validateConfig(args[key], generators[key])
     }
   })
 }

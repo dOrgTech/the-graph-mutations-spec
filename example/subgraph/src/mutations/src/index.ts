@@ -1,9 +1,10 @@
 import {
+  ConfigGenerators,
   EventPayload,
-  StateBuilder,
+  EventTypeMap,
   MutationState,
-  StateUpdater,
-  EventTypeMap
+  StateBuilder,
+  StateUpdater
 } from "@graphprotocol/mutations"
 
 import gql from "graphql-tag"
@@ -152,7 +153,7 @@ const resolvers = {
   }
 }
 
-const config = {
+const config: ConfigGenerators = {
   ethereum: (provider: any) => {
     return new ethers.providers.Web3Provider(provider)
   },

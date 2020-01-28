@@ -21,7 +21,7 @@ export const getUniqueMutations = (doc: DocumentNode, resolverNames: string[]) =
   visit(doc, {
     OperationDefinition(node) {
       node.selectionSet.selections.reduce((result: string[], selection) => {
-        if(selection.kind === "Field" && resolverNames.includes(selection.name.value)){
+        if(selection.kind === 'Field' && resolverNames.includes(selection.name.value)){
           result.push(selection.name.value)
         }
         return result;

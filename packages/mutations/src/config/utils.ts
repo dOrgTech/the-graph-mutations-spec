@@ -4,7 +4,7 @@ import {
   ConfigValues
 } from './types'
 
-const isPromise = (test: any) => typeof test.then === "function"
+const isPromise = (test: any) => typeof test.then === 'function'
 
 const callFunc = async (func: any) => {
   let result = func()
@@ -21,16 +21,16 @@ const initConfig = async (
 ) => {
   const keys = Object.keys(setters)
   for (let key of keys) {
-    if (typeof getters === "function") {
+    if (typeof getters === 'function') {
       getters = await callFunc(getters)
     }
 
     const getter = getters[key]
     const setter = setters[key]
 
-    if (typeof setter === "function") {
+    if (typeof setter === 'function') {
       let value = getter
-      if (typeof getter === "function") {
+      if (typeof getter === 'function') {
         value = await callFunc(getter)
       }
       config[key] = setter(value)
@@ -56,8 +56,8 @@ export const validateConfig = (getters: any, setters: any) => {
       throw Error(`Failed to find mutation configuration value for the property ${key}.`)
     }
 
-    if (typeof setters[key] === "object") {
-      if (typeof getters[key] === "function") {
+    if (typeof setters[key] === 'object') {
+      if (typeof getters[key] === 'function') {
         // we return here, as we can't validate at runtime that
         // the function will return the shape we're looking for
         return

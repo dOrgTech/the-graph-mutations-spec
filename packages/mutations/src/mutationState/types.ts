@@ -7,12 +7,12 @@ export type MutationState<TState> = CoreState & TState
 
 // A collection of mutation states
 export type MutationStates<TState> = {
-  [mutation: string]: TState
+  [mutation: string]: MutationState<TState>
 }
 
 export type MutationEvents<TEventMap> = CoreEvents & TEventMap
 
-export interface StateBuilder<TState, TEventMap extends EventTypeMap = { }> {
+export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
   getInitialState(uuid: string): TState,
   // Event Specific Reducers
   reducers?: {

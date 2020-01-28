@@ -1,10 +1,15 @@
 import {
+  ConfigGenerator,
+  ConfigGenerators,
+  MutationResolvers,
+  MutationResolver,
+  MutationsModule,
   EventPayload,
-  StateBuilder,
+  EventTypeMap,
   MutationState,
-  StateUpdater,
-  EventTypeMap
-} from '@graphprotocol/mutations'
+  StateBuilder,
+  StateUpdater
+} from "@graphprotocol/mutations"
 
 import gql from 'graphql-tag'
 import { ethers } from 'ethers'

@@ -1,21 +1,28 @@
-// Validate that all leaf property values of the ConfigGetters
-// instance match the type of the ConfigSetters function arguments
-type SetterValue<T> =
-  T extends ((value: infer U) => any) ? U : ConfigGetters<T>
+type InferGeneratorArg<T> =
+  T extends ((value: infer U) => any) ? U : ConfigArguments<T>
 
-type GetterFunc<T> =
-  (() => SetterValue<T>) | (() => Promise<SetterValue<T>>)
+type InferGeneratorRet<T> =
+  T extends ((value: any) => infer U) ? U : ConfigArguments<T>
 
-type ConfigGetterProp<T> = SetterValue<T> | GetterFunc<T>
+// Validate that all leaf property values of the ConfigArguments
+// instance match the type of the ConfigGenerators function arguments
+type ConfigArgumentFunc<T> =
+  (() => InferGeneratorArg<T>) | (() => Promise<InferGeneratorArg<T>>)
 
-export type ConfigGetters<T> = {
-  [Prop in keyof T]: ConfigGetterProp<T[Prop]>
+export type ConfigGenerator<TArg, TRet> = (value: TArg) => TRet
+
+export interface ConfigGenerators {
+  [prop: string]: ConfigGenerator<any, any> | ConfigGenerators
 }
 
-export type ConfigValues<T> = {
-  [Prop in keyof T]: SetterValue<T[Prop]>
+export type ConfigProperty<T> = InferGeneratorRet<T>
+
+export type ConfigProperties<T> = {
+  [Prop in keyof T]: ConfigProperty<T[Prop]>
 }
 
-export type ConfigSetters = {
-  [prop: string]: ((value: any) => any) | ConfigSetters
+export type ConfigArgument<T> = InferGeneratorArg<T> | ConfigArgumentFunc<T>
+
+export type ConfigArguments<T> = {
+  [Prop in keyof T]: ConfigArgument<T[Prop]>
 }

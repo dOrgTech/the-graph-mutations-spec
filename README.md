@@ -17,7 +17,7 @@ Runtime packages for mutation & dApp developer.
     * Mutation State  
     * Mutation Configuration  
     * Instantiation  
-    * Querying  
+    * Executing  
   * [`mutations-apollo-react`](./packages/mutations-apollo-react)  
   Utility wrappers around commonly used hooks and components for React applications that use Apollo.  
   * [`mutations-apollo-vue`](./packages/mutations-apollo-vue)  

@@ -1,28 +1,23 @@
 import {
   Event,
-  EventPayload,
   EventTypeMap,
   MutationEvents,
   MutationState,
-  MutationStates,
   InferEventPayload,
   StateBuilder
 } from './types'
 import {
   CoreEvents,
   CoreState,
-  coreStateBuilder,
-  TransactionCompletedEvent,
-  TransactionCreatedEvent,
-  TransactionErrorEvent
+  coreStateBuilder
 } from './core'
 
 import { BehaviorSubject } from 'rxjs'
 import { cloneDeep, merge } from 'lodash'
 
 class StateUpdater<
-  TState = { },
-  TEventMap extends EventTypeMap = { }
+  TState,
+  TEventMap extends EventTypeMap
 > {
 
   private _state: MutationState<TState>
@@ -95,17 +90,6 @@ class StateUpdater<
   }
 }
 
-export {
-  EventPayload,
-  EventTypeMap,
-  MutationEvents,
-  StateBuilder,
-  MutationState,
-  MutationStates,
-  StateUpdater,
-  CoreState,
-  CoreEvents,
-  TransactionCompletedEvent,
-  TransactionCreatedEvent,
-  TransactionErrorEvent
-}
+export { StateUpdater }
+export * from './core'
+export * from './types'

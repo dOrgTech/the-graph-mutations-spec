@@ -2,6 +2,7 @@ import {
   CoreEvents,
   CoreState
 } from './core'
+import { OptionalAsync } from '../utils'
 
 export type MutationState<TState> = CoreState & TState
 
@@ -19,13 +20,13 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
     [TEvent in keyof MutationEvents<TEventMap>]?: (
       state: MutationState<TState>,
       payload: InferEventPayload<TEvent, TEventMap>
-    ) => Promise<Partial<MutationState<TState>>>
+    ) => OptionalAsync<Partial<MutationState<TState>>>
   },
   // Catch-All Reducer
   reducer?: (
     state: MutationState<TState>,
     event: Event
-  ) => Promise<MutationState<TState>>,
+  ) => OptionalAsync<MutationState<TState>>
 }
 
 export interface EventPayload { }

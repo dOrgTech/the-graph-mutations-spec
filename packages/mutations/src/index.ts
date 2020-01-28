@@ -12,7 +12,7 @@ import {
 import {
   validateConfig,
   createConfig
-} from './config/utils'
+} from './config'
 import {
   StateUpdater,
   EventTypeMap,

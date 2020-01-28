@@ -65,3 +65,7 @@ Run these commands from the root directory:
     * 0xa453611d9419d0e56f499079478fd72c37b251a94bfde4d19872c44cf65386e3
     * 0x829e924fdf021ba3dbbc4225edfece9aca04b929d6e75613329ca6f1d31c0bb4
     * 0xb0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773
+  * NOTE: If transactions fail try clearing the account history, which will reset the nonce to 0.
+* Stop Subgraph & Clean Cache
+  * `yarn stop:subgraph`
+  * NOTE: This requires root permissions as it deletes the protected cache directory `./example/subgraph/data`.

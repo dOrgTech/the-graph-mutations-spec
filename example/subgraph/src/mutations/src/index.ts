@@ -45,18 +45,28 @@ async function queryUserGravatar(context: any) {
 
   // TODO time travel query (specific block #)
   // block: hash#?
-  return await client.query({
-    query: gql`
-      query GetGravatars {
-        gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
-          id
-          owner
-          displayName
-          imageUrl
-        }
-      }`
+  for (let i = 0; i < 20; ++i) {
+    const { data } = await client.query({
+      query: gql`
+        query GetGravatars {
+          gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
+            id
+            owner
+            displayName
+            imageUrl
+          }
+        }`
+      }
+    )
+
+    if (data === null) {
+      await sleep(500)
+    } else {
+      return data.gravatars[0]
     }
-  )
+  }
+
+  return null
 }
 
 async function sendTx(tx: Transaction, state: StateUpdater<State, EventMap>) {
@@ -97,8 +107,7 @@ async function createGravatar(_root: any, { options }: any, context: any) {
     throw new Error('WHOLE PROCESS FAILED')
   }
 
-  const { data } = await queryUserGravatar(context)
-  return null
+  return await queryUserGravatar(context)
 }
 
 async function deleteGravatar(_root: any, { }: any, context: any) {
@@ -132,8 +141,7 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
 
   await state.dispatch('CUSTOM_EVENT', { myValue: displayName })
 
-  const { data } = await queryUserGravatar(context)
-  return data.gravatars[0]
+  return await queryUserGravatar(context)
 }
 
 async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
@@ -147,8 +155,7 @@ async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) 
 
   await sendTx(gravity.updateGravatarImage(imageUrl), state)
 
-  const { data } = await queryUserGravatar(context)
-  return data.gravatars[0]
+  return await queryUserGravatar(context)
 }
 
 const resolvers = {

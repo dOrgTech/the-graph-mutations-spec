@@ -10,7 +10,7 @@ dataSources:
     name: Gravity
     network: private
     source:
-      address: "0xB9bdBAEc07751F6d54d19A6B9995708873F3DE18"
+      address: "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
       abi: Gravity
     mapping:
       kind: ethereum/events

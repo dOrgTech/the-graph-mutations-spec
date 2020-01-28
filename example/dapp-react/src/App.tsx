@@ -171,7 +171,6 @@ function App() {
             orderBy: "displayName",
           }
         })
-        
       },
       onError: (error) => {
         alert(error)

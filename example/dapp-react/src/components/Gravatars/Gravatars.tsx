@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -12,7 +12,8 @@ import {
   LinearProgress,
   Input
 } from '@material-ui/core'
-import { UPDATE_GRAVATAR_NAME, TEST_TRIPLE_UPDATE } from '../../queries';
+import { cloneDeep } from 'lodash'
+import { UPDATE_GRAVATAR_NAME, TEST_TRIPLE_UPDATE, DELETE_GRAVATAR, GRAVATARS_QUERY } from '../../queries';
 import { useMutation } from '@graphprotocol/mutations-apollo-react'
 
 const gravatarStyles = theme =>
@@ -37,17 +38,10 @@ const gravatarStyles = theme =>
     },
   })
 
-const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode}) => {
+const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode }) => {
 
   const [name, setName] = useState('')
 
-  const [gravatar, setGravatar] = useState({
-    id,
-    displayName,
-    imageUrl,
-    owner
-  })
-  
   const [executeUpdate, { loading, state: { updateGravatarName: mutationState } }] = useMutation(
     UPDATE_GRAVATAR_NAME,
     {
@@ -56,8 +50,77 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode})
         id,
         displayName: name
       },
-      onCompleted: ({updateGravatarName}) => {
-        setGravatar(updateGravatarName)
+      optimisticResponse: {
+        updateGravatar: {
+          id,
+          displayName: name,
+          owner,
+          imageUrl,
+          __typename: "Gravatar"
+        }
+      },
+      update: (proxy, result) => {
+        const data: any = cloneDeep(proxy.readQuery({
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: {},
+            orderBy: "displayName",
+          }
+        }, true))
+
+        if (result.data && result.data.updateGravatar) {
+          for (let i = 0; i < data.gravatars.length; i++) {
+            if (data.gravatars[i].owner === owner) {
+              data.gravatars[i] = result.data.updateGravatar;
+              break;
+            }
+          }
+        }
+
+        proxy.writeQuery({
+          query: GRAVATARS_QUERY,
+          data,
+          variables: {
+            where: {},
+            orderBy: "displayName"
+          }
+        })
+
+      },
+      onError: (error) => {
+        alert(error)
+      }
+    })
+
+  const [executeDelete] = useMutation(
+    DELETE_GRAVATAR,
+    {
+      client,
+      optimisticResponse: {
+        deleteGravatar: true
+      },
+      update: (proxy, result) => {
+        const data: any = cloneDeep(proxy.readQuery({
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: {},
+            orderBy: "displayName",
+          }
+        }, true))
+
+        if (result.data && result.data.deleteGravatar) {
+          data.gravatars = data.gravatars.filter(gravatar => gravatar.owner !== owner)
+        }
+
+        proxy.writeQuery({
+          query: GRAVATARS_QUERY,
+          data,
+          variables: {
+            where: {},
+            orderBy: "displayName"
+          }
+        })
+
       },
       onError: (error) => {
         alert(error)
@@ -81,64 +144,72 @@ const Gravatar = ({ classes, id, displayName, imageUrl, owner, client, devMode})
   }
 
   return (
-  <Grid item>
-    <Card>
-      <div className={classes.actionArea}>
-        {gravatar.imageUrl && (
-          <CardMedia className={classes.image} image={gravatar.imageUrl} title={gravatar.displayName} />
-        )}
-        <CardContent>
-          <Typography variant="h6" component="h3" className={classes.displayName}>
-            {gravatar.displayName || '—'}
-          </Typography>
-          <Typography color="textSecondary">ID</Typography>
-          <Typography component="p" className={classes.id}>
-            {gravatar.id}
-          </Typography>
-          <Typography color="textSecondary">Owner</Typography>
-          <Typography component="p" className={classes.owner}>
-            {gravatar.owner}
-          </Typography>
-        </CardContent>
-        {((window as any).web3.currentProvider.selectedAddress === gravatar.owner)?
-          devMode?
-          (
-            <CardActions>
-              <Input
-                placeholder="Type new name..."
-                onChange={handleNameChange}></Input>
-              <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
-                Update
-              </Button>
-              <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
-                Multi Query
-              </Button>
-            </CardActions>
-          )
-          : (
-            <CardActions>
-              <Input
-                placeholder="Type new name..."
-                onChange={handleNameChange}></Input>
-              <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
-                Update
-              </Button>
-            </CardActions>
-          ): null
-        }
-        {
-          loading && (window as any).web3.currentProvider.selectedAddress === gravatar.owner? (
-            <LinearProgress
-              variant="determinate"
-              value={mutationState && mutationState.progress? mutationState.progress : 0}
-            >
-            </LinearProgress>
-          ): null
-        }
-      </div>
-    </Card>
-  </Grid>
-)}
+    <Grid item>
+      <Card>
+        <div className={classes.actionArea}>
+          {imageUrl && (
+            <CardMedia className={classes.image} image={imageUrl} title={displayName} />
+          )}
+          <CardContent>
+            <Typography variant="h6" component="h3" className={classes.displayName}>
+              {displayName || '—'}
+            </Typography>
+            <Typography color="textSecondary">ID</Typography>
+            <Typography component="p" className={classes.id}>
+              {id}
+            </Typography>
+            <Typography color="textSecondary">Owner</Typography>
+            <Typography component="p" className={classes.owner}>
+              {owner}
+            </Typography>
+          </CardContent>
+          <CardActions>
+          {((window as any).web3.currentProvider.selectedAddress === owner) ?
+            devMode ?
+              (<>
+                <Input
+                  placeholder="Name..."
+                  onChange={handleNameChange}></Input>
+                <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
+                  Update
+                </Button>
+                <Button size="small" color="secondary" variant="outlined" onClick={() => executeDelete()}>
+                  Delete
+                </Button>
+                <Button size="small" color="default" variant="outlined" onClick={() => multiUpdate()}>
+                  Multi Query
+                </Button>
+              </>
+              )
+              : (
+                <>
+                  <Input
+                    placeholder="Name..."
+                    onChange={handleNameChange}></Input>
+                  <Button size="small" color="primary" variant="outlined" onClick={() => executeUpdate()}>
+                    Update
+                  </Button>
+                  <Button size="small" color="secondary" variant="outlined" onClick={() => executeDelete()}>
+                    Delete
+                  </Button>
+                </>
+              ) : null
+          }
+          </CardActions>
+          {
+            loading && (window as any).web3.currentProvider.selectedAddress === owner ? (
+              <LinearProgress
+                variant="determinate"
+                value={mutationState && mutationState.progress ? mutationState.progress : 0}
+              >
+              </LinearProgress>
+            ) : null
+          }
+        </div>
+      </Card>
+    </Grid>
+  )
+}
 
 const StyledGravatar = withStyles(gravatarStyles)(Gravatar)
 

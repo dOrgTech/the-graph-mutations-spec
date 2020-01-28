@@ -5,6 +5,7 @@ import { InMemoryCache } from 'apollo-boost'
 import { createHttpLink } from 'apollo-link-http'
 import { getMainDefinition } from 'apollo-utilities'
 import { useQuery } from '@apollo/react-hooks'
+import { cloneDeep } from 'lodash'
 import {
   Grid,
   LinearProgress,
@@ -92,10 +93,9 @@ function App() {
   const [withName, setWithName] = React.useState(false)
   const [orderBy, setOrderBy] = React.useState('displayName')
   const [showHelpDialog, setShowHelpDialog] = React.useState(false)
-  const [gravatars, setGravatars] = React.useState([] as Gravatar[])
   const [devMode, setDevMode] = React.useState(false)
 
-  const alreadyCreated = !!gravatars.find((gravatar) => gravatar.owner === (window as any).web3.currentProvider.selectedAddress)
+  let alreadyCreated = false
   const randName = getRandomName()
   const randPic = getRandomProfilePic(randName)
 
@@ -118,8 +118,8 @@ function App() {
     }
   })
 
-  if(data && gravatars.length === 0){
-    setGravatars(data.gravatars)
+  if(data && data.gravatars){
+    alreadyCreated = !!data.gravatars.find((gravatar) => gravatar.owner === (window as any).web3.currentProvider.selectedAddress)
   }
 
   const [executeCreate] = useMutation(
@@ -129,35 +129,51 @@ function App() {
       variables: {
         options: { displayName: randName, imageUrl: randPic }
       },
+      refetchQueries: [
+        {
+          query: GRAVATARS_QUERY,
+          variables: {
+            where: { },
+            orderBy: "displayName"
+          }
+        }
+      ],
       optimisticResponse: {
         createGravatar: {
-          id: "New",
-          imageUrl: randPic,
+          id: "0xa",
           owner: (window as any).web3.currentProvider.selectedAddress,
           displayName: randName,
+          imageUrl: randPic,
           __typename: "Gravatar"
         }
       },
       update: (proxy, result) => {
-        const data: any = proxy.readQuery({
+        const data: any = cloneDeep(proxy.readQuery({
           query: GRAVATARS_QUERY,
           variables: {
             where: {
               ...(withImage ? { imageUrl_starts_with: 'http' } : {}),
               ...(withName ? { displayName_not: '' } : {}),
             },
-            orderBy: orderBy,
+            orderBy: "displayName",
           }
-        }, true)
+        }, true))
 
         if (result.data && result.data.createGravatar) {
           data.gravatars.push(result.data.createGravatar)
         }
 
-        setGravatars(data.gravatars)
+        proxy.writeQuery({
+          query: GRAVATARS_QUERY, 
+          data,
+          variables: {
+            where: { },
+            orderBy: "displayName",
+          }
+        })
+        
       },
       onError: (error) => {
-        setGravatars(gravatars.filter(gravatar => gravatar.id !== "New"))
         alert(error)
       }
     }
@@ -203,7 +219,7 @@ function App() {
             ) : error ? (
               <CustomError error={error} />
             ) : (
-                  <Gravatars client={client} gravatars={gravatars} devMode={devMode} />
+                  <Gravatars client={client} gravatars={data.gravatars} devMode={devMode} />
                 )
             }
           </Grid>
@@ -234,7 +250,7 @@ function App() {
       <br></br>
       {devMode? 
         !alreadyCreated?
-          <DevTests client={client} randName={randName} randPic={randPic} gravatarState={[gravatars, setGravatars]} options={{withImage, withName, orderBy}} />
+          <DevTests client={client} randName={randName} randPic={randPic} options={{withImage, withName, orderBy}} />
           : "A Gravatar with this address has already been created"
             : null}
     </div>

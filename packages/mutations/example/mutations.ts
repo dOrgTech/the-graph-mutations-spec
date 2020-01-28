@@ -1,4 +1,7 @@
 import {
+  EventTypeMap,
+  EventPayload,
+  MutationState,
   StateBuilder
 } from '../src'
 
@@ -25,9 +28,30 @@ const config = {
   }
 }
 
-const stateBuilder: StateBuilder<{ }> = {
+interface State {
+  myValue: boolean
+}
+
+interface MyEvent extends EventPayload {
+  myValue: boolean
+}
+
+interface Events extends EventTypeMap {
+  'MY_EVENT': MyEvent
+}
+
+const stateBuilder: StateBuilder<State, Events> = {
   getInitialState() {
-    return { }
+    return {
+      myValue: false
+    }
+  },
+  reducers: {
+    'MY_EVENT': (state: MutationState<State>, payload: MyEvent) => {
+      return {
+        myValue: payload.myValue
+      }
+    }
   }
 }
 

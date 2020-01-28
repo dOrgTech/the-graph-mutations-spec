@@ -1,4 +1,4 @@
-import { makeRepeatedUnique } from './arrayUtils'
+import { makeRepeatedUnique } from './array'
 
 import { DocumentNode } from 'graphql'
 import { visit } from 'graphql/language/visitor'

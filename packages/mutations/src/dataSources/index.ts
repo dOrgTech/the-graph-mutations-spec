@@ -2,7 +2,7 @@ import { DataSource } from './dataSource'
 import {
   getDataSource,
   getContractAbis
-} from './utils'
+} from '../utils'
 
 import { HttpLink } from 'apollo-link-http'
 const ipfsHttpClient = require('ipfs-http-client')

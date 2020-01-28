@@ -1,7 +1,8 @@
 import {
   EventPayload,
   StateBuilder,
-  Event
+  Event,
+  ProgressValue
 } from './types'
 
 export type EventLog = Event[]
@@ -9,13 +10,14 @@ export type EventLog = Event[]
 export interface CoreState {
   events: EventLog
   uuid: string
-  progress: number
+  progress: ProgressValue
 }
 
 export type CoreEvents = {
   'TRANSACTION_CREATED': TransactionCreatedEvent
   'TRANSACTION_COMPLETED': TransactionCompletedEvent
   'TRANSACTION_ERROR': TransactionErrorEvent
+  'PROGRESS_UPDATE': ProgressUpdateEvent
 }
 
 export interface TransactionCreatedEvent extends EventPayload {
@@ -31,6 +33,10 @@ export interface TransactionCompletedEvent extends EventPayload {
 export interface TransactionErrorEvent extends EventPayload {
   id: string
   error: Error
+}
+
+export interface ProgressUpdateEvent extends EventPayload {
+  value: ProgressValue
 }
 
 export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
@@ -50,6 +56,15 @@ export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
     },
     'TRANSACTION_ERROR': async (state: CoreState, payload: TransactionErrorEvent) => {
       return state;
+    },
+    'PROGRESS_UPDATE': async (state: CoreState, payload: ProgressUpdateEvent) => {
+      if( payload.value < 0 || payload.value > 100){
+        throw new Error("Progress value must be a number between 0 and 1")
+      }
+
+      return {
+        progress: payload.value
+      }
     }
   }
 }

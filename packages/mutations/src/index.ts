@@ -14,16 +14,21 @@ import {
   createConfig
 } from './config'
 import {
-  StateUpdater,
+  CoreState,
   EventTypeMap,
-  CoreState
+  StateUpdater,
+  MutationState,
+  MutationStates,
+  MutationStatesSub,
+  MutationStateSub,
+  MutationStateSubs
 } from './mutationState'
 import { getUniqueMutations } from './utils'
 import { DataSources } from './dataSources'
 import executors, { MutationExecutor } from './mutationExecutors'
 
 import { v4 } from 'uuid'
-import { BehaviorSubject, combineLatest } from 'rxjs'
+import { combineLatest } from 'rxjs'
 import { ApolloLink, Operation, Observable } from 'apollo-link'
 
 interface CreateMutationsOptions<
@@ -68,23 +73,39 @@ const createMutations = <
 
     // Wrap the resolver
     mutations.resolvers.Mutation[name] = async (source, args, context, info) => {
-      const rootObserver = context.graph.__rootObserver
-      const mutationObservers: BehaviorSubject<TState>[] = context.graph.__mutationObservers
-      const mutationsCalled = context.graph.__mutationsCalled
+      /*const {
+        _rootObserver,
+        _mutationObservers,
+        _mutationsCalled
+      } = context.graph*/
+      // TODO: all of these need types
+      const _rootObserver = context.graph._rootObserver as MutationStatesSub<TState>
+      const _mutationObservers = context.graph._mutationObservers as MutationStateSubs<TState>
+      const _mutationsCalled = context.graph._mutationsCalled as string[]
 
-      if (rootObserver && mutationObservers.length === 0) {
-        for (const mutation of mutationsCalled) {
-          mutationObservers.push(new BehaviorSubject<TState>({} as TState));
-        }
+      // If an observer is being used, and we haven't instantiated
+      // observers for each mutation being executed
+      if (_rootObserver && _mutationObservers.length === 0) {
 
-        combineLatest(mutationObservers).subscribe((values: TState[]) => {
-          const result: {[key: string]: TState} = {}
+        // Create observers for each mutation that's called
+        _mutationsCalled.forEach(() => {
+          _mutationObservers.push(
+            new MutationStateSub<TState>(
+              { } as MutationState<TState>
+            )
+          )
+        })
+
+        // Subscribe to all of the mutation observers
+        // TODO: get rid of type cast
+        combineLatest(_mutationObservers).subscribe((values: MutationState<TState>[]) => {
+          const result: MutationStates<TState> = { }
 
           values.forEach((value, index) => {
-            result[mutationsCalled[index]] = value;
+            result[_mutationsCalled[index]] = value;
           })
 
-          rootObserver.next(result)
+          _rootObserver.next(result)
         })
       }
 
@@ -92,11 +113,19 @@ const createMutations = <
       let uuid = v4()
 
       const state = new StateUpdater<TState, TEventMap>(
-        uuid, mutations.stateBuilder, rootObserver ? mutationObservers.shift() : undefined
+        uuid, mutations.stateBuilder,
+        // Initialize StateUpdater with a state subscription if one is present
+        _rootObserver ? _mutationObservers.shift() : undefined
       )
 
       // Create a new context with the state added to context.graph
-      const newContext = { ...context, graph: { ...context.graph, state } }
+      const newContext = {
+        ...context,
+        graph: {
+          ...context.graph,
+          state
+        }
+      }
 
       // Execute the resolver
       return await resolver(source, args, newContext, info)
@@ -124,9 +153,9 @@ const createMutations = <
         graph: {
           config: configProperties,
           dataSources,
-          __rootObserver: context.graph ? context.graph.__stateObserver : undefined,
-          __mutationObservers: [],
-          __mutationsCalled: getUniqueMutations(query, Object.keys(mutations.resolvers.Mutation)),
+          _rootObserver: context.graph ? context.graph.__stateObserver : undefined,
+          _mutationObservers: [],
+          _mutationsCalled: getUniqueMutations(query, Object.keys(mutations.resolvers.Mutation)),
         }
       })
 

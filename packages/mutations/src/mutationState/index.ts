@@ -4,7 +4,8 @@ import {
   MutationEvents,
   MutationState,
   InferEventPayload,
-  StateBuilder
+  StateBuilder,
+  MutationStateSub
 } from './types'
 import {
   CoreEvents,
@@ -13,7 +14,6 @@ import {
 } from './core'
 import { execFunc } from '../utils'
 
-import { BehaviorSubject } from 'rxjs'
 import { cloneDeep, merge } from 'lodash'
 
 class StateUpdater<
@@ -22,14 +22,14 @@ class StateUpdater<
 > {
 
   private _state: MutationState<TState>
-  private _observer?: BehaviorSubject<TState>
+  private _observer?: MutationStateSub<TState>
   private _ext?: StateBuilder<TState, TEventMap>
   private _core: StateBuilder<CoreState, CoreEvents>
 
   constructor(
     uuid: string,
     ext?: StateBuilder<TState, TEventMap>,
-    observer?: BehaviorSubject<TState>
+    observer?: MutationStateSub<TState>
   ) {
     this._observer = observer
     this._ext = ext
@@ -39,6 +39,9 @@ class StateUpdater<
       ...this._core.getInitialState(uuid),
       ...(this._ext ? this._ext.getInitialState(uuid) : { } as TState),
     }
+
+    // Publish the initial state
+    this.publish()
   }
 
   public get current() {

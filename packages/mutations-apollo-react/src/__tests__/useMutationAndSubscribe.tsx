@@ -5,24 +5,52 @@ import { act } from 'react-dom/test-utils'
 import { isEqual } from 'lodash'
 
 
-import { CREATE_TODO, client, statesToPublish } from '../test-utils'
+import { TEST_RESOLVER, client, statesToPublish } from '../test-utils'
 import { useMutation } from '..'
 
 Enzyme.configure({ adapter: new Adapter() })
 
 describe("UseMutation Custom Hook", () => {
+
+   it('Correctly sets observer object inside context', async () => {
+
+    let mutationResult: any;
+    let observerSet = false;
+
+    function Wrapper() {
+      mutationResult = useMutation(TEST_RESOLVER, {
+        client
+      })
+
+      const [_, { data }] = mutationResult
+
+      if(data && data.testResolve){
+        observerSet = true
+      }
+
+      return null;
+    }
+
+    mount(<Wrapper></Wrapper>)
+
+    const [ execute ] = mutationResult
+
+    await act(async () => {
+      execute()
+    })
+
+    expect(observerSet).toEqual(true)
+
+   })
+
   it('Returns states in dispatch order', async () => {
 
     let mutationResult: any;
     let states: string[] = [];
 
     function Wrapper() {
-      mutationResult = useMutation(CREATE_TODO, {
-        client,
-        variables: {
-          description: "TEST DESCRIPTION",
-          asignee: "TEST ASIGNEE"
-        }
+      mutationResult = useMutation(TEST_RESOLVER, {
+        client
       })
 
       const [_, { state }] = mutationResult

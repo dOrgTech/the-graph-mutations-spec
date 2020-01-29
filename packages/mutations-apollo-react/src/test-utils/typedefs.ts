@@ -15,12 +15,7 @@ export const typeDefs = gql`
       getTodos: [Todo]
   }
   extend type Mutation{
-      create(createInput: CreateInput, requestId: ID): Todo!
-      setComplete(id: ID!, requestId: ID): Todo!
-      setIncomplete(id: ID!, requestId: ID): Todo!
-      delete(id: ID!, requestId: ID): Todo!
+      testResolve: Boolean!
   }
-  extend type Subscription {
-      progress(requestId: ID!): Float!
-  }
+
   `;

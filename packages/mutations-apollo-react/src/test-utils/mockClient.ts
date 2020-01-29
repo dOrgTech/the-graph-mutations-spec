@@ -9,7 +9,7 @@ cache.writeData({
     }
 })
 
-export const statesToPublish = ["First", "Second", "Third"]
+export const statesToPublish = [{ testResolve: "First"}, { testResolve: "Second"}, { testResolve: "Third"}]
 
 export const client = new ApolloClient({
     resolvers: {

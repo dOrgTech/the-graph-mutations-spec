@@ -8,6 +8,7 @@ import {
   MutationFunctionOptions
 } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
+import { MutationHookOptions } from '@apollo/react-hooks';
 
 interface MutationResultWithState<TState, TData = any> extends MutationResult<TData> {
   state: MutationStates<TState>
@@ -26,6 +27,7 @@ export interface MutationComponentOptionsWithState<
   TVariables
 > extends BaseMutationOptions<TData, TVariables> {
   mutation: DocumentNode;
+  options: MutationHookOptions
   children: (
     mutateFunction: MutationFunction<TData, TVariables>,
     result: MutationResultWithState<TState, TData>

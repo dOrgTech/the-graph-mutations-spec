@@ -61,6 +61,6 @@ export const Mutation = <
 >(
   props: MutationComponentOptionsWithState<TState, TData, TVariables>
 ) => {
-  const [runMutation, result] = useMutation<TState>(props.mutation, props)
+  const [runMutation, result] = useMutation<TState>(props.mutation, props.options)
   return props.children ? props.children(runMutation, result) : null
 }

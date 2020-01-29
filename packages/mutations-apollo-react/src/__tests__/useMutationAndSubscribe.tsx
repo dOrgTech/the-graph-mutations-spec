@@ -7,6 +7,8 @@ import { isEqual } from 'lodash'
 
 import { TEST_RESOLVER, client, statesToPublish } from '../test-utils'
 import { useMutation } from '..'
+import { MutationStates } from '@graphprotocol/mutations/src/mutationState'
+import { CoreState } from '@graphprotocol/mutations/src'
 
 Enzyme.configure({ adapter: new Adapter() })
 
@@ -14,29 +16,27 @@ describe("UseMutation Custom Hook", () => {
 
    it('Correctly sets observer object inside context', async () => {
 
-    let mutationResult: any;
+    let mutationFunction: Function;
     let observerSet = false;
 
     function Wrapper() {
-      mutationResult = useMutation(TEST_RESOLVER, {
+      const [execute, { data }] = useMutation(TEST_RESOLVER, {
         client
       })
-
-      const [_, { data }] = mutationResult
 
       if(data && data.testResolve){
         observerSet = true
       }
+
+      mutationFunction = execute;
 
       return null;
     }
 
     mount(<Wrapper></Wrapper>)
 
-    const [ execute ] = mutationResult
-
     await act(async () => {
-      execute()
+      mutationFunction()
     })
 
     expect(observerSet).toEqual(true)
@@ -45,15 +45,15 @@ describe("UseMutation Custom Hook", () => {
 
   it('Returns states in dispatch order', async () => {
 
-    let mutationResult: any;
-    let states: string[] = [];
+    let mutationFunction: Function;
+    let states: MutationStates<CoreState>[] = [];
 
     function Wrapper() {
-      mutationResult = useMutation(TEST_RESOLVER, {
+      const [execute, { state }] = useMutation(TEST_RESOLVER, {
         client
       })
 
-      const [_, { state }] = mutationResult
+      mutationFunction = execute
 
       useEffect(() => {
         if(!isEqual(state, {}))
@@ -65,10 +65,8 @@ describe("UseMutation Custom Hook", () => {
 
     mount(<Wrapper></Wrapper>)
 
-    const [ execute ] = mutationResult
-
     await act(async () => {
-      execute()
+      mutationFunction()
     })
 
     expect(statesToPublish).toEqual(states)

@@ -112,6 +112,7 @@ const createMutations = <
       // Generate a unique ID for this resolver execution
       let uuid = v4()
 
+      // Create a new StateUpdater for the resolver to dispatch updates through
       const state = new StateUpdater<TState, TEventMap>(
         uuid, mutations.stateBuilder,
         // Initialize StateUpdater with a state subscription if one is present

@@ -2,13 +2,15 @@ import {
   MutationComponentOptionsWithState,
   MutationTupleWithState
 } from './types'
-import { useObservable } from './utils'
+// TODO: get rid of dist/
+import { MutationStatesSub } from '@graphprotocol/mutations/dist/mutationState'
 import {
   CoreState,
   MutationStates
 } from '@graphprotocol/mutations/dist/mutationState'
 
 import {
+  useEffect,
   useState
 } from 'react'
 import {
@@ -17,7 +19,6 @@ import {
 } from '@apollo/react-hooks'
 import { OperationVariables } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
-import { BehaviorSubject } from 'rxjs'
 
 export const useMutation = <
   TState = CoreState,
@@ -29,7 +30,7 @@ export const useMutation = <
 ): MutationTupleWithState<TState, TData, TVariables> => {
 
   const [state, setState] = useState({} as MutationStates<TState>)
-  const [observable] = useState(new BehaviorSubject({} as MutationStates<TState>))
+  const [observable] = useState(new MutationStatesSub<TState>({ }))
 
   mutationOptions.context = {
     ...mutationOptions.context,
@@ -43,7 +44,14 @@ export const useMutation = <
     mutation, mutationOptions
   )
 
-  useObservable(observable, setState)
+  useEffect(() => {
+    let subscription = observable.subscribe(result => {
+      if (result) {
+        setState(result)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [observable, setState])
 
   return [
     execute,

@@ -2,7 +2,9 @@ import {
   Mutations,
   MutationsModule,
   MutationQuery,
-  MutationResult
+  MutationResult,
+  MutationContext,
+  UserMutationQuery
 } from './types'
 import {
   ConfigGenerators,
@@ -19,13 +21,14 @@ import {
   StateUpdater,
   MutationState,
   MutationStates,
-  MutationStatesSub,
-  MutationStateSub,
-  MutationStateSubs
+  MutationStateSub
 } from './mutationState'
 import { getUniqueMutations } from './utils'
 import { DataSources } from './dataSources'
-import executors, { MutationExecutor } from './mutationExecutors'
+import {
+  execLocalResolver,
+  MutationExecutor
+} from './mutationExecutors'
 
 import { v4 } from 'uuid'
 import { combineLatest } from 'rxjs'
@@ -40,7 +43,7 @@ interface CreateMutationsOptions<
   subgraph: string,
   node: string,
   config: ConfigArguments<TConfig>
-  mutationExecutor?: MutationExecutor
+  mutationExecutor?: MutationExecutor<TConfig, TState, TEventMap>
 }
 
 const createMutations = <
@@ -49,7 +52,7 @@ const createMutations = <
   TEventMap extends EventTypeMap = { },
 >(
   options: CreateMutationsOptions<TConfig, TState, TEventMap>
-): Mutations<TConfig> => {
+): Mutations<TConfig, TState, TEventMap> => {
 
   const { mutations, subgraph, node, config, mutationExecutor } = options
 
@@ -64,7 +67,7 @@ const createMutations = <
     subgraph, node, 'http://localhost:5001'
   )
 
-  // Wrap the resolvers and add a mutation state instance to the context
+  // Wrap each resolver and add a mutation state instance to the context
   const resolverNames = Object.keys(mutations.resolvers.Mutation)
 
   for (let i = 0; i < resolverNames.length; i++) {
@@ -73,23 +76,19 @@ const createMutations = <
 
     // Wrap the resolver
     mutations.resolvers.Mutation[name] = async (source, args, context, info) => {
-      /*const {
-        _rootObserver,
-        _mutationObservers,
+      const {
+        _rootSub,
+        _mutationSubs,
         _mutationsCalled
-      } = context.graph*/
-      // TODO: all of these need types
-      const _rootObserver = context.graph._rootObserver as MutationStatesSub<TState>
-      const _mutationObservers = context.graph._mutationObservers as MutationStateSubs<TState>
-      const _mutationsCalled = context.graph._mutationsCalled as string[]
+      } = context.graph
 
-      // If an observer is being used, and we haven't instantiated
-      // observers for each mutation being executed
-      if (_rootObserver && _mutationObservers.length === 0) {
+      // If a root mutation state sub is being used, and we haven't
+      // instantiated subscribes for each mutation being executed...
+      if (_rootSub && _mutationSubs.length === 0) {
 
         // Create observers for each mutation that's called
         _mutationsCalled.forEach(() => {
-          _mutationObservers.push(
+          _mutationSubs.push(
             new MutationStateSub<TState>(
               { } as MutationState<TState>
             )
@@ -98,14 +97,14 @@ const createMutations = <
 
         // Subscribe to all of the mutation observers
         // TODO: get rid of type cast
-        combineLatest(_mutationObservers).subscribe((values: MutationState<TState>[]) => {
+        combineLatest(_mutationSubs).subscribe((values: MutationState<TState>[]) => {
           const result: MutationStates<TState> = { }
 
           values.forEach((value, index) => {
             result[_mutationsCalled[index]] = value;
           })
 
-          _rootObserver.next(result)
+          _rootSub.next(result)
         })
       }
 
@@ -116,7 +115,7 @@ const createMutations = <
       const state = new StateUpdater<TState, TEventMap>(
         uuid, mutations.stateBuilder,
         // Initialize StateUpdater with a state subscription if one is present
-        _rootObserver ? _mutationObservers.shift() : undefined
+        _rootSub ? _mutationSubs.shift() : undefined
       )
 
       // Create a new context with the state added to context.graph
@@ -134,9 +133,11 @@ const createMutations = <
   }
 
   return {
-    execute: async (mutationQuery: MutationQuery) => {
+    execute: async (mutationQuery: UserMutationQuery) => {
 
-      const { setContext,getContext, query } = mutationQuery
+      const internalQuery = mutationQuery as MutationQuery<TConfig, TState, TEventMap>
+
+      const { setContext, getContext, query } = internalQuery
 
       // Create the config instance during
       // the first mutation execution
@@ -154,8 +155,10 @@ const createMutations = <
         graph: {
           config: configProperties,
           dataSources,
-          _rootObserver: context.graph ? context.graph.__stateObserver : undefined,
-          _mutationObservers: [],
+          // This will get overridden by the wrapped resolver above
+          state: { } as StateUpdater<TState, TEventMap>,
+          _rootSub: context.graph ? context.graph._rootSub : undefined,
+          _mutationSubs: [],
           _mutationsCalled: getUniqueMutations(query, Object.keys(mutations.resolvers.Mutation)),
         }
       })
@@ -163,11 +166,11 @@ const createMutations = <
       // Execute the mutation
       if (mutationExecutor) {
         return await mutationExecutor(
-          mutationQuery, mutations.resolvers
+          internalQuery, mutations.resolvers
         )
       } else {
-        return await executors.localResolver(
-          mutationQuery, mutations.resolvers
+        return await execLocalResolver(
+          internalQuery, mutations.resolvers
         )
       }
     },
@@ -178,17 +181,30 @@ const createMutations = <
   }
 }
 
-const createMutationsLink = <TConfig extends ConfigGenerators>(
-  { mutations }: { mutations: Mutations<TConfig> }
+const createMutationsLink = <
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap,
+> (
+  { mutations }: { mutations: Mutations<TConfig, TState, TEventMap> }
 ): ApolloLink => {
-  return new ApolloLink((operation: Operation) =>
-    new Observable(observer => {
+  return new ApolloLink((operation: Operation) => {
+
+    const setContext = (context: MutationContext<TConfig, TState, TEventMap>) => {
+      return operation.setContext(context) as MutationContext<TConfig, TState, TEventMap>
+    }
+
+    const getContext = () => {
+      return operation.getContext() as MutationContext<TConfig, TState, TEventMap>
+    }
+
+    return new Observable(observer => {
       mutations.execute({
         query: operation.query,
         variables: operation.variables,
         operationName: operation.operationName,
-        setContext: operation.setContext,
-        getContext: operation.getContext
+        setContext: setContext,
+        getContext: getContext
       }).then(
         (result: MutationResult) => {
           observer.next(result)
@@ -197,7 +213,7 @@ const createMutationsLink = <TConfig extends ConfigGenerators>(
         (e: Error) => observer.error(e)
       )
     })
-  )
+  })
 }
 
 export {
@@ -205,7 +221,6 @@ export {
   createMutationsLink,
 
   // mutationExecutors
-  executors,
   MutationExecutor
 }
 

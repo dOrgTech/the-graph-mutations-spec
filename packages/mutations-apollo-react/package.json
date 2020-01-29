@@ -1,10 +1,10 @@
 {
   "name": "@graphprotocol/mutations-apollo-react",
   "version": "0.0.0",
-  "description": "TODO",
+  "description": "Wrappers for commonly used apollo-react hooks and components.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "TODO",
+  "repository": "https://github.com/graphprotocol/mutations",
   "author": "Graph Protocol, Inc.",
   "license": "MIT/Apache",
   "private": false,

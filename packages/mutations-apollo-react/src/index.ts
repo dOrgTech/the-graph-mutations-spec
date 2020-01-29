@@ -2,7 +2,6 @@ import {
   MutationComponentOptionsWithState,
   MutationTupleWithState
 } from './types'
-// TODO: get rid of dist/
 import { MutationStatesSub } from '@graphprotocol/mutations/dist/mutationState'
 import {
   CoreState,

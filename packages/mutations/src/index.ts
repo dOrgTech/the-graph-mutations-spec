@@ -96,8 +96,7 @@ const createMutations = <
         })
 
         // Subscribe to all of the mutation observers
-        // TODO: get rid of type cast
-        combineLatest(_mutationSubs).subscribe((values: MutationState<TState>[]) => {
+        combineLatest(_mutationSubs).subscribe((values) => {
           const result: MutationStates<TState> = { }
 
           values.forEach((value, index) => {
@@ -218,11 +217,15 @@ const createMutationsLink = <
 
 export {
   createMutations,
-  createMutationsLink,
-
-  // mutationExecutors
-  MutationExecutor
+  createMutationsLink
 }
+
+export {
+  MutationResolvers,
+  MutationContext
+} from './types'
+
+export { MutationExecutor } from './mutationExecutors'
 
 export {
   CoreState,

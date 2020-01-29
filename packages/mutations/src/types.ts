@@ -8,7 +8,8 @@ import {
 import { DataSources } from './dataSources'
 import {
   ConfigGenerators,
-  ConfigArguments
+  ConfigArguments,
+  ConfigProperties
 } from './config'
 
 import { ExecutionResult } from 'graphql/execution'
@@ -32,7 +33,7 @@ export interface MutationContext<
 > {
   [prop: string]: any,
   graph: {
-    config: TConfig,
+    config: ConfigProperties<TConfig>,
     dataSources: DataSources,
     state: StateUpdater<TState, TEventMap>
     _mutationsCalled: string[],

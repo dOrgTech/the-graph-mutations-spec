@@ -3,6 +3,7 @@ import { CoreState } from '../core'
 import { StateBuilder, MutationState, EventTypeMap, EventPayload } from '../types'
 import { StateUpdater } from '../index'
 import { BehaviorSubject } from 'rxjs'
+import { Event } from '../types'
 
 describe("Core Mutation State", () => {
 
@@ -51,6 +52,26 @@ describe("Core Mutation State", () => {
 
   })
 
+  it("Dispatches state updates in correct order", async () => {
+    await state.dispatch("PROGRESS_UPDATE", { value: 5 })
+    await state.dispatch("TRANSACTION_CREATED", {
+      id: "Test Id",
+      description: "Test Description"
+    })
+
+    const currentState = state.current
+
+    expect(currentState.events[0].name).toEqual("PROGRESS_UPDATE")
+    expect(currentState.events[0].payload).toEqual( { value: 5 })
+
+    expect(currentState.events[1].name).toEqual("TRANSACTION_CREATED")
+    expect(currentState.events[1].payload).toEqual( {
+      id: "Test Id",
+      description: "Test Description"
+    })
+
+  })
+
   it("Fails if PROGRESS_UPDATE event receives number lower than 0 or higher than 100 or non integer", async () => {
     expect(state.dispatch("PROGRESS_UPDATE", { value: 105 } as any)).rejects.toThrow()
     expect(state.dispatch("PROGRESS_UPDATE", { value: -5 } as any)).rejects.toThrow()
@@ -62,7 +83,8 @@ describe("Core Mutation State", () => {
 describe("Extended Mutation State", () => {
 
   interface CustomEvent extends EventPayload {
-    myValue: string
+    myValue: string,
+    myFlag: boolean
   }
   
   interface EventMap extends EventTypeMap {
@@ -82,8 +104,8 @@ describe("Extended Mutation State", () => {
   const stateBuilder: StateBuilder<State, EventMap> = {
     getInitialState(): State {
       return {
-        myValue: '',
-        myFlag: false
+        myValue: 'initial',
+        myFlag: true
       }
     },
     reducers: {
@@ -92,6 +114,9 @@ describe("Extended Mutation State", () => {
           myValue: 'true'
         }
       }
+    },
+    reducer: async (state: MutationState<State>, {payload: {}}) => {
+      return { }
     }
   }
 
@@ -110,8 +135,38 @@ describe("Extended Mutation State", () => {
     })
   })
 
-  it("Works", () => {
+  it("Includes extended state with correct initial values", () => {
+    const currentState = state.current;
     
+    expect(currentState.myFlag).toEqual(true)
+    expect(currentState.myValue).toEqual('initial')
   })
+
+  it("Correctly executes CUSTOM_EVENT defined reducer", async () => {
+    await state.dispatch("CUSTOM_EVENT", { myFlag: false, myValue: 'false'})
+
+    const currentState = state.current;
+    
+    expect(currentState.myFlag).toEqual(true)
+    expect(currentState.myValue).toEqual('true')
+  })
+
+  it("Includes custom events alongside core events in the events history", async () => {
+    await state.dispatch("PROGRESS_UPDATE", { value: 5 })
+    await state.dispatch("CUSTOM_EVENT", { myFlag: false, myValue: 'false'})
+
+    const currentState = state.current;
+    
+    expect(currentState.events[1].name).toEqual("CUSTOM_EVENT")
+    expect(currentState.events[1].payload).toEqual({ myFlag: false, myValue: 'false'})
+  })
+
+  // it("Executes catch-all reducer", async () => {
+  //   await state.dispatch("RANDOM_EVENT", { myFlag: false, myValue: 'false'})
+
+  //   const currentState = state.current;
+
+  //   console.log(currentState)
+  // })
 
 })

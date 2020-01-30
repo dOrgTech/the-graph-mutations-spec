@@ -41,14 +41,6 @@ if (!process.env.REACT_APP_GRAPHQL_ENDPOINT) {
 const nodeEndpoint = process.env.REACT_APP_GRAPHQL_ENDPOINT
 const queryLink = createHttpLink({ uri: `${nodeEndpoint}/subgraphs/name/example` })
 
-interface Gravatar {
-  id: string,
-  imageUrl: string,
-  owner: string,
-  displayName: string,
-  __typename: string
-}
-
 const mutations = createMutations({
   mutations: gravatarMutations,
   subgraph: "gravatars",

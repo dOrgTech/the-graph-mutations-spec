@@ -202,7 +202,6 @@ export default {
 
 // Required Types
 export {
-  Config,
   State,
   EventMap,
   CustomEvent

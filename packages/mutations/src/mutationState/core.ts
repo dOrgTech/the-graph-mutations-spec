@@ -63,7 +63,7 @@ export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
       return state;
     },
     'PROGRESS_UPDATE': async (state: CoreState, payload: ProgressUpdateEvent) => {
-      if (payload.value < 0 || payload.value > 100) {
+      if (payload.value < 0 || payload.value > 100 || ! Number.isInteger(payload.value)) {
         throw new Error('Progress value must be an integer between 0 and 100')
       }
 

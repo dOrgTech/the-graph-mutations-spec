@@ -44,7 +44,7 @@ export const useMutation = <
   )
 
   useEffect(() => {
-    let subscription = observable.subscribe(result => {
+    let subscription = observable.subscribe((result: MutationStates<TState>) => {
       if (result) {
         setState(result)
       }

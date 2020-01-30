@@ -15,12 +15,13 @@ export const client = new ApolloClient({
     resolvers: {
       Mutation: {
           testResolve: async (_, __, context) => {
-            if(!context.graph || !context.graph.__stateObserver){
+
+            if(!context.graph || !context.graph._rootSub){
               return false;
             }
-            context.graph.__stateObserver.next(statesToPublish[0])
-            context.graph.__stateObserver.next(statesToPublish[1])
-            context.graph.__stateObserver.next(statesToPublish[2])
+            context.graph._rootSub.next(statesToPublish[0])
+            context.graph._rootSub.next(statesToPublish[1])
+            context.graph._rootSub.next(statesToPublish[2])
             return true;
         }
       }

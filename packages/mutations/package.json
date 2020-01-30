@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "tsc",
-    "test": "jest --passWithNoTests",
+    "test": "jest --passWithNoTests --verbose",
     "test:watch": "jest --watch --passWithNoTests"
   },
   "devDependencies": {

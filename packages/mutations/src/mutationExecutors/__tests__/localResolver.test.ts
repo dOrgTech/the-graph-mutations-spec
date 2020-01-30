@@ -10,24 +10,29 @@ const resolvers = {
   }
 }
 
-const link = new ApolloLink((operation: Operation) => 
-  new Observable(observer => {
-    localResolver({
-      query: operation.query,
-      variables: operation.variables,
-      operationName: operation.operationName,
-      setContext: operation.setContext,
-      getContext: operation.getContext
-    }, resolvers).then(
-      (result: any) => {
-        observer.next(result)
-        observer.complete()
-      },
-      (e: Error) => observer.error(e)
-    )
-  }))
+let link: ApolloLink;
 
 describe("LocalResolver", () => {
+
+  beforeAll(() => {
+
+    link = new ApolloLink((operation: Operation) =>
+      new Observable(observer => {
+        localResolver({
+          query: operation.query,
+          variables: operation.variables,
+          operationName: operation.operationName,
+          setContext: operation.setContext,
+          getContext: operation.getContext
+        }, resolvers).then(
+          (result: any) => {
+            observer.next(result)
+            observer.complete()
+          },
+          (e: Error) => observer.error(e)
+        )
+      }))
+  })
 
   it("Throws error if client directive is missing", async () => {
     expect(

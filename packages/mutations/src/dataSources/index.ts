@@ -12,6 +12,9 @@ class DataSources {
   private _subgraph: string
   private _metadataLink: HttpLink
   private _ipfs: any
+  private _dataSources: {
+    [name: string]: DataSource
+  } = { }
 
   constructor(subgraph: string, nodeEndpoint: string, ipfsEndpoint: string) {
     this._subgraph = subgraph
@@ -24,19 +27,21 @@ class DataSources {
       port: url.port,
       'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/',
     })
-
-    return new Proxy(this, {
-      get: (target: any, name: string): DataSource => {
-        if (!(name in target)) {
-          const dataSource = new DataSource(this, name)
-          target[name] = dataSource
-        }
-        return target[name]
-      }
-    })
   }
 
-  public async fetchAbi(name: string): Promise<string | undefined> {
+  public get(name: string): DataSource {
+    if (!(name in this._dataSources)) {
+      this._dataSources[name] = new DataSource(
+        name,
+        (name: string) => this.getAbi(name),
+        (name: string) => this.getAddress(name)
+      )
+    }
+
+    return this._dataSources[name]
+  }
+
+  private async getAbi(name: string): Promise<string | undefined> {
     const { data } = await getDataSource(
       this._metadataLink, this._subgraph, name
     )
@@ -53,8 +58,8 @@ class DataSources {
     )
 
     if (!result.data || result.data.ethereumContractAbis.length === 0) {
-    throw new Error(`Error fetching ethereum contract abis with name '${abiName}'`)
-  }
+      throw new Error(`Error fetching ethereum contract abis with name '${abiName}'`)
+    }
 
     const abi = result.data.ethereumContractAbis[0].file;
 
@@ -67,7 +72,7 @@ class DataSources {
     return resp[0].content.toString('utf8')
   }
 
-  public async fetchAddress(name: string): Promise<string | undefined> {
+  private async getAddress(name: string): Promise<string | undefined> {
     const { data } = await getDataSource(
       this._metadataLink, this._subgraph, name
     )

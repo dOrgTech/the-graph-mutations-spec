@@ -100,6 +100,7 @@ describe("Extended Mutation State", () => {
   interface State {
     myValue: string
     myFlag: boolean
+    catchAll: boolean
   }
 
   let uuid: string
@@ -111,7 +112,8 @@ describe("Extended Mutation State", () => {
     getInitialState(): State {
       return {
         myValue: 'initial',
-        myFlag: true
+        myFlag: true,
+        catchAll: false
       }
     },
     reducers: {
@@ -122,7 +124,26 @@ describe("Extended Mutation State", () => {
       }
     },
     reducer: async (state: MutationState<State>, event: Event) => {
-      return { }
+
+      switch(event.name){
+        case "CUSTOM_EVENT": {
+          return {
+            catchAll: true
+          }
+        }
+
+        case "RANDOM_EVENT": {
+          return {
+            catchAll: true
+          }
+        }
+
+        case "PROGRESS_UPDATE": {
+          return {
+            catchAll: true
+          }
+        }
+      }
     }
   }
 
@@ -146,6 +167,7 @@ describe("Extended Mutation State", () => {
     
     expect(currentState.myFlag).toEqual(true)
     expect(currentState.myValue).toEqual('initial')
+    expect(currentState.catchAll).toEqual(false)
   })
 
   it("Correctly executes CUSTOM_EVENT defined reducer", async () => {
@@ -158,21 +180,37 @@ describe("Extended Mutation State", () => {
   })
 
   it("Includes custom events alongside core events in the events history", async () => {
-    await state.dispatch("PROGRESS_UPDATE", { value: 5 })
+    await state.dispatch("TRANSACTION_CREATED", { id: "Test ID", description: "Test Description" })
     await state.dispatch("CUSTOM_EVENT", { myFlag: false, myValue: 'false'})
 
     const currentState = state.current;
     
     expect(currentState.events[1].name).toEqual("CUSTOM_EVENT")
-    expect(currentState.events[1].payload).toEqual({ myFlag: false, myValue: 'false'})
+    expect(currentState.events[1].payload).toEqual({ myFlag: false, myValue: 'false' })
   })
 
-  // it("Executes catch-all reducer", async () => {
-  //   await state.dispatch("RANDOM_EVENT", { myFlag: false, myValue: 'false'})
+  it("Executes catch-all reducer if specific event reducer is not found", async () => {
+    await state.dispatch("RANDOM_EVENT", { })
 
-  //   const currentState = state.current;
+    const currentState = state.current;
 
-  //   console.log(currentState)
-  // })
+    expect(currentState.catchAll).toEqual(true)
+  })
+
+  it("Executes specific custom event reducer if found, even if same custom event is defined in catch-all reducer", async () => {
+    await state.dispatch("CUSTOM_EVENT", { myValue: 'false', myFlag: false })
+
+    const currentState = state.current;
+
+    expect(currentState.catchAll).toEqual(false)
+  })
+
+  it("Executes both core reducer and catch-all reducer if a core event is supported in it", async () => {
+    await state.dispatch("PROGRESS_UPDATE", { value: 50 })
+
+    expect(state.current.progress).toEqual(50)
+    expect(state.current.catchAll).toEqual(true)
+
+  })
 
 })

@@ -1,14 +1,16 @@
 import {
   MutationQuery,
   MutationResolvers,
-  MutationResult
+  MutationResult,
 } from '../types'
+import { ConfigGenerators } from '../config'
+import { EventTypeMap } from '../mutationState'
 
-export type MutationExecutor = (
-  query: MutationQuery,
-  resolvers: MutationResolvers
+export type MutationExecutor<
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap
+> = (
+  query: MutationQuery<TConfig, TState, TEventMap>,
+  resolvers: MutationResolvers<TConfig, TState, TEventMap>
 ) => Promise<MutationResult>
-
-export type MutationExecutors = {
-  [prop: string]: MutationExecutor
-}

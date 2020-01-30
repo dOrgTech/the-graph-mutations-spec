@@ -3,13 +3,17 @@ import {
   EventTypeMap,
   MutationState,
   StateBuilder,
-  StateUpdater
+  StateUpdater,
+  MutationResolvers,
+  MutationContext
 } from "@graphprotocol/mutations"
 
 import gql from 'graphql-tag'
 import { ethers } from 'ethers'
 import { Transaction } from 'ethers/utils'
+import { AsyncSendable, Web3Provider } from "ethers/providers"
 
+// State Payloads + Events + StateBuilder
 interface CustomEvent extends EventPayload {
   myValue: string
 }
@@ -39,9 +43,28 @@ const stateBuilder: StateBuilder<State, EventMap> = {
   }
 }
 
-async function queryUserGravatar(context: any) {
+// Configuration
+type Config = typeof config
+
+const config = {
+  ethereum: (provider: AsyncSendable): Web3Provider => {
+    return new Web3Provider(provider)
+  },
+  // Example of a custom configuration property
+  property: {
+    // Property setters can be nested
+    a: (value: string) => { },
+    b: (value: string) => { }
+  }
+}
+
+type Context = MutationContext<Config, State, EventMap>
+
+async function queryUserGravatar(context: Context) {
   const { client } = context
   const { ethereum } = context.graph.config
+
+  const address = await ethereum.getSigner().getAddress()
 
   // TODO time travel query (specific block #)
   // block: hash#?
@@ -49,7 +72,7 @@ async function queryUserGravatar(context: any) {
     const { data } = await client.query({
       query: gql`
         query GetGravatars {
-          gravatars (where: {owner: "${ethereum.provider.selectedAddress}"}) {
+          gravatars (where: {owner: "${address}"}) {
             id
             owner
             displayName
@@ -80,21 +103,28 @@ async function sendTx(tx: Transaction, state: StateUpdater<State, EventMap>) {
   }
 }
 
-async function getGravityContract(context: any) {
+async function getGravityContract(context: Context) {
+  const { dataSources } = context.graph
+  const abi = await dataSources.get("Gravity").abi
+  const address = await dataSources.get("Gravity").address
+
+  if (!abi || !address) { 
+    throw Error(`Missing the DataSource "Gravity"`)
+  }
+
   const { ethereum } = context.graph.config
-  const abi = await context.graph.dataSources.Gravity.abi
-  const address = await context.graph.dataSources.Gravity.address
 
   const contract = new ethers.Contract(
     address, abi, ethereum.getSigner()
   )
   contract.connect(ethereum)
+
   return contract
 }
 
-async function createGravatar(_root: any, { options }: any, context: any) {
+async function createGravatar(_, { options }: any, context: Context) {
   const { displayName, imageUrl } = options
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+  const state = context.graph.state
   const gravity = await getGravityContract(context)
 
   await sleep(2000)
@@ -110,8 +140,8 @@ async function createGravatar(_root: any, { options }: any, context: any) {
   return await queryUserGravatar(context)
 }
 
-async function deleteGravatar(_root: any, { }: any, context: any) {
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+async function deleteGravatar(_, { }: any, context: Context) {
+  const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
   const txResult = await sendTx(gravity.deleteGravatar(), state)
@@ -122,8 +152,8 @@ async function deleteGravatar(_root: any, { }: any, context: any) {
   return true
 }
 
-async function updateGravatarName(_root: any, { displayName }: any, context: any) {
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+async function updateGravatarName(_, { displayName }: any, context: Context) {
+  const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
   await state.dispatch('PROGRESS_UPDATE', { value: 50 })
@@ -144,8 +174,8 @@ async function updateGravatarName(_root: any, { displayName }: any, context: any
   return await queryUserGravatar(context)
 }
 
-async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) {
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+async function updateGravatarImage(_, { imageUrl }: any, context: Context) {
+  const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
   await sleep(2000)
@@ -158,24 +188,12 @@ async function updateGravatarImage(_root: any, { imageUrl }: any, context: any) 
   return await queryUserGravatar(context)
 }
 
-const resolvers = {
+const resolvers: MutationResolvers<Config, State, EventMap> = {
   Mutation: {
     createGravatar,
     deleteGravatar,
     updateGravatarName,
     updateGravatarImage
-  }
-}
-
-const config = {
-  ethereum: (provider: any) => {
-    return new ethers.providers.Web3Provider(provider)
-  },
-  // Example of a custom configuration property
-  property: {
-    // Property setters can be nested
-    a: (value: string) => { },
-    b: (value: string) => { }
   }
 }
 
@@ -185,6 +203,7 @@ export default {
   stateBuilder
 }
 
+// Required Types
 export {
   State,
   EventMap,

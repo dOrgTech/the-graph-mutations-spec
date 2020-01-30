@@ -1,10 +1,11 @@
-import { MutationExecutor } from './types'
 import {
   MutationQuery,
   MutationResult,
   MutationResolvers
 } from '../types'
 import { hasDirectives } from '../utils'
+import { ConfigGenerators } from '../config'
+import { EventTypeMap } from '../mutationState'
 
 import {
   execute,
@@ -13,9 +14,13 @@ import {
 import { withClientState } from 'apollo-link-state'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 
-const localResolver: MutationExecutor = (
-  mutationQuery: MutationQuery,
-  resolvers: MutationResolvers
+const localResolver = <
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap
+> (
+  mutationQuery: MutationQuery<TConfig, TState, TEventMap>,
+  resolvers: MutationResolvers<TConfig, TState, TEventMap>
 ): Promise<MutationResult> => {
 
   // @client directive must be used

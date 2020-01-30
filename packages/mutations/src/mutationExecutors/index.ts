@@ -1,9 +1,3 @@
-import localResolver from './localResolver'
-import { MutationExecutors } from './types'
-
-const executors: MutationExecutors = {
-  localResolver
-}
-
+import execLocalResolver from './localResolver'
+export { execLocalResolver }
 export * from './types'
-export default executors

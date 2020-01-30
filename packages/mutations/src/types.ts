@@ -1,10 +1,15 @@
 import {
   EventTypeMap,
-  StateBuilder
+  StateBuilder,
+  MutationStatesSub,
+  MutationStateSubs,
+  StateUpdater
 } from './mutationState'
+import { DataSources } from './dataSources'
 import {
   ConfigGenerators,
-  ConfigArguments
+  ConfigArguments,
+  ConfigProperties
 } from './config'
 
 import { ExecutionResult } from 'graphql/execution'
@@ -16,29 +21,65 @@ export interface MutationsModule<
   TState,
   TEventMap extends EventTypeMap
 > {
-  resolvers: MutationResolvers,
+  resolvers: MutationResolvers<TConfig, TState, TEventMap>,
   config: TConfig,
   stateBuilder?: StateBuilder<TState, TEventMap>
 }
 
-export interface MutationResolvers {
+export interface MutationContext<
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap
+> {
+  [prop: string]: any,
+  graph: {
+    config: ConfigProperties<TConfig>,
+    dataSources: DataSources,
+    state: StateUpdater<TState, TEventMap>
+    _mutationsCalled: string[],
+    _rootSub?: MutationStatesSub<TState>,
+    _mutationSubs: MutationStateSubs<TState>
+  }
+}
+
+export interface MutationResolvers<
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap
+> {
   Mutation: {
-      [field: string]: GraphQLFieldResolver<any, any>;
+      [field: string]: GraphQLFieldResolver<
+        any,
+        MutationContext<TConfig, TState, TEventMap>
+      >
   };
 }
 
-export interface MutationQuery {
+export interface UserMutationQuery {
   query: DocumentNode
   variables: Record<string, any>
   operationName: string
   extensions?: Record<string, any>
-  setContext: (context: Record<string, any>) => Record<string, any>
-  getContext: () => Record<string, any>
+  setContext: (context: any) => any
+  getContext: () => any
+}
+
+export interface MutationQuery<
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap
+> extends UserMutationQuery {
+  setContext: (context: MutationContext<TConfig, TState, TEventMap>) => MutationContext<TConfig, TState, TEventMap>
+  getContext: () => MutationContext<TConfig, TState, TEventMap>
 }
 
 export type MutationResult = ExecutionResult
 
-export interface Mutations<TConfig extends ConfigGenerators> {
-  execute: (query: MutationQuery) => Promise<MutationResult>
+export interface Mutations<
+  TConfig extends ConfigGenerators,
+  TState,
+  TEventMap extends EventTypeMap
+> {
+  execute: (query: MutationQuery<TConfig, TState, TEventMap>) => Promise<MutationResult>
   configure: (config: ConfigArguments<TConfig>) => void
 }

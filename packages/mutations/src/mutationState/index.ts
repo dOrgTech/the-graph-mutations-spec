@@ -4,16 +4,12 @@ import {
   MutationEvents,
   MutationState,
   InferEventPayload,
-  StateBuilder
+  StateBuilder,
+  MutationStateSub
 } from './types'
-import {
-  CoreEvents,
-  CoreState,
-  coreStateBuilder
-} from './core'
+import { coreStateBuilder as core } from './core'
 import { execFunc } from '../utils'
 
-import { BehaviorSubject } from 'rxjs'
 import { cloneDeep, merge } from 'lodash'
 
 class StateUpdater<
@@ -22,23 +18,24 @@ class StateUpdater<
 > {
 
   private _state: MutationState<TState>
-  private _observer?: BehaviorSubject<TState>
+  private _sub?: MutationStateSub<TState>
   private _ext?: StateBuilder<TState, TEventMap>
-  private _core: StateBuilder<CoreState, CoreEvents>
 
   constructor(
     uuid: string,
     ext?: StateBuilder<TState, TEventMap>,
-    observer?: BehaviorSubject<TState>
+    subscriber?: MutationStateSub<TState>
   ) {
-    this._observer = observer
     this._ext = ext
-    this._core = coreStateBuilder
+    this._sub = subscriber
 
     this._state = {
-      ...this._core.getInitialState(uuid),
+      ...core.getInitialState(uuid),
       ...(this._ext ? this._ext.getInitialState(uuid) : { } as TState),
     }
+
+    // Publish the initial state
+    this.publish()
   }
 
   public get current() {
@@ -59,8 +56,8 @@ class StateUpdater<
     this._state.events.push(event)
 
     // Call all relevant reducers
-    const coreReducers = this._core.reducers as any
-    const coreReducer = this._core.reducer
+    const coreReducers = core.reducers as any
+    const coreReducer = core.reducer
     const extReducers = this._ext?.reducers as any
     const extReducer = this._ext?.reducer
 
@@ -85,8 +82,8 @@ class StateUpdater<
   }
 
   private publish() {
-    if (this._observer) {
-      this._observer.next(cloneDeep(this._state))
+    if (this._sub) {
+      this._sub.next(cloneDeep(this._state))
     }
   }
 }

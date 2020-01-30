@@ -4,18 +4,20 @@ import Adapter from 'enzyme-adapter-react-16'
 import { act } from 'react-dom/test-utils'
 import { isEqual } from 'lodash'
 
-
-import { TEST_RESOLVER, client, statesToPublish } from '../test-utils'
-import { useMutation } from '..'
-import { MutationStates } from '@graphprotocol/mutations/src/mutationState'
-import { CoreState } from '@graphprotocol/mutations/src'
+import {
+  TEST_RESOLVER,
+  client,
+  statesToPublish
+} from './utils'
+import { useMutation } from '../'
+import { MutationStates } from '@graphprotocol/mutations/dist/mutationState'
+import { CoreState } from '@graphprotocol/mutations'
 
 Enzyme.configure({ adapter: new Adapter() })
 
-describe("UseMutation Custom Hook", () => {
+describe('UseMutation', () => {
 
    it('Correctly sets observer object inside context', async () => {
-
     let mutationFunction: Function;
     let observerSet = false;
 
@@ -24,24 +26,22 @@ describe("UseMutation Custom Hook", () => {
         client
       })
 
-      if(data && data.testResolve){
+      if (data && data.testResolve) {
         observerSet = true
       }
 
       mutationFunction = execute;
-
       return null;
     }
 
-    mount(<Wrapper></Wrapper>)
+    mount(<Wrapper/>)
 
     await act(async () => {
       mutationFunction()
     })
 
     expect(observerSet).toEqual(true)
-
-   })
+  })
 
   it('Returns states in dispatch order', async () => {
 
@@ -70,6 +70,5 @@ describe("UseMutation Custom Hook", () => {
     })
 
     expect(statesToPublish).toEqual(states)
-
   })
 })

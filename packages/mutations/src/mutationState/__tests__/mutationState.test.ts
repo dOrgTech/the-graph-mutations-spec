@@ -1,9 +1,15 @@
 import { v4 } from 'uuid'
 import { CoreState } from '../core'
-import { StateBuilder, MutationState, EventTypeMap, EventPayload } from '../types'
+import {
+  Event,
+  EventTypeMap,
+  EventPayload,
+  MutationState,
+  MutationStateSub,
+  StateBuilder
+} from '../types'
 import { StateUpdater } from '../index'
 import { BehaviorSubject } from 'rxjs'
-import { Event } from '../types'
 
 describe("Core Mutation State", () => {
 
@@ -98,7 +104,7 @@ describe("Extended Mutation State", () => {
 
   let uuid: string
   let latestState: State;
-  let observer: BehaviorSubject<State>
+  let observer: MutationStateSub<State>
   let state: StateUpdater<State, EventTypeMap>
   
   const stateBuilder: StateBuilder<State, EventMap> = {
@@ -115,7 +121,7 @@ describe("Extended Mutation State", () => {
         }
       }
     },
-    reducer: async (state: MutationState<State>, {payload: {}}) => {
+    reducer: async (state: MutationState<State>, event: Event) => {
       return { }
     }
   }
@@ -124,7 +130,7 @@ describe("Extended Mutation State", () => {
 
     uuid = v4()
 
-    observer = new BehaviorSubject<State>({} as State)
+    observer = new MutationStateSub<State>({} as MutationState<State>)
 
     state = new StateUpdater<State, EventMap>(
       uuid, stateBuilder, observer

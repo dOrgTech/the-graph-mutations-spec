@@ -1,5 +1,12 @@
 import localResolver from '../localResolver'
-import { ApolloLink, Operation, Observable, makePromise, execute } from 'apollo-link';
+
+import {
+  ApolloLink,
+  execute,
+  makePromise,
+  Operation,
+  Observable
+} from 'apollo-link';
 import gql from 'graphql-tag'
 
 const resolvers = {
@@ -22,8 +29,8 @@ describe("LocalResolver", () => {
           query: operation.query,
           variables: operation.variables,
           operationName: operation.operationName,
-          setContext: operation.setContext,
-          getContext: operation.getContext
+          setContext: operation.setContext as any,
+          getContext: operation.getContext as any
         }, resolvers).then(
           (result: any) => {
             observer.next(result)
@@ -62,6 +69,5 @@ describe("LocalResolver", () => {
 
     expect(data).toBeTruthy()
     expect(data?.testResolve).toEqual(true)
-
   })
 })

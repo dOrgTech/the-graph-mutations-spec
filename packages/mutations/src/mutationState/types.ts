@@ -35,7 +35,7 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
   reducer?: (
     state: MutationState<TState>,
     event: Event
-  ) => OptionalAsync<MutationState<TState>>
+  ) => OptionalAsync<Partial<MutationState<TState>>>
 }
 
 export interface EventPayload { }

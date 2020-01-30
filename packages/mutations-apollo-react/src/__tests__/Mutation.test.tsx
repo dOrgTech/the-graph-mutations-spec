@@ -4,22 +4,24 @@ import Adapter from 'enzyme-adapter-react-16'
 import { act } from 'react-dom/test-utils'
 import { isEqual } from 'lodash'
 
-
-import { TEST_RESOLVER, client, statesToPublish } from '../test-utils'
-import { Mutation } from '..'
-import { MutationStates } from '@graphprotocol/mutations/src/mutationState'
-import { CoreState } from '@graphprotocol/mutations/src'
+import {
+  TEST_RESOLVER,
+  client,
+  statesToPublish
+} from './utils'
+import { Mutation } from '../'
+import { MutationStates } from '@graphprotocol/mutations/dist/mutationState'
+import { CoreState } from '@graphprotocol/mutations'
 
 Enzyme.configure({ adapter: new Adapter() })
 
-describe("Mutation Component", () => {
-  it("Correctly sets observer object inside context", async () => {
+describe('Mutation', () => {
 
+  it('Correctly sets observer object inside context', async () => {
     let executeFunction: Function;
     let observerSet = false;
 
     function Wrapper() {
-
       return (
         <Mutation mutation={TEST_RESOLVER} options={{ client }}>
           {
@@ -32,26 +34,23 @@ describe("Mutation Component", () => {
             }
           }
         </Mutation>
-      );
+      )
     }
 
-    mount(<Wrapper></Wrapper>)
+    mount(<Wrapper/>)
 
     await act(async () => {
       executeFunction()
     })
 
     expect(observerSet).toEqual(true)
-
   })
 
   it('Returns states in dispatch order', async () => {
-
     let executeFunction: any;
     let states: MutationStates<CoreState>[] = [];
 
     function Wrapper() {
-
       return (
         <Mutation mutation={TEST_RESOLVER} options={{ client }}>
           {
@@ -71,13 +70,12 @@ describe("Mutation Component", () => {
       );
     }
 
-    mount(<Wrapper></Wrapper>)
+    mount(<Wrapper/>)
 
     await act(async () => {
       executeFunction()
     })
 
     expect(statesToPublish).toEqual(states)
-
   })
 })

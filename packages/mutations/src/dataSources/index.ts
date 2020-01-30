@@ -32,7 +32,9 @@ class DataSources {
   public get(name: string): DataSource {
     if (!(name in this._dataSources)) {
       this._dataSources[name] = new DataSource(
-        name, this.getAbi, this.getAddress
+        name,
+        (name: string) => this.getAbi(name),
+        (name: string) => this.getAddress(name)
       )
     }
 

@@ -105,9 +105,12 @@ async function sendTx(tx: Transaction, state: StateUpdater<State, EventMap>) {
 
 async function getGravityContract(context: Context) {
   const { dataSources } = context.graph
-
   const abi = await dataSources.get("Gravity").abi
   const address = await dataSources.get("Gravity").address
+
+  if (!abi || !address) { 
+    throw Error(`Missing the DataSource "Gravity"`)
+  }
 
   const { ethereum } = context.graph.config
 
@@ -121,7 +124,7 @@ async function getGravityContract(context: Context) {
 
 async function createGravatar(_, { options }: any, context: Context) {
   const { displayName, imageUrl } = options
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+  const state = context.graph.state
   const gravity = await getGravityContract(context)
 
   await sleep(2000)
@@ -150,7 +153,7 @@ async function deleteGravatar(_, { }: any, context: Context) {
 }
 
 async function updateGravatarName(_, { displayName }: any, context: Context) {
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+  const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
   await state.dispatch('PROGRESS_UPDATE', { value: 50 })
@@ -172,7 +175,7 @@ async function updateGravatarName(_, { displayName }: any, context: Context) {
 }
 
 async function updateGravatarImage(_, { imageUrl }: any, context: Context) {
-  const state: StateUpdater<State, EventMap> = context.graph.state;
+  const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
   await sleep(2000)

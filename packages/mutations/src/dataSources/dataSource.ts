@@ -19,7 +19,7 @@ export class DataSource {
     this._getAbi = getAbi
     this._getAddress = getAddress
   }
- 
+
   get name(): string {
     return this._name
   }

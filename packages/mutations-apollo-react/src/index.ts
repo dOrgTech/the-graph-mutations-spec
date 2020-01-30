@@ -35,7 +35,7 @@ export const useMutation = <
     ...mutationOptions.context,
     client: mutationOptions.client,
     graph: {
-      __stateObserver: observable
+      _rootSub: observable
     }
   }
 

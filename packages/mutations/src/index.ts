@@ -204,13 +204,12 @@ const createMutationsLink = <
         operationName: operation.operationName,
         setContext: setContext,
         getContext: getContext
-      }).then(
-        (result: MutationResult) => {
-          observer.next(result)
-          observer.complete()
-        },
-        (e: Error) => observer.error(e)
-      )
+      })
+      .then((result: MutationResult) => {
+        observer.next(result)
+        observer.complete()
+      })
+      .catch((e: Error) => observer.error(e))
     })
   })
 }

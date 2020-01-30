@@ -1,8 +1,8 @@
 type InferGeneratorArg<T> =
-  T extends ((value: infer U) => any) ? U : never
+  T extends ((value: infer U) => any) ? U : ConfigArguments<T>
 
 type InferGeneratorRet<T> =
-  T extends ((value: any) => infer U) ? U : never
+  T extends ((value: any) => infer U) ? U : ConfigProperties<T>
 
 // Validate that all leaf property values of the ConfigArguments
 // instance match the type of the ConfigGenerators function arguments

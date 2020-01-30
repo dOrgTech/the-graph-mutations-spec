@@ -165,6 +165,7 @@ function App() {
         })
       },
       onError: (error) => {
+        console.error(error)
         alert(error)
       }
     }

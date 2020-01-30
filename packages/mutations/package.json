@@ -8,6 +8,12 @@
   "author": "Graph Protocol, Inc.",
   "license": "MIT/Apache",
   "private": false,
+  "jest": {
+    "transform": {
+      "^.+\\.ts?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts)$"
+  },
   "scripts": {
     "build": "tsc",
     "prepublish": "tsc",
@@ -16,9 +22,12 @@
   },
   "devDependencies": {
     "@babel/types": "^7.5.0",
-    "@types/node": "^12.6.1",
+    "@types/jest": "^25.1.1",
     "@types/lodash": "^4.14.149",
-    "@types/uuid": "^3.4.6"
+    "@types/node": "^12.6.1",
+    "@types/uuid": "^3.4.6",
+    "jest": "^25.1.0",
+    "ts-jest": "^25.0.0"
   },
   "dependencies": {
     "lodash": "^4.17.15",

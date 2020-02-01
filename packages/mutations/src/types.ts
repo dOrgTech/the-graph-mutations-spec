@@ -37,8 +37,8 @@ export interface MutationContext<
     dataSources: DataSources
     state: StateUpdater<TState, TEventMap>
     _mutationsCalled: string[]
-    _rootSub?: MutationStatesSub<TState>
-    _mutationSubs: MutationStateSubs<TState>
+    _rootSub?: MutationStatesSub<TState, TEventMap>
+    _mutationSubs: MutationStateSubs<TState, TEventMap>
   }
 }
 

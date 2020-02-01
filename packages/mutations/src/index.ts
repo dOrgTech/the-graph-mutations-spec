@@ -89,15 +89,15 @@ const createMutations = <
         // Create observers for each mutation that's called
         _mutationsCalled.forEach(() => {
           _mutationSubs.push(
-            new MutationStateSub<TState>(
-              { } as MutationState<TState>
+            new MutationStateSub<TState, TEventMap>(
+              { } as MutationState<TState, TEventMap>
             )
           )
         })
 
         // Subscribe to all of the mutation observers
         combineLatest(_mutationSubs).subscribe((values) => {
-          const result: MutationStates<TState> = { }
+          const result: MutationStates<TState, TEventMap> = { }
 
           values.forEach((value, index) => {
             result[_mutationsCalled[index]] = value

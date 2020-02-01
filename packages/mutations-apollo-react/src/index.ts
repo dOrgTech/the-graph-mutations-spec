@@ -2,7 +2,7 @@ import {
   MutationComponentOptionsWithState,
   MutationTupleWithState
 } from './types'
-import { MutationStatesSub } from '@graphprotocol/mutations/dist/mutationState'
+import { MutationStatesSub, EventTypeMap, CoreEvents } from '@graphprotocol/mutations/dist/mutationState'
 import {
   CoreState,
   MutationStates
@@ -21,15 +21,16 @@ import { DocumentNode } from 'graphql'
 
 export const useMutation = <
   TState = CoreState,
+  TEventMap extends EventTypeMap = CoreEvents,
   TData = any,
   TVariables = OperationVariables
 >(
   mutation: DocumentNode,
   options?: MutationHookOptions<TData, TVariables>
-): MutationTupleWithState<TState, TData, TVariables> => {
+): MutationTupleWithState<TState, TEventMap, TData, TVariables> => {
 
-  const [state, setState] = useState({} as MutationStates<TState>)
-  const [observable] = useState(new MutationStatesSub<TState>({ }))
+  const [state, setState] = useState({} as MutationStates<TState, TEventMap>)
+  const [observable] = useState(new MutationStatesSub<TState, TEventMap>({ }))
 
   const graphContext = {
     graph: {
@@ -54,7 +55,7 @@ export const useMutation = <
   )
 
   useEffect(() => {
-    let subscription = observable.subscribe((result: MutationStates<TState>) => {
+    let subscription = observable.subscribe((result: MutationStates<TState, TEventMap>) => {
       if (result) {
         setState(result)
       }
@@ -73,11 +74,12 @@ export const useMutation = <
 
 export const Mutation = <
   TState = CoreState,
+  TEventMap extends EventTypeMap = CoreEvents,
   TData = any,
   TVariables = OperationVariables
 >(
-  props: MutationComponentOptionsWithState<TState, TData, TVariables>
+  props: MutationComponentOptionsWithState<TState, TEventMap, TData, TVariables>
 ) => {
-  const [runMutation, result] = useMutation<TState>(props.mutation, props)
+  const [runMutation, result] = useMutation<TState, TEventMap>(props.mutation, props)
   return props.children ? props.children(runMutation, result) : null
 }

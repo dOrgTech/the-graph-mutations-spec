@@ -17,19 +17,20 @@ class StateUpdater<
   TEventMap extends EventTypeMap
 > {
 
-  private _state: MutationState<TState>
-  private _sub?: MutationStateSub<TState>
+  private _state: MutationState<TState, TEventMap>
+  private _sub?: MutationStateSub<TState, TEventMap>
   private _ext?: StateBuilder<TState, TEventMap>
 
   constructor(
     uuid: string,
     ext?: StateBuilder<TState, TEventMap>,
-    subscriber?: MutationStateSub<TState>
+    subscriber?: MutationStateSub<TState, TEventMap>
   ) {
     this._ext = ext
     this._sub = subscriber
 
     this._state = {
+      events: [],
       ...core.getInitialState(uuid),
       ...(this._ext ? this._ext.getInitialState(uuid) : { } as TState),
     }
@@ -53,7 +54,7 @@ class StateUpdater<
     }
 
     // Append the event
-    this._state.events.push(event as any)
+    this._state.events.push(event)
 
     // Call all relevant reducers
     const coreReducers = core.reducers as any

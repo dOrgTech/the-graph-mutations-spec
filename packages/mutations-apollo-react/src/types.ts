@@ -1,4 +1,4 @@
-import { MutationStates } from '@graphprotocol/mutations/dist/mutationState'
+import { MutationStates, EventTypeMap } from '@graphprotocol/mutations/dist/mutationState'
 
 import {
   BaseMutationOptions,
@@ -8,27 +8,32 @@ import {
   MutationFunctionOptions
 } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
-import { MutationHookOptions } from '@apollo/react-hooks'
 
-interface MutationResultWithState<TState, TData = any> extends MutationResult<TData> {
-  state: MutationStates<TState>
+interface MutationResultWithState<TState, TEventMap extends EventTypeMap, TData = any> extends MutationResult<TData> {
+  state: MutationStates<TState, TEventMap>
 }
 
-export type MutationTupleWithState<TState, TData, TVariables> = [
+export type MutationTupleWithState<
+  TState,
+  TEventMap extends EventTypeMap,
+  TData,
+  TVariables
+> = [
   (
     options?: MutationFunctionOptions<TData, TVariables>
   ) => Promise<ExecutionResult<TData>>,
-  MutationResultWithState<TState, TData>
+  MutationResultWithState<TState, TEventMap, TData>
 ]
 
 export interface MutationComponentOptionsWithState<
   TState,
+  TEventMap extends EventTypeMap,
   TData,
   TVariables
 > extends BaseMutationOptions<TData, TVariables> {
   mutation: DocumentNode
   children: (
     mutateFunction: MutationFunction<TData, TVariables>,
-    result: MutationResultWithState<TState, TData>
+    result: MutationResultWithState<TState, TEventMap, TData>
   ) => JSX.Element | null
 }

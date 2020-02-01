@@ -18,7 +18,6 @@ import {
 } from '@apollo/react-hooks'
 import { OperationVariables } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
-import { stringLiteral } from '@babel/types'
 
 export const useMutation = <
   TState = CoreState,

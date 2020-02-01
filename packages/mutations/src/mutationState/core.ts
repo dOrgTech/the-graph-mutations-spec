@@ -1,5 +1,4 @@
 import {
-  Event,
   EventPayload,
   StateBuilder
 } from './types'
@@ -23,12 +22,17 @@ export type CoreEvents = {
 }
 
 export interface TransactionCreatedEvent extends EventPayload {
-  id: string,
+  id: string
+  to: string
+  from: string
+  data: string
+  amount: string
+  chainId: string
   description: string
 }
 
 export interface TransactionCompletedEvent extends EventPayload {
-  id: string,
+  id: string
   description: string
 }
 

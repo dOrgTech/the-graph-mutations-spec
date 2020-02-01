@@ -5,3 +5,4 @@ schema:
 resolvers:
   kind: javascript
   file: ./bundle/index.js
+  types: ./bundle/index.d.ts

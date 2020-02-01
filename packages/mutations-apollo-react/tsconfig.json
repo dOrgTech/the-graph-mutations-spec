@@ -9,13 +9,9 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "strict": true,
-    "composite": true,
     "jsx": "react",
     "lib": ["es2015", "es6", "esnext.asynciterable", "dom"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/__tests__/*.ts"],
-  "references": [{
-    "path": "../mutations"
-  }]
+  "exclude": ["src/**/__tests__/**/*.ts*"]
 }

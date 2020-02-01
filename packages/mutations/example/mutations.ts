@@ -1,5 +1,4 @@
 import {
-  EventTypeMap,
   EventPayload,
   MutationState,
   StateBuilder
@@ -36,7 +35,7 @@ interface MyEvent extends EventPayload {
   myValue: boolean
 }
 
-interface Events extends EventTypeMap {
+type Events = {
   'MY_EVENT': MyEvent
 }
 

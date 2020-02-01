@@ -1,4 +1,5 @@
 import {
+  Event,
   EventPayload,
   MutationState,
   StateBuilder
@@ -52,6 +53,16 @@ const stateBuilder: StateBuilder<State, EventMap> = {
       return {
         myValue: payload.myValue
       }
+    }
+  },
+  // Catch all reducer
+  reducer: (state: MutationState<State>, event: Event<EventMap>) => {
+    switch (event.name) {
+      case 'PROGRESS_UPDATE':
+        // do something custom
+        return { }
+      default:
+        return { }
     }
   }
 }

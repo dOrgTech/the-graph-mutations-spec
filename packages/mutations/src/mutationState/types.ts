@@ -34,14 +34,14 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
   // Catch-All Reducer
   reducer?: (
     state: MutationState<TState>,
-    event: Event
+    event: Event<TEventMap>
   ) => OptionalAsync<Partial<MutationState<TState>>>
 }
 
 export interface EventPayload { }
 
-export interface Event {
-  name: string
+export interface Event<TEventMap extends EventTypeMap> {
+  name: keyof MutationEvents<TEventMap>
   payload: EventPayload
 }
 

@@ -47,13 +47,13 @@ class StateUpdater<
     payload: InferEventPayload<TEvent, MutationEvents<TEventMap>>
   ) {
 
-    const event: Event = {
-      name: eventName as string,
+    const event: Event<TEventMap> = {
+      name: eventName,
       payload
     }
 
     // Append the event
-    this._state.events.push(event)
+    this._state.events.push(event as any)
 
     // Call all relevant reducers
     const coreReducers = core.reducers as any

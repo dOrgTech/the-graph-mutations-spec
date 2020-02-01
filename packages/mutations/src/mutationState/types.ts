@@ -40,7 +40,7 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
 
 export interface EventPayload { }
 
-export interface Event<TEventMap extends EventTypeMap> {
+export interface Event<TEventMap extends EventTypeMap = CoreEvents> {
   name: keyof MutationEvents<TEventMap>
   payload: EventPayload
 }

@@ -23,7 +23,7 @@ describe('Mutation', () => {
 
     function Wrapper() {
       return (
-        <Mutation mutation={TEST_RESOLVER} options={{ client }}>
+        <Mutation mutation={TEST_RESOLVER} client={client}>
           {
             (execute, { data }) => {
               executeFunction = execute
@@ -52,7 +52,7 @@ describe('Mutation', () => {
 
     function Wrapper() {
       return (
-        <Mutation mutation={TEST_RESOLVER} options={{ client }}>
+        <Mutation mutation={TEST_RESOLVER} client={client}>
           {
             (execute, { state }) => {
               executeFunction = execute
@@ -76,6 +76,6 @@ describe('Mutation', () => {
       executeFunction()
     })
 
-    expect(statesToPublish).toEqual(states)
+    expect(states).toEqual(statesToPublish)
   })
 })

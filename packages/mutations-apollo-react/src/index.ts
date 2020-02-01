@@ -18,6 +18,7 @@ import {
 } from '@apollo/react-hooks'
 import { OperationVariables } from '@apollo/react-common'
 import { DocumentNode } from 'graphql'
+import { stringLiteral } from '@babel/types'
 
 export const useMutation = <
   TState = CoreState,
@@ -25,22 +26,32 @@ export const useMutation = <
   TVariables = OperationVariables
 >(
   mutation: DocumentNode,
-  mutationOptions: MutationHookOptions<TData, TVariables>
+  options?: MutationHookOptions<TData, TVariables>
 ): MutationTupleWithState<TState, TData, TVariables> => {
 
   const [state, setState] = useState({} as MutationStates<TState>)
   const [observable] = useState(new MutationStatesSub<TState>({ }))
 
-  mutationOptions.context = {
-    ...mutationOptions.context,
-    client: mutationOptions.client,
+  const graphContext = {
     graph: {
       _rootSub: observable
     }
   }
 
+  const updatedOptions = options ? {
+    ...options,
+    context: {
+      ...options.context,
+      ...graphContext
+    }
+  } : {
+    context: {
+      ...graphContext
+    }
+  }
+
   const [execute, result] = apolloUseMutation(
-    mutation, mutationOptions
+    mutation, updatedOptions
   )
 
   useEffect(() => {
@@ -68,6 +79,6 @@ export const Mutation = <
 >(
   props: MutationComponentOptionsWithState<TState, TData, TVariables>
 ) => {
-  const [runMutation, result] = useMutation<TState>(props.mutation, props.options)
+  const [runMutation, result] = useMutation<TState>(props.mutation, props)
   return props.children ? props.children(runMutation, result) : null
 }

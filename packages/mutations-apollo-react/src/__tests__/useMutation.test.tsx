@@ -63,12 +63,12 @@ describe('UseMutation', () => {
       return null
     }
 
-    mount(<Wrapper></Wrapper>)
+    mount(<Wrapper/>)
 
     await act(async () => {
       mutationFunction()
     })
 
-    expect(statesToPublish).toEqual(states)
+    expect(states).toEqual(statesToPublish)
   })
 })

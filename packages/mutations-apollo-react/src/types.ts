@@ -27,7 +27,6 @@ export interface MutationComponentOptionsWithState<
   TVariables
 > extends BaseMutationOptions<TData, TVariables> {
   mutation: DocumentNode
-  options: MutationHookOptions
   children: (
     mutateFunction: MutationFunction<TData, TVariables>,
     result: MutationResultWithState<TState, TData>

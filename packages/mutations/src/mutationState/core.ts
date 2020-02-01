@@ -1,7 +1,7 @@
 import {
+  Event,
   EventPayload,
-  StateBuilder,
-  Event
+  StateBuilder
 } from './types'
 
 export type EventLog = Event[]

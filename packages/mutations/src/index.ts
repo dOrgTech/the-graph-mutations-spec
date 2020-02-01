@@ -230,7 +230,6 @@ export {
   CoreState,
   CoreEvents,
   Event,
-  EventTypeMap,
   EventPayload,
   MutationState,
   ProgressUpdateEvent,

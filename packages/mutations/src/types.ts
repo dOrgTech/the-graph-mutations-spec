@@ -52,7 +52,7 @@ export interface MutationResolvers<
         any,
         MutationContext<TConfig, TState, TEventMap>
       >
-  };
+  }
 }
 
 export interface UserMutationQuery {

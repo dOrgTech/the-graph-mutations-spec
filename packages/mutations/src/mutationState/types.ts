@@ -49,6 +49,7 @@ export interface EventTypeMap {
   [eventName: string]: EventPayload
 }
 
-export type InferEventPayload<TEvent extends keyof TEvents, TEvents extends EventTypeMap> =
-  TEvent extends keyof TEvents ? TEvents[TEvent] :
-  any
+export type InferEventPayload<
+  TEvent extends keyof TEvents,
+  TEvents extends EventTypeMap
+> = TEvent extends keyof TEvents ? TEvents[TEvent] : any

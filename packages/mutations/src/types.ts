@@ -21,8 +21,8 @@ export interface MutationsModule<
   TState,
   TEventMap extends EventTypeMap
 > {
-  resolvers: MutationResolvers<TConfig, TState, TEventMap>,
-  config: TConfig,
+  resolvers: MutationResolvers<TConfig, TState, TEventMap>
+  config: TConfig
   stateBuilder?: StateBuilder<TState, TEventMap>
 }
 
@@ -33,11 +33,11 @@ export interface MutationContext<
 > {
   [prop: string]: any,
   graph: {
-    config: ConfigProperties<TConfig>,
-    dataSources: DataSources,
+    config: ConfigProperties<TConfig>
+    dataSources: DataSources
     state: StateUpdater<TState, TEventMap>
-    _mutationsCalled: string[],
-    _rootSub?: MutationStatesSub<TState>,
+    _mutationsCalled: string[]
+    _rootSub?: MutationStatesSub<TState>
     _mutationSubs: MutationStateSubs<TState>
   }
 }

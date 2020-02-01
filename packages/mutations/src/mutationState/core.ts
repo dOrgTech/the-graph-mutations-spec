@@ -54,13 +54,13 @@ export const coreStateBuilder: StateBuilder<CoreState, CoreEvents> = {
   },
   reducers: {
     'TRANSACTION_CREATED': async (state: CoreState, payload: TransactionCreatedEvent) => {
-      return state;
+      return state
     },
     'TRANSACTION_COMPLETED': async (state: CoreState, payload: TransactionCreatedEvent) => {
-      return state;
+      return state
     },
     'TRANSACTION_ERROR': async (state: CoreState, payload: TransactionErrorEvent) => {
-      return state;
+      return state
     },
     'PROGRESS_UPDATE': async (state: CoreState, payload: ProgressUpdateEvent) => {
       if (payload.value < 0 || payload.value > 100 || ! Number.isInteger(payload.value)) {

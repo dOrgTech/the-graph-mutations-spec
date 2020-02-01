@@ -6,18 +6,18 @@ import {
   makePromise,
   Operation,
   Observable
-} from 'apollo-link';
+} from 'apollo-link'
 import gql from 'graphql-tag'
 
 const resolvers = {
   Mutation: {
     testResolve: async () => {
-      return true;
+      return true
     }
   }
 }
 
-let link: ApolloLink;
+let link: ApolloLink
 
 describe("LocalResolver", () => {
 

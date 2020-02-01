@@ -18,8 +18,8 @@ Enzyme.configure({ adapter: new Adapter() })
 describe('Mutation', () => {
 
   it('Correctly sets observer object inside context', async () => {
-    let executeFunction: Function;
-    let observerSet = false;
+    let executeFunction: Function
+    let observerSet = false
 
     function Wrapper() {
       return (
@@ -47,8 +47,8 @@ describe('Mutation', () => {
   })
 
   it('Returns states in dispatch order', async () => {
-    let executeFunction: any;
-    let states: MutationStates<CoreState>[] = [];
+    let executeFunction: any
+    let states: MutationStates<CoreState>[] = []
 
     function Wrapper() {
       return (
@@ -67,7 +67,7 @@ describe('Mutation', () => {
             }
           }
         </Mutation>
-      );
+      )
     }
 
     mount(<Wrapper/>)

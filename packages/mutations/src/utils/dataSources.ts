@@ -1,5 +1,5 @@
 import { execute, makePromise } from 'apollo-link'
-import { HttpLink } from 'apollo-link-http';
+import { HttpLink } from 'apollo-link-http'
 import gql from 'graphql-tag'
 
 const GET_DATASOURCE = gql`

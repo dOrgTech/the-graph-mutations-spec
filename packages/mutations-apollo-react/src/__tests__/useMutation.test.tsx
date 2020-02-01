@@ -18,8 +18,8 @@ Enzyme.configure({ adapter: new Adapter() })
 describe('UseMutation', () => {
 
    it('Correctly sets observer object inside context', async () => {
-    let mutationFunction: Function;
-    let observerSet = false;
+    let mutationFunction: Function
+    let observerSet = false
 
     function Wrapper() {
       const [execute, { data }] = useMutation(TEST_RESOLVER, {
@@ -30,8 +30,8 @@ describe('UseMutation', () => {
         observerSet = true
       }
 
-      mutationFunction = execute;
-      return null;
+      mutationFunction = execute
+      return null
     }
 
     mount(<Wrapper/>)
@@ -45,8 +45,8 @@ describe('UseMutation', () => {
 
   it('Returns states in dispatch order', async () => {
 
-    let mutationFunction: Function;
-    let states: MutationStates<CoreState>[] = [];
+    let mutationFunction: Function
+    let states: MutationStates<CoreState>[] = []
 
     function Wrapper() {
       const [execute, { state }] = useMutation(TEST_RESOLVER, {
@@ -60,7 +60,7 @@ describe('UseMutation', () => {
           states.push(state)
       }, [state])
 
-      return null;
+      return null
     }
 
     mount(<Wrapper></Wrapper>)

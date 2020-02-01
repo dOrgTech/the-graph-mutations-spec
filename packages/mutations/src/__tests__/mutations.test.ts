@@ -1,19 +1,19 @@
 import ApolloClient from 'apollo-client'
-import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
+import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { BehaviorSubject } from 'rxjs'
-import 'cross-fetch/polyfill';
+import 'cross-fetch/polyfill'
 
 import { createMutations, createMutationsLink } from '..'
 import { MutationStates, CoreState } from '../mutationState'
-import gql from 'graphql-tag';
+import gql from 'graphql-tag'
 
 const resolvers = {
   Mutation: {
     testResolve: async () => {
-      return true;
+      return true
     },
     secondTestResolve: async () => {
-      return true;
+      return true
     }
   }
 }

@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import gql from 'graphql-tag'
 
 export const typeDefs = gql`
   extend type Todo{
@@ -17,5 +17,4 @@ export const typeDefs = gql`
   extend type Mutation{
       testResolve: Boolean!
   }
-
-  `;
+`

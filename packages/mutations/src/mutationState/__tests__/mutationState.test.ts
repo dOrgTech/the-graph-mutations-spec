@@ -14,7 +14,7 @@ import { BehaviorSubject } from 'rxjs'
 describe("Core Mutation State", () => {
 
   let uuid: string
-  let latestState: CoreState;
+  let latestState: CoreState
   let observer: BehaviorSubject<CoreState>
   let state: StateUpdater<CoreState, EventTypeMap>
 
@@ -47,7 +47,7 @@ describe("Core Mutation State", () => {
   it("State dispatched is immutable", async () => {
     await state.dispatch("PROGRESS_UPDATE", { value: 5 })
 
-    latestState.progress = 100;
+    latestState.progress = 100
 
     await state.dispatch("TRANSACTION_CREATED", {
       id: "Test Id",
@@ -104,7 +104,7 @@ describe("Extended Mutation State", () => {
   }
 
   let uuid: string
-  let latestState: State;
+  let latestState: State
   let observer: MutationStateSub<State>
   let state: StateUpdater<State, EventTypeMap>
   
@@ -124,7 +124,6 @@ describe("Extended Mutation State", () => {
       }
     },
     reducer: async (state: MutationState<State>, event: Event) => {
-
       switch(event.name){
         case "CUSTOM_EVENT": {
           return {
@@ -148,11 +147,8 @@ describe("Extended Mutation State", () => {
   }
 
   beforeEach(() => {
-
     uuid = v4()
-
     observer = new MutationStateSub<State>({} as MutationState<State>)
-
     state = new StateUpdater<State, EventMap>(
       uuid, stateBuilder, observer
     )
@@ -163,7 +159,7 @@ describe("Extended Mutation State", () => {
   })
 
   it("Includes extended state with correct initial values", () => {
-    const currentState = state.current;
+    const currentState = state.current
     
     expect(currentState.myFlag).toEqual(true)
     expect(currentState.myValue).toEqual('initial')
@@ -173,7 +169,7 @@ describe("Extended Mutation State", () => {
   it("Correctly executes CUSTOM_EVENT defined reducer", async () => {
     await state.dispatch("CUSTOM_EVENT", { myFlag: false, myValue: 'false'})
 
-    const currentState = state.current;
+    const currentState = state.current
     
     expect(currentState.myFlag).toEqual(true)
     expect(currentState.myValue).toEqual('true')
@@ -183,7 +179,7 @@ describe("Extended Mutation State", () => {
     await state.dispatch("TRANSACTION_CREATED", { id: "Test ID", description: "Test Description" })
     await state.dispatch("CUSTOM_EVENT", { myFlag: false, myValue: 'false'})
 
-    const currentState = state.current;
+    const currentState = state.current
     
     expect(currentState.events[1].name).toEqual("CUSTOM_EVENT")
     expect(currentState.events[1].payload).toEqual({ myFlag: false, myValue: 'false' })
@@ -192,7 +188,7 @@ describe("Extended Mutation State", () => {
   it("Executes catch-all reducer if specific event reducer is not found", async () => {
     await state.dispatch("RANDOM_EVENT", { })
 
-    const currentState = state.current;
+    const currentState = state.current
 
     expect(currentState.catchAll).toEqual(true)
   })
@@ -200,7 +196,7 @@ describe("Extended Mutation State", () => {
   it("Executes specific custom event reducer if found, even if same custom event is defined in catch-all reducer", async () => {
     await state.dispatch("CUSTOM_EVENT", { myValue: 'false', myFlag: false })
 
-    const currentState = state.current;
+    const currentState = state.current
 
     expect(currentState.catchAll).toEqual(false)
   })
@@ -210,7 +206,5 @@ describe("Extended Mutation State", () => {
 
     expect(state.current.progress).toEqual(50)
     expect(state.current.catchAll).toEqual(true)
-
   })
-
 })

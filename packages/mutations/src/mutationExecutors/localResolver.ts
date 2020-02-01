@@ -31,7 +31,7 @@ const localResolver = <
   // Reuse the cache from the client
   const context = mutationQuery.getContext()
   const client = context.client
-  let cache;
+  let cache
 
   if (client && client.cache) {
     cache = client.cache

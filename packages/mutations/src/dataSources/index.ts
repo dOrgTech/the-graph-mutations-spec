@@ -61,7 +61,7 @@ class DataSources {
       throw new Error(`Error fetching ethereum contract abis with name '${abiName}'`)
     }
 
-    const abi = result.data.ethereumContractAbis[0].file;
+    const abi = result.data.ethereumContractAbis[0].file
 
     const resp = await this._ipfs.get(abi)
 

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag'
 
-export const typeDefs = gql`
+export const schema = gql`
   extend type Todo{
       id: ID!
       asignee: String!

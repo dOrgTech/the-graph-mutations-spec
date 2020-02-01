@@ -1,6 +1,6 @@
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
-import { typeDefs } from './typedefs'
+import { schema } from './schema'
 
 const cache = new InMemoryCache()
 cache.writeData({
@@ -27,5 +27,5 @@ export const client = new ApolloClient({
       }
     },
     cache,
-    typeDefs
+    typeDefs: schema
 })

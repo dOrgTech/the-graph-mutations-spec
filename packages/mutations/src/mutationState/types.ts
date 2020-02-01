@@ -35,7 +35,7 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
   reducer?: (
     state: MutationState<TState>,
     event: Event
-  ) => OptionalAsync<MutationState<TState>>
+  ) => OptionalAsync<Partial<MutationState<TState>>>
 }
 
 export interface EventPayload { }
@@ -49,6 +49,7 @@ export interface EventTypeMap {
   [eventName: string]: EventPayload
 }
 
-export type InferEventPayload<TEvent extends keyof TEvents, TEvents extends EventTypeMap> =
-  TEvent extends keyof TEvents ? TEvents[TEvent] :
-  any
+export type InferEventPayload<
+  TEvent extends keyof TEvents,
+  TEvents extends EventTypeMap
+> = TEvent extends keyof TEvents ? TEvents[TEvent] : any

@@ -4,19 +4,19 @@ import { DocumentNode } from 'graphql'
 import { visit } from 'graphql/language/visitor'
 
 export const getDirectiveNames = (doc: DocumentNode) => {
-  const names: string[] = [];
+  const names: string[] = []
 
   visit(doc, {
     Directive(node) {
-      names.push(node.name.value);
-    },
-  });
+      names.push(node.name.value)
+    }
+  })
 
-  return names;
+  return names
 }
 
 export const getUniqueMutations = (doc: DocumentNode, resolverNames: string[]) => {
-  let names: string [] = [];
+  let names: string [] = []
 
   visit(doc, {
     OperationDefinition(node) {
@@ -24,7 +24,7 @@ export const getUniqueMutations = (doc: DocumentNode, resolverNames: string[]) =
         if (selection.kind === 'Field' && resolverNames.includes(selection.name.value)) {
           result.push(selection.name.value)
         }
-        return result;
+        return result
       }, names)
     },
   })
@@ -32,8 +32,7 @@ export const getUniqueMutations = (doc: DocumentNode, resolverNames: string[]) =
   return makeRepeatedUnique(names)
 }
 
-export const hasDirectives = (names: string[], doc: DocumentNode) => {
-  return getDirectiveNames(doc).some(
+export const hasDirectives = (names: string[], doc: DocumentNode) =>
+  getDirectiveNames(doc).some(
     (name: string) => names.indexOf(name) > -1,
-  );
-}
+  )

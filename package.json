@@ -14,13 +14,16 @@
   },
   "scripts": {
     "build": "yarn build:packages && yarn build:example",
+    "build:ci": "yarn build:packages:ci",
     "build:packages": "lerna exec --scope @graphprotocol/mutations* -- yarn build",
+    "build:packages:ci": "lerna exec --scope @graphprotocol/mutations* -- yarn build:ci",
     "build:example": "yarn build:example:mutations && yarn build:example:subgraph",
     "build:example:subgraph": "lerna exec --scope example-subgraph -- yarn build",
     "build:example:mutations": "lerna exec --scope example-mutations -- yarn build",
     "start:subgraph": "lerna exec --scope example-subgraph -- yarn start",
     "start:dapp": "lerna exec --scope example-dapp-react -- yarn start",
     "stop:subgraph": "lerna exec --scope example-subgraph -- yarn stop",
+    "test": "lerna exec --scope @graphprotocol/mutations* -- yarn test",
     "preinstall": "([ ! -d graph-cli ] && git clone --branch mutations-build https://github.com/dOrgTech/graph-cli) || true"
   },
   "devDependencies": {

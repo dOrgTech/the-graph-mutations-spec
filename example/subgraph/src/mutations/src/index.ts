@@ -1,24 +1,26 @@
 import {
   EventPayload,
-  EventTypeMap,
+  MutationContext,
+  MutationResolvers,
   MutationState,
   StateBuilder,
   StateUpdater,
-  MutationResolvers,
-  MutationContext
 } from "@graphprotocol/mutations"
 
 import gql from 'graphql-tag'
 import { ethers } from 'ethers'
 import { Transaction } from 'ethers/utils'
-import { AsyncSendable, Web3Provider } from "ethers/providers"
+import {
+  AsyncSendable,
+  Web3Provider
+} from "ethers/providers"
 
 // State Payloads + Events + StateBuilder
 interface CustomEvent extends EventPayload {
   myValue: string
 }
 
-interface EventMap extends EventTypeMap {
+type EventMap = {
   'CUSTOM_EVENT': CustomEvent
 }
 

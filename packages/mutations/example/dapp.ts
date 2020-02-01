@@ -1,9 +1,13 @@
 import {
   createMutations,
-  createMutationsLink
+  createMutationsLink,
+  MutationContext
 } from '../src'
-import exampleMutations from './mutations'
+import exampleMutations, { State, EventMap, Config } from './mutations'
 
+import gql from 'graphql-tag'
+
+// Create Executable & Executable Mutations
 const mutations = createMutations({
   mutations: exampleMutations,
   subgraph: 'my-subgraph',
@@ -19,4 +23,30 @@ const mutations = createMutations({
   }
 })
 
+// Create an ApolloLink to execute the mutations
 const link = createMutationsLink({ mutations })
+
+// Execute a mutation without Apollo
+const EXAMPLE = gql`
+  mutation example($input: String!) {
+    example(input: $input) @client{
+      output
+    }
+  }
+`
+
+type Context = MutationContext<Config, State, EventMap>
+let context = { } as Context
+
+mutations.execute({
+  query: EXAMPLE,
+  variables: {
+    input: "..."
+  },
+  operationName: "mutation",
+  setContext: (newContext: Context) => {
+    context = newContext
+    return context
+  },
+  getContext: () => context
+})

@@ -1,8 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
+    "rootDir": "./",
+    "outDir": "./ci",
     "target": "es2015",
     "module": "commonjs",
     "declaration": true,
@@ -11,7 +11,7 @@
     "strict": true,
     "lib": ["es2015", "es6", "esnext.asynciterable", "dom"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "example/**/*.ts"],
   "exclude": ["src/**/__tests__/**/*.ts"],
   "references": []
 }

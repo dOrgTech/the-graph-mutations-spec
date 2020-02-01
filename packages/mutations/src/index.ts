@@ -100,7 +100,7 @@ const createMutations = <
           const result: MutationStates<TState> = { }
 
           values.forEach((value, index) => {
-            result[_mutationsCalled[index]] = value;
+            result[_mutationsCalled[index]] = value
           })
 
           _rootSub.next(result)
@@ -230,7 +230,6 @@ export {
   CoreState,
   CoreEvents,
   Event,
-  EventTypeMap,
   EventPayload,
   MutationState,
   ProgressUpdateEvent,

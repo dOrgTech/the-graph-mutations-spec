@@ -25,9 +25,11 @@ export function Component() {
 
   return (
     <Mutation mutation={EXAMPLE}>
-    {(exec, { state }) => {
-      return (<div />)
-    }}
+    {(exec, { state }) => (
+      <div>
+        {state.example ? state.example.progress : ""}
+      </div>
+    )}
     </Mutation>
   )
 }

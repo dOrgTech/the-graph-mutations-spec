@@ -11,6 +11,8 @@ const resolvers = {
   }
 }
 
+type Config = typeof config
+
 const config = {
   a: (name: string): string => {
     return `Hi my name is ${name}!`
@@ -35,11 +37,11 @@ interface MyEvent extends EventPayload {
   myValue: boolean
 }
 
-type Events = {
+type EventMap = {
   'MY_EVENT': MyEvent
 }
 
-const stateBuilder: StateBuilder<State, Events> = {
+const stateBuilder: StateBuilder<State, EventMap> = {
   getInitialState() {
     return {
       myValue: false
@@ -58,4 +60,11 @@ export default {
   resolvers,
   config,
   stateBuilder
+}
+
+export {
+  Config,
+  State,
+  EventMap,
+  MyEvent
 }

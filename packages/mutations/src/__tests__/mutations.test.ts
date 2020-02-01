@@ -57,7 +57,6 @@ describe("Mutations package - CreateMutations", () => {
     })
 
     expect(data.testResolve).toEqual(true)
-
   })
 
   it("Correctly wraps resolvers and formats observer results to object with mutation name as key and state as value", async () => {

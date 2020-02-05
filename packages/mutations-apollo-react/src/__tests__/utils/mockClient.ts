@@ -1,6 +1,6 @@
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import ApolloClient from 'apollo-client'
-import { typeDefs } from './typedefs'
+import { schema } from './schema'
 
 const cache = new InMemoryCache()
 cache.writeData({
@@ -16,16 +16,16 @@ export const client = new ApolloClient({
       Mutation: {
           testResolve: async (_, __, context) => {
 
-            if(!context.graph || !context.graph._rootSub){
+            if(!context._rootSub){
               return false
             }
-            context.graph._rootSub.next(statesToPublish[0])
-            context.graph._rootSub.next(statesToPublish[1])
-            context.graph._rootSub.next(statesToPublish[2])
+            context._rootSub.next(statesToPublish[0])
+            context._rootSub.next(statesToPublish[1])
+            context._rootSub.next(statesToPublish[2])
             return true
         }
       }
     },
     cache,
-    typeDefs
+    typeDefs: schema
 })

@@ -1,7 +1,9 @@
 import {
+  Event,
   EventPayload,
   MutationState,
-  StateBuilder
+  StateBuilder,
+  ProgressUpdateEvent
 } from '../src'
 
 const resolvers = {
@@ -52,6 +54,17 @@ const stateBuilder: StateBuilder<State, EventMap> = {
       return {
         myValue: payload.myValue
       }
+    }
+  },
+  // Catch all reducer
+  reducer: (state: MutationState<State>, event: Event<EventMap>) => {
+    switch (event.name) {
+      case 'PROGRESS_UPDATE':
+        // do something custom, in addition to the core reducer
+        const payload = event.payload as ProgressUpdateEvent
+        return { }
+      default:
+        return { }
     }
   }
 }

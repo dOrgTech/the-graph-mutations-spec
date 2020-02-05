@@ -7,17 +7,26 @@ import { OptionalAsync } from '../utils'
 import { BehaviorSubject } from 'rxjs'
 
 // An aggregate of all possible MutationState properties
-export type MutationState<TState> = CoreState & TState
+export type MutationState<
+  TState = CoreState,
+  TEventMap extends EventTypeMap = CoreEvents
+> = { events: EventLog<TEventMap> } & CoreState & TState
 
 // A collection of mutation states
-export type MutationStates<TState> = {
-  [mutation: string]: MutationState<TState>
+export type MutationStates<
+  TState = CoreState,
+  TEventMap extends EventTypeMap = CoreEvents
+> = {
+  [mutation: string]: MutationState<TState, TEventMap>
 }
 
 // Mutation State Subscriptions
-export class MutationStatesSub<TState> extends BehaviorSubject<MutationStates<TState>> { }
-export class MutationStateSub<TState> extends BehaviorSubject<MutationState<TState>> { }
-export type MutationStateSubs<TState> = MutationStateSub<TState>[]
+export class MutationStatesSub<
+  TState = CoreState,
+  TEventMap extends EventTypeMap = CoreEvents
+> extends BehaviorSubject<MutationStates<TState, TEventMap>> { }
+export class MutationStateSub<TState, TEventMap extends EventTypeMap> extends BehaviorSubject<MutationState<TState, TEventMap>> { }
+export type MutationStateSubs<TState, TEventMap extends EventTypeMap> = MutationStateSub<TState, TEventMap>[]
 
 // An aggregate of all possible MutationEvents
 export type MutationEvents<TEventMap> = CoreEvents & TEventMap
@@ -34,16 +43,18 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
   // Catch-All Reducer
   reducer?: (
     state: MutationState<TState>,
-    event: Event
+    event: Event<TEventMap>
   ) => OptionalAsync<Partial<MutationState<TState>>>
 }
 
 export interface EventPayload { }
 
-export interface Event {
-  name: string
+export interface Event<TEventMap extends EventTypeMap = CoreEvents> {
+  name: keyof MutationEvents<TEventMap>
   payload: EventPayload
 }
+
+export type EventLog<TEventMap extends EventTypeMap = CoreEvents> = Event<TEventMap>[]
 
 export interface EventTypeMap {
   [eventName: string]: EventPayload

@@ -203,7 +203,7 @@ function App() {
           {!alreadyCreated? (
             <Button size="large" color="primary" variant="outlined" onClick={() => executeCreate()}>
               Create New Random Gravatar
-          </Button>
+            </Button>
           ): "A Gravatar with this address has already been created"}
           <Grid container>
             {loading ? (
@@ -233,10 +233,10 @@ function App() {
         <DialogActions>
           <Button onClick={toggleHelpDialog} color="primary">
             Nah, I'm good
-            </Button>
+          </Button>
           <Button onClick={gotoQuickStartGuide} color="primary" autoFocus>
             Yes, please
-            </Button>
+          </Button>
         </DialogActions>
       </Dialog>
       <br></br>

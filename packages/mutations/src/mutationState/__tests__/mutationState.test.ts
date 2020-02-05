@@ -1,30 +1,42 @@
 import { v4 } from 'uuid'
-import { CoreState } from '../core'
+import {
+  CoreState,
+  CoreEvents,
+  TransactionCreatedEvent
+} from '../core'
 import {
   Event,
-  EventTypeMap,
   EventPayload,
   MutationState,
   MutationStateSub,
   StateBuilder
 } from '../types'
 import { StateUpdater } from '../index'
-import { BehaviorSubject } from 'rxjs'
+
+const mockTransaction: TransactionCreatedEvent = {
+  id: "Test Id",
+  to: "0x0",
+  from: "0x0",
+  data: "",
+  amount: "0",
+  chainId: "",
+  description: "Test Description"
+}
 
 describe("Core Mutation State", () => {
 
   let uuid: string
-  let latestState: CoreState
-  let observer: BehaviorSubject<CoreState>
-  let state: StateUpdater<CoreState, EventTypeMap>
+  let latestState: MutationState<CoreState>
+  let observer: MutationStateSub<CoreState, CoreEvents>
+  let state: StateUpdater<CoreState, CoreEvents>
 
   beforeEach(() => {
 
     uuid = v4()
 
-    observer = new BehaviorSubject<CoreState>({} as CoreState)
+    observer = new MutationStateSub<CoreState, CoreEvents>({} as MutationState<CoreState>)
 
-    state = new StateUpdater<CoreState, EventTypeMap>(
+    state = new StateUpdater<CoreState, CoreEvents>(
       uuid, undefined, observer
     )
 
@@ -49,21 +61,14 @@ describe("Core Mutation State", () => {
 
     latestState.progress = 100
 
-    await state.dispatch("TRANSACTION_CREATED", {
-      id: "Test Id",
-      description: "Test Description"
-    })
+    await state.dispatch("TRANSACTION_CREATED", mockTransaction)
 
     expect(latestState.progress).toEqual(5)
-
   })
 
   it("Dispatches state updates in correct order", async () => {
     await state.dispatch("PROGRESS_UPDATE", { value: 5 })
-    await state.dispatch("TRANSACTION_CREATED", {
-      id: "Test Id",
-      description: "Test Description"
-    })
+    await state.dispatch("TRANSACTION_CREATED", mockTransaction)
 
     const currentState = state.current
 
@@ -71,10 +76,7 @@ describe("Core Mutation State", () => {
     expect(currentState.events[0].payload).toEqual( { value: 5 })
 
     expect(currentState.events[1].name).toEqual("TRANSACTION_CREATED")
-    expect(currentState.events[1].payload).toEqual( {
-      id: "Test Id",
-      description: "Test Description"
-    })
+    expect(currentState.events[1].payload).toEqual(mockTransaction)
 
   })
 
@@ -93,8 +95,9 @@ describe("Extended Mutation State", () => {
     myFlag: boolean
   }
   
-  interface EventMap extends EventTypeMap {
+  type EventMap = {
     'CUSTOM_EVENT': CustomEvent
+    'RANDOM_EVENT': { }
   }
   
   interface State {
@@ -105,8 +108,8 @@ describe("Extended Mutation State", () => {
 
   let uuid: string
   let latestState: State
-  let observer: MutationStateSub<State>
-  let state: StateUpdater<State, EventTypeMap>
+  let observer: MutationStateSub<State, EventMap>
+  let state: StateUpdater<State, EventMap>
   
   const stateBuilder: StateBuilder<State, EventMap> = {
     getInitialState(): State {
@@ -123,7 +126,7 @@ describe("Extended Mutation State", () => {
         }
       }
     },
-    reducer: async (state: MutationState<State>, event: Event) => {
+    reducer: async (state: MutationState<State>, event: Event<EventMap>) => {
       switch(event.name){
         case "CUSTOM_EVENT": {
           return {
@@ -148,7 +151,7 @@ describe("Extended Mutation State", () => {
 
   beforeEach(() => {
     uuid = v4()
-    observer = new MutationStateSub<State>({} as MutationState<State>)
+    observer = new MutationStateSub<State, EventMap>({} as MutationState<State, EventMap>)
     state = new StateUpdater<State, EventMap>(
       uuid, stateBuilder, observer
     )
@@ -176,11 +179,11 @@ describe("Extended Mutation State", () => {
   })
 
   it("Includes custom events alongside core events in the events history", async () => {
-    await state.dispatch("TRANSACTION_CREATED", { id: "Test ID", description: "Test Description" })
+    await state.dispatch("TRANSACTION_CREATED", mockTransaction)
     await state.dispatch("CUSTOM_EVENT", { myFlag: false, myValue: 'false'})
 
     const currentState = state.current
-    
+
     expect(currentState.events[1].name).toEqual("CUSTOM_EVENT")
     expect(currentState.events[1].payload).toEqual({ myFlag: false, myValue: 'false' })
   })

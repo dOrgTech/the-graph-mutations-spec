@@ -17,19 +17,20 @@ class StateUpdater<
   TEventMap extends EventTypeMap
 > {
 
-  private _state: MutationState<TState>
-  private _sub?: MutationStateSub<TState>
+  private _state: MutationState<TState, TEventMap>
+  private _sub?: MutationStateSub<TState, TEventMap>
   private _ext?: StateBuilder<TState, TEventMap>
 
   constructor(
     uuid: string,
     ext?: StateBuilder<TState, TEventMap>,
-    subscriber?: MutationStateSub<TState>
+    subscriber?: MutationStateSub<TState, TEventMap>
   ) {
     this._ext = ext
     this._sub = subscriber
 
     this._state = {
+      events: [],
       ...core.getInitialState(uuid),
       ...(this._ext ? this._ext.getInitialState(uuid) : { } as TState),
     }
@@ -47,8 +48,8 @@ class StateUpdater<
     payload: InferEventPayload<TEvent, MutationEvents<TEventMap>>
   ) {
 
-    const event: Event = {
-      name: eventName as string,
+    const event: Event<TEventMap> = {
+      name: eventName,
       payload
     }
 
@@ -62,18 +63,18 @@ class StateUpdater<
     const extReducer = this._ext?.reducer
 
     if (coreReducers && coreReducers[event.name] !== undefined) {
-      const coreStatePartial = await execFunc(coreReducers[event.name], [cloneDeep(this._state), payload])
+      const coreStatePartial = await execFunc(coreReducers[event.name], cloneDeep(this._state), payload)
       this._state = merge(this._state, coreStatePartial)
     } else if (coreReducer) {
-      const coreStatePartial = await execFunc(coreReducer, [cloneDeep(this._state), event])
+      const coreStatePartial = await execFunc(coreReducer, cloneDeep(this._state), event)
       this._state = merge(this._state, coreStatePartial)
     }
 
     if (extReducers && extReducers[event.name] !== undefined) {
-      const extStatePartial = await execFunc(extReducers[event.name], [cloneDeep(this._state), payload])
+      const extStatePartial = await execFunc(extReducers[event.name], cloneDeep(this._state), payload)
       this._state = merge(this._state, extStatePartial)
     } else if (extReducer) {
-      const extStatePartial = await execFunc(extReducer, [cloneDeep(this._state), event])
+      const extStatePartial = await execFunc(extReducer, cloneDeep(this._state), event)
       this._state = merge(this._state, extStatePartial)
     }
 

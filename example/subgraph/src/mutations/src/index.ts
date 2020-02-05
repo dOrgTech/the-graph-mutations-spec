@@ -68,35 +68,45 @@ async function queryUserGravatar(context: Context) {
 
   const address = await ethereum.getSigner().getAddress()
 
-  // TODO time travel query (specific block #)
-  // block: hash#?
-  for (let i = 0; i < 20; ++i) {
-    const { data } = await client.query({
-      query: gql`
-        query GetGravatars {
-          gravatars (where: {owner: "${address}"}) {
-            id
-            owner
-            displayName
-            imageUrl
-          }
-        }`
-      }
-    )
+  if (client) {
+    // TODO time travel query (specific block #)
+    // block: hash#?
+    for (let i = 0; i < 20; ++i) {
+      const { data } = await client.query({
+        query: gql`
+          query GetGravatars {
+            gravatars (where: {owner: "${address}"}) {
+              id
+              owner
+              displayName
+              imageUrl
+            }
+          }`
+        }
+      )
 
-    if (data === null) {
-      await sleep(500)
-    } else {
-      return data.gravatars[0]
+      if (data === null) {
+        await sleep(500)
+      } else {
+        return data.gravatars[0]
+      }
     }
   }
 
   return null
 }
 
-async function sendTx(tx: Transaction, state: StateUpdater<State, EventMap>) {
+async function sendTx(tx: Transaction, description: string, state: StateUpdater<State, EventMap>) {
   try {
-    await state.dispatch('TRANSACTION_CREATED', { id: tx.hash, description: tx.data })
+    await state.dispatch('TRANSACTION_CREATED', {
+      id: tx.hash,
+      to: tx.to,
+      from: tx.from,
+      data: tx.data,
+      amount: tx.value.toString(),
+      chainId: `ethereum-${tx.chainId}`,
+      description
+    })
     tx = await tx
     await state.dispatch('TRANSACTION_COMPLETED', { id: tx.hash, description: tx.data })
     return tx;
@@ -134,7 +144,12 @@ async function createGravatar(_, { options }: any, context: Context) {
     throw new Error('Transaction Errored (Controlled Error Test Case)')
   }
 
-  const txResult = await sendTx(gravity.createGravatar(displayName, imageUrl), state)
+  const txResult = await sendTx(
+    await gravity.createGravatar(displayName, imageUrl),
+    `Create new Gravatar named ${displayName}...`,
+    state
+  )
+
   if (!txResult) {
     throw new Error('WHOLE PROCESS FAILED')
   }
@@ -146,7 +161,11 @@ async function deleteGravatar(_, { }: any, context: Context) {
   const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
-  const txResult = await sendTx(gravity.deleteGravatar(), state)
+  const txResult = await sendTx(
+    await gravity.deleteGravatar(),
+    `Delete user's Gravatar...`,
+    state
+  )
 
   if (!txResult) {
     throw new Error('Error deleting gravatar')
@@ -166,7 +185,12 @@ async function updateGravatarName(_, { displayName }: any, context: Context) {
     throw new Error('Transaction Errored (Controlled Error Test Case)')
   }
 
-  const txResult = await sendTx(gravity.updateGravatarName(displayName), state)
+  const txResult = await sendTx(
+    await gravity.updateGravatarName(displayName),
+    `Change Gravatar's name to ${displayName}...`,
+    state
+  )
+
   if (!txResult) {
     throw new Error('WHOLE PROCESS FAILED')
   }
@@ -185,7 +209,11 @@ async function updateGravatarImage(_, { imageUrl }: any, context: Context) {
     throw new Error('Transaction Errored (Controlled Error Test Case)')
   }
 
-  await sendTx(gravity.updateGravatarImage(imageUrl), state)
+  await sendTx(
+    await gravity.updateGravatarImage(imageUrl),
+    `Update Gravatar's image...`,
+    state
+  )
 
   return await queryUserGravatar(context)
 }

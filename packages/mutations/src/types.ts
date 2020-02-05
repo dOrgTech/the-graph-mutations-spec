@@ -1,8 +1,11 @@
 import {
+  CoreEvents,
+  CoreState,
   EventTypeMap,
-  StateBuilder,
+  MutationState,
   MutationStatesSub,
   MutationStateSubs,
+  StateBuilder,
   StateUpdater
 } from './mutationState'
 import { DataSources } from './dataSources'
@@ -18,8 +21,8 @@ import { GraphQLFieldResolver } from 'graphql'
 
 export interface MutationsModule<
   TConfig extends ConfigGenerators,
-  TState,
-  TEventMap extends EventTypeMap
+  TState = MutationState<CoreState>,
+  TEventMap extends EventTypeMap = CoreEvents
 > {
   resolvers: MutationResolvers<TConfig, TState, TEventMap>
   config: TConfig
@@ -28,8 +31,8 @@ export interface MutationsModule<
 
 export interface MutationContext<
   TConfig extends ConfigGenerators,
-  TState,
-  TEventMap extends EventTypeMap
+  TState = MutationState<CoreState>,
+  TEventMap extends EventTypeMap = CoreEvents
 > {
   [prop: string]: any,
   graph: {
@@ -44,8 +47,8 @@ export interface MutationContext<
 
 export interface MutationResolvers<
   TConfig extends ConfigGenerators,
-  TState,
-  TEventMap extends EventTypeMap
+  TState = MutationState<CoreState>,
+  TEventMap extends EventTypeMap = CoreEvents
 > {
   Mutation: {
       [field: string]: GraphQLFieldResolver<
@@ -66,8 +69,8 @@ export interface UserMutationQuery {
 
 export interface MutationQuery<
   TConfig extends ConfigGenerators,
-  TState,
-  TEventMap extends EventTypeMap
+  TState = MutationState<CoreState>,
+  TEventMap extends EventTypeMap = CoreEvents
 > extends UserMutationQuery {
   setContext: (context: MutationContext<TConfig, TState, TEventMap>) => MutationContext<TConfig, TState, TEventMap>
   getContext: () => MutationContext<TConfig, TState, TEventMap>
@@ -77,9 +80,9 @@ export type MutationResult = ExecutionResult
 
 export interface Mutations<
   TConfig extends ConfigGenerators,
-  TState,
-  TEventMap extends EventTypeMap
+  TState = MutationState<CoreState>,
+  TEventMap extends EventTypeMap = CoreEvents
 > {
   execute: (query: MutationQuery<TConfig, TState, TEventMap>) => Promise<MutationResult>
-  configure: (config: ConfigArguments<TConfig>) => void
+  configure: (config: ConfigArguments<TConfig>) => Promise<void>
 }

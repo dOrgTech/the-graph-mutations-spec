@@ -220,8 +220,9 @@ export {
 }
 
 export {
+  MutationContext,
   MutationResolvers,
-  MutationContext
+  Mutations
 } from './types'
 
 export { MutationExecutor } from './mutationExecutors'
@@ -232,6 +233,7 @@ export {
   Event,
   EventPayload,
   MutationState,
+  MutationStates,
   ProgressUpdateEvent,
   StateBuilder,
   StateUpdater,

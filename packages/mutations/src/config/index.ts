@@ -41,18 +41,33 @@ export const createConfig = async <TConfig extends ConfigGenerators>(
 }
 
 export const validateConfig = (args: any, generators: any) => {
-  Object.keys(generators).forEach(key => {
+  const keys = Object.keys(generators)
+
+  if (keys.length === 0) {
+    throw Error('Config Generators must be a function, or an object that contains functions.')
+  }
+
+  keys.forEach(key => {
     if (args[key] === undefined) {
-      throw Error(`Failed to find mutation configuration value for the property ${key}.`)
+      throw Error(`Failed to find mutation configuration value for the property '${key}'.`)
     }
 
-    if (typeof generators[key] === 'object') {
+    const generator = generators[key]
+    const generatorType = typeof generator
+
+    if (generatorType === 'object') {
       if (typeof args[key] === 'function') {
         // we return here, as we can't validate at runtime that
         // the function will return the shape we're looking for
         return
       }
       validateConfig(args[key], generators[key])
+    } else if (generatorType === 'function') {
+      if (generator.length !== 1) {
+        throw Error('Config Generators must take 1 argument')
+      }
+    } else {
+      throw Error(`Generator must be of type 'object' or 'function'`)
     }
   })
 }

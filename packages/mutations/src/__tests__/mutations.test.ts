@@ -92,9 +92,7 @@ describe('Mutations package - CreateMutations', () => {
         }
       `,
       context: {
-        graph: {
-          _rootSub: observer
-        }
+        _rootSub: observer
       }
     })
 
@@ -111,9 +109,7 @@ describe('Mutations package - CreateMutations', () => {
         }
       `,
       context: {
-        graph: {
-          _rootSub: observer
-        }
+        _rootSub: observer
       }
     })
 
@@ -135,9 +131,7 @@ describe('Mutations package - CreateMutations', () => {
         }
       `,
       context: {
-        graph: {
-          _rootSub: observer
-        }
+        _rootSub: observer
       }
     })
 
@@ -176,10 +170,8 @@ describe('Mutations package - CreateMutations', () => {
       const observer = new MutationStatesSub<CoreState, CoreEvents>({ })
 
       let context = {
-        graph: {
-          _rootSub: observer
-        }
-      } as MutationContext<Config>
+        _rootSub: observer
+      }
 
       let progress = 0
 
@@ -198,12 +190,13 @@ describe('Mutations package - CreateMutations', () => {
         variables: { },
         operationName: 'mutation',
         getContext: () => context,
-        setContext: (newContext: MutationContext<Config>) => {
+        setContext: (newContext: any) => {
           context = newContext
           return context
-        }
+        },
+        stateSub: observer
       })
-  
+
       expect(progress).toEqual(50)
       sub.unsubscribe()
     })

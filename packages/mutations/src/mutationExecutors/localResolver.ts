@@ -19,7 +19,7 @@ const localResolver = <
   TState,
   TEventMap extends EventTypeMap
 > (
-  mutationQuery: MutationQuery<TConfig, TState, TEventMap>,
+  mutationQuery: MutationQuery<TState, TEventMap>,
   resolvers: MutationResolvers<TConfig, TState, TEventMap>
 ): Promise<MutationResult> => {
 

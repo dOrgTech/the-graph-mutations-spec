@@ -35,15 +35,14 @@ export const useMutation = <
   const [observable] = useState(new MutationStatesSub<TState, TEventMap>({ }))
 
   const graphContext = {
-    graph: {
-      _rootSub: observable
-    }
+    _rootSub: observable
   }
 
   const updatedOptions = options ? {
     ...options,
     context: {
       ...options.context,
+      client: options.client,
       ...graphContext
     }
   } : {

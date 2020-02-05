@@ -11,6 +11,6 @@ export type MutationExecutor<
   TState,
   TEventMap extends EventTypeMap
 > = (
-  query: MutationQuery<TConfig, TState, TEventMap>,
+  query: MutationQuery<TState, TEventMap>,
   resolvers: MutationResolvers<TConfig, TState, TEventMap>
 ) => Promise<MutationResult>

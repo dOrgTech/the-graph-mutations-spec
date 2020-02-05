@@ -39,10 +39,17 @@ export interface MutationContext<
     config: ConfigProperties<TConfig>
     dataSources: DataSources
     state: StateUpdater<TState, TEventMap>
-    _mutationsCalled: string[]
-    _rootSub?: MutationStatesSub<TState, TEventMap>
-    _mutationSubs: MutationStateSubs<TState, TEventMap>
   }
+}
+
+export interface InternalMutationContext<
+  TConfig extends ConfigGenerators,
+  TState = MutationState<CoreState>,
+  TEventMap extends EventTypeMap = CoreEvents
+> extends MutationContext<TConfig, TState, TEventMap> {
+  _mutationsCalled: string[]
+  _rootSub?: MutationStatesSub<TState, TEventMap>
+  _mutationSubs: MutationStateSubs<TState, TEventMap>
 }
 
 export interface MutationResolvers<
@@ -58,31 +65,26 @@ export interface MutationResolvers<
   }
 }
 
-export interface UserMutationQuery {
+export interface MutationQuery<
+  TState = CoreState,
+  TEventMap extends EventTypeMap = CoreEvents
+> {
   query: DocumentNode
   variables: Record<string, any>
   operationName: string
   extensions?: Record<string, any>
   setContext: (context: any) => any
-  getContext: () => any
-}
-
-export interface MutationQuery<
-  TConfig extends ConfigGenerators,
-  TState = MutationState<CoreState>,
-  TEventMap extends EventTypeMap = CoreEvents
-> extends UserMutationQuery {
-  setContext: (context: MutationContext<TConfig, TState, TEventMap>) => MutationContext<TConfig, TState, TEventMap>
-  getContext: () => MutationContext<TConfig, TState, TEventMap>
+  getContext: () => any,
+  stateSub?: MutationStatesSub<TState, TEventMap>
 }
 
 export type MutationResult = ExecutionResult
 
 export interface Mutations<
   TConfig extends ConfigGenerators,
-  TState = MutationState<CoreState>,
+  TState = CoreState,
   TEventMap extends EventTypeMap = CoreEvents
 > {
-  execute: (query: MutationQuery<TConfig, TState, TEventMap>) => Promise<MutationResult>
+  execute: (query: MutationQuery<TState, TEventMap>) => Promise<MutationResult>
   configure: (config: ConfigArguments<TConfig>) => Promise<void>
 }

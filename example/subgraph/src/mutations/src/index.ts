@@ -68,26 +68,28 @@ async function queryUserGravatar(context: Context) {
 
   const address = await ethereum.getSigner().getAddress()
 
-  // TODO time travel query (specific block #)
-  // block: hash#?
-  for (let i = 0; i < 20; ++i) {
-    const { data } = await client.query({
-      query: gql`
-        query GetGravatars {
-          gravatars (where: {owner: "${address}"}) {
-            id
-            owner
-            displayName
-            imageUrl
-          }
-        }`
-      }
-    )
+  if (client) {
+    // TODO time travel query (specific block #)
+    // block: hash#?
+    for (let i = 0; i < 20; ++i) {
+      const { data } = await client.query({
+        query: gql`
+          query GetGravatars {
+            gravatars (where: {owner: "${address}"}) {
+              id
+              owner
+              displayName
+              imageUrl
+            }
+          }`
+        }
+      )
 
-    if (data === null) {
-      await sleep(500)
-    } else {
-      return data.gravatars[0]
+      if (data === null) {
+        await sleep(500)
+      } else {
+        return data.gravatars[0]
+      }
     }
   }
 
@@ -143,7 +145,7 @@ async function createGravatar(_, { options }: any, context: Context) {
   }
 
   const txResult = await sendTx(
-    gravity.createGravatar(displayName, imageUrl),
+    await gravity.createGravatar(displayName, imageUrl),
     `Create new Gravatar named ${displayName}...`,
     state
   )
@@ -160,7 +162,7 @@ async function deleteGravatar(_, { }: any, context: Context) {
   const gravity = await getGravityContract(context)
 
   const txResult = await sendTx(
-    gravity.deleteGravatar(),
+    await gravity.deleteGravatar(),
     `Delete user's Gravatar...`,
     state
   )
@@ -184,7 +186,7 @@ async function updateGravatarName(_, { displayName }: any, context: Context) {
   }
 
   const txResult = await sendTx(
-    gravity.updateGravatarName(displayName),
+    await gravity.updateGravatarName(displayName),
     `Change Gravatar's name to ${displayName}...`,
     state
   )
@@ -208,7 +210,7 @@ async function updateGravatarImage(_, { imageUrl }: any, context: Context) {
   }
 
   await sendTx(
-    gravity.updateGravatarImage(imageUrl),
+    await gravity.updateGravatarImage(imageUrl),
     `Update Gravatar's image...`,
     state
   )

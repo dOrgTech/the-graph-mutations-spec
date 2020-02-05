@@ -2,10 +2,12 @@ import {
   MutationComponentOptionsWithState,
   MutationTupleWithState
 } from './types'
-import { MutationStatesSub, EventTypeMap, CoreEvents } from '@graphprotocol/mutations/dist/mutationState'
 import {
+  CoreEvents,
   CoreState,
-  MutationStates
+  EventTypeMap,
+  MutationStates,
+  MutationStatesSub
 } from '@graphprotocol/mutations/dist/mutationState'
 
 import {

@@ -9,14 +9,13 @@ import 'cross-fetch/polyfill'
 import {
   createMutations,
   createMutationsLink,
-  MutationStates,
+  CoreEvents,
   CoreState,
   Mutations,
-  MutationContext
+  MutationContext,
+  MutationStates
 } from '../'
-import {
-  MutationStatesSub
-} from '../mutationState'
+import { MutationStatesSub } from '../mutationState'
 
 const resolvers = {
   Mutation: {
@@ -24,6 +23,10 @@ const resolvers = {
       return true
     },
     secondTestResolve: async () => {
+      return true
+    },
+    dispatchStateEvent: async (_, __, context: MutationContext<Config>) => {
+      await context.graph.state.dispatch('PROGRESS_UPDATE', { value: 50 })
       return true
     },
     testConfig: async (_, __, context: MutationContext<Config>) => {
@@ -37,7 +40,7 @@ const config = {
   value: (arg: string) => arg
 }
 
-describe("Mutations package - CreateMutations", () => {
+describe('Mutations package - CreateMutations', () => {
 
   let client: ApolloClient<NormalizedCacheObject>
   let mutations: Mutations<Config>
@@ -53,7 +56,7 @@ describe("Mutations package - CreateMutations", () => {
       subgraph: '',
       node: '',
       config: {
-        value: "..."
+        value: '...'
       }
     })
 
@@ -69,7 +72,7 @@ describe("Mutations package - CreateMutations", () => {
     })
   })
 
-  it("Successfully creates mutations, link and executes mutations with it. No observer provided", async () => {
+  it('Successfully creates mutations, link and executes mutations with it. No observer provided', async () => {
     const { data }  = await client.mutate({
       mutation: gql`
         mutation testResolve {
@@ -81,7 +84,7 @@ describe("Mutations package - CreateMutations", () => {
     expect(data.testResolve).toEqual(true)
   })
 
-  it("Correctly wraps resolvers and formats observer results to object with mutation name as key and state as value", async () => {
+  it('Correctly wraps resolvers and formats observer results to object with mutation name as key and state as value', async () => {
     await client.mutate({
       mutation: gql`
         mutation testResolve {
@@ -95,11 +98,11 @@ describe("Mutations package - CreateMutations", () => {
       }
     })
 
-    expect(latestState).toHaveProperty("testResolve")
+    expect(latestState).toHaveProperty('testResolve')
     expect(latestState.testResolve.events).toBeTruthy()
   })
 
-  it("Executes multiple mutations in the same mutation query and dispatches object with different states for each", async () => {
+  it('Executes multiple mutations in the same mutation query and dispatches object with different states for each', async () => {
     await client.mutate({
       mutation: gql`
         mutation testResolve {
@@ -114,16 +117,16 @@ describe("Mutations package - CreateMutations", () => {
       }
     })
 
-    expect(latestState).toHaveProperty("testResolve")
+    expect(latestState).toHaveProperty('testResolve')
     expect(latestState.testResolve.events).toBeTruthy()
 
-    expect(latestState).toHaveProperty("secondTestResolve")
+    expect(latestState).toHaveProperty('secondTestResolve')
     expect(latestState.secondTestResolve.events).toBeTruthy()
 
     expect(latestState.testResolve).not.toEqual(latestState.secondTestResolve)
   })
 
-  it("Executes the same mutation several times in the same query and dispatches object with different states for each", async () => {
+  it('Executes the same mutation several times in the same query and dispatches object with different states for each', async () => {
     await client.mutate({
       mutation: gql`
         mutation testResolve {
@@ -138,17 +141,17 @@ describe("Mutations package - CreateMutations", () => {
       }
     })
 
-    expect(latestState).toHaveProperty("testResolve_1")
+    expect(latestState).toHaveProperty('testResolve_1')
     expect(latestState.testResolve_1.events).toBeTruthy()
 
-    expect(latestState).toHaveProperty("testResolve_2")
+    expect(latestState).toHaveProperty('testResolve_2')
     expect(latestState.testResolve_2.events).toBeTruthy()
 
     expect(latestState.testResolve_1).not.toEqual(latestState.testResolve_2)
   })
 
-  describe("mutations.execute(...)", () => {
-    it("Correctly executes mutation without ApolloLink", async () => {
+  describe('mutations.execute(...)', () => {
+    it('Correctly executes mutation without ApolloLink', async () => {
       let context = { } as MutationContext<Config>
   
       const { data } = await mutations.execute({
@@ -168,10 +171,46 @@ describe("Mutations package - CreateMutations", () => {
   
       expect(data.testResolve).toEqual(true)
     })
+
+    it('State is correctly updated', async () => {
+      const observer = new MutationStatesSub<CoreState, CoreEvents>({ })
+
+      let context = {
+        graph: {
+          _rootSub: observer
+        }
+      } as MutationContext<Config>
+
+      let progress = 0
+
+      const sub = observer.subscribe((state: MutationStates<CoreState, CoreEvents>) => {
+        if (state.dispatchStateEvent) {
+          progress = state.dispatchStateEvent.progress
+        }
+      })
+
+      await mutations.execute({
+        query: gql`
+          mutation TestResolve {
+            dispatchStateEvent @client
+          }
+        `,
+        variables: { },
+        operationName: 'mutation',
+        getContext: () => context,
+        setContext: (newContext: MutationContext<Config>) => {
+          context = newContext
+          return context
+        }
+      })
+  
+      expect(progress).toEqual(50)
+      sub.unsubscribe()
+    })
   })
 
-  describe("mutations.configure(...)", () => {
-    it("Correctly reconfigures the mutation module", async () => {
+  describe('mutations.configure(...)', () => {
+    it('Correctly reconfigures the mutation module', async () => {
       {
         const { data }  = await client.mutate({
           mutation: gql`
@@ -181,11 +220,11 @@ describe("Mutations package - CreateMutations", () => {
           `
         })
   
-        expect(data.testConfig).toEqual("...")
+        expect(data.testConfig).toEqual('...')
       }
   
       await mutations.configure({
-        value: "foo"
+        value: 'foo'
       })
   
       {
@@ -197,28 +236,17 @@ describe("Mutations package - CreateMutations", () => {
           `
         })
   
-        expect(data.testConfig).toEqual("foo")
+        expect(data.testConfig).toEqual('foo')
       }
     })
 
-    it("Detects incorrect configuration values object", async () => {
+    it('Detects incorrect configuration values object', async () => {
       try {
-        await mutations.configure({ notValues: "" } as any)
-        throw Error("This should never happen...")
+        await mutations.configure({ notValues: '' } as any)
+        throw Error('This should never happen...')
       } catch (e) {
         expect(e.message).toBe(`Failed to find mutation configuration value for the property 'value'.`)
       }
     })
   })
-
-  // TODO:
-  /*
-    - query with different `mutation Name` and make sure that isn't the state name that's used
-    - no @client directive
-    - hide private context values
-    - all external types don't require state & eventmap (update example)
-    - - why does it matter to the caller who's maintaining the context what config is? could it just be an any type?
-    - test vanilla useMutation & <Mutation />
-    - is state type safe when you consume
-  */
 })

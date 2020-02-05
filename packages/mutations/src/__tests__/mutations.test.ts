@@ -147,150 +147,72 @@ describe("Mutations package - CreateMutations", () => {
     expect(latestState.testResolve_1).not.toEqual(latestState.testResolve_2)
   })
 
-  it("Correctly executes mutation without ApolloLink", async () => {
-    let context = { } as MutationContext<Config>
-
-    const { data } = await mutations.execute({
-      query: gql`
-        mutation testResolve {
-            testResolve @client
+  describe("mutations.execute(...)", () => {
+    it("Correctly executes mutation without ApolloLink", async () => {
+      let context = { } as MutationContext<Config>
+  
+      const { data } = await mutations.execute({
+        query: gql`
+          mutation testResolve {
+              testResolve @client
+          }
+        `,
+        variables: { },
+        operationName: 'mutation',
+        getContext: () => context,
+        setContext: (newContext: MutationContext<Config>) => {
+          context = newContext
+          return context
         }
-      `,
-      variables: { },
-      operationName: 'mutation',
-      getContext: () => context,
-      setContext: (newContext: MutationContext<Config>) => {
-        context = newContext
-        return context
+      })
+  
+      expect(data.testResolve).toEqual(true)
+    })
+  })
+
+  describe("mutations.configure(...)", () => {
+    it("Correctly reconfigures the mutation module", async () => {
+      {
+        const { data }  = await client.mutate({
+          mutation: gql`
+            mutation testConfig {
+              testConfig @client
+            }
+          `
+        })
+  
+        expect(data.testConfig).toEqual("...")
+      }
+  
+      await mutations.configure({
+        value: "foo"
+      })
+  
+      {
+        const { data }  = await client.mutate({
+          mutation: gql`
+            mutation testConfig {
+              testConfig @client
+            }
+          `
+        })
+  
+        expect(data.testConfig).toEqual("foo")
       }
     })
 
-    expect(data.testResolve).toEqual(true)
-  })
-
-  it("Correctly reconfigures the mutation module", async () => {
-    {
-      const { data }  = await client.mutate({
-        mutation: gql`
-          mutation testConfig {
-            testConfig @client
-          }
-        `
-      })
-
-      expect(data.testConfig).toEqual("...")
-    }
-
-    await mutations.configure({
-      value: "foo"
+    it("Detects incorrect configuration values object", async () => {
+      try {
+        await mutations.configure({ notValues: "" } as any)
+        throw Error("This should never happen...")
+      } catch (e) {
+        expect(e.message).toBe(`Failed to find mutation configuration value for the property 'value'.`)
+      }
     })
-
-    {
-      const { data }  = await client.mutate({
-        mutation: gql`
-          mutation testConfig {
-            testConfig @client
-          }
-        `
-      })
-
-      expect(data.testConfig).toEqual("foo")
-    }
-  })
-
-  it("Detects incorrect configuration values object", async () => {
-    try {
-      mutations.configure({ notValues: "" } as any)
-      throw Error("This should never happen...")
-    } catch (e) { }
-  })
-
-  it("Detects incorrect configuration generator objects", async () => {
-
-    // Generator isn't a function
-    try {
-      createMutations({
-        mutations: {
-          resolvers,
-          config: { value: true } as any
-        },
-        subgraph: '',
-        node: '',
-        config: { value: true }
-      })
-      throw Error("This should never happen...")
-    } catch (e) {
-      expect(e.message).toBe(`Generator must be of type 'object' or 'function'`)
-    }
-
-    // Nested generator isn't a function
-    try {
-      createMutations({
-        mutations: {
-          resolvers,
-          config: { something: { } } as any
-        },
-        subgraph: '',
-        node: '',
-        config: { something: { } }
-      })
-      throw Error("This should never happen...")
-    } catch (e) {
-      expect(e.message).toBe('Config Generators must be a function, or an object that contains functions.')
-    }
-
-    // Argument doesn't exist
-    try {
-      createMutations({
-        mutations: {
-          resolvers,
-          config
-        },
-        subgraph: '',
-        node: '',
-        config: { } as any
-      })
-      throw Error("This should never happen...")
-    } catch (e) {
-      expect(e.message).toBe(`Failed to find mutation configuration value for the property 'value'.`)
-    }
-
-    // Nested argument doesn't exist
-    try {
-      createMutations({
-        mutations: {
-          resolvers,
-          config: { something: { value: (value: string) => value } } as any
-        },
-        subgraph: '',
-        node: '',
-        config: { something: { } } as any
-      })
-      throw Error("This should never happen...")
-    } catch (e) {
-      expect(e.message).toBe(`Failed to find mutation configuration value for the property 'value'.`)
-    }
-
-    // Config generators must take one argument
-    try {
-      createMutations({
-        mutations: {
-          resolvers,
-          config: { something: () => "" } as any
-        },
-        subgraph: '',
-        node: '',
-        config: { something: "" } as any
-      })
-      throw Error("This should never happen...")
-    } catch (e) {
-      expect(e.message).toBe('Config Generators must take 1 argument')
-    }
   })
 
   // TODO:
   /*
-    - config should be optionally an empty object
     - query with different `mutation Name` and make sure that isn't the state name that's used
     - no @client directive
     - hide private context values

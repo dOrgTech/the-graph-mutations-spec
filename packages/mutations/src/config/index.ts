@@ -3,7 +3,9 @@ import {
   ConfigArguments,
   ConfigProperties
 } from './types'
-import { execFunc } from '../utils'
+import { executeMaybeAsyncFunction } from '../utils'
+
+export * from './types'
 
 const initConfig = async (
   properties: any,
@@ -13,7 +15,7 @@ const initConfig = async (
 
   // An argument can be a function that returns other arguments
   if (typeof args === 'function') {
-    args = await execFunc(args)
+    args = await executeMaybeAsyncFunction(args)
   }
 
   const keys = Object.keys(generators)
@@ -25,10 +27,10 @@ const initConfig = async (
       let arg = args[key]
 
       if (typeof arg === 'function') {
-        arg = await execFunc(arg)
+        arg = await executeMaybeAsyncFunction(arg)
       }
 
-      properties[key] = await execFunc(generator, arg)
+      properties[key] = await executeMaybeAsyncFunction(generator, arg)
     } else {
       properties[key] = { }
       await initConfig(properties[key], args[key], generators[key])
@@ -49,7 +51,7 @@ export const validateConfig = (args: any, generators: any, depth = 0) => {
   const keys = Object.keys(generators)
 
   if (depth !== 0 && keys.length === 0) {
-    throw Error('Config Generators must be a function, or an object that contains functions.')
+    throw Error('Config generators must be a function, or an object that contains functions.')
   }
 
   keys.forEach(key => {
@@ -69,12 +71,10 @@ export const validateConfig = (args: any, generators: any, depth = 0) => {
       validateConfig(args[key], generators[key], depth + 1)
     } else if (generatorType === 'function') {
       if (generator.length !== 1) {
-        throw Error('Config Generators must take 1 argument')
+        throw Error('Config generators must take 1 argument')
       }
     } else {
       throw Error(`Generator must be of type 'object' or 'function'`)
     }
   })
 }
-
-export * from './types'

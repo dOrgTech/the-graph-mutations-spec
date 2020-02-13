@@ -27,7 +27,7 @@ describe('Mutations Config', () => {
         )
         throw Error('This should never happen...')
       } catch (e) {
-        expect(e.message).toBe('Config Generators must be a function, or an object that contains functions.')
+        expect(e.message).toBe('Config generators must be a function, or an object that contains functions.')
       }
     })
 
@@ -63,7 +63,7 @@ describe('Mutations Config', () => {
         )
         throw Error('This should never happen...')
       } catch (e) {
-        expect(e.message).toBe('Config Generators must take 1 argument')
+        expect(e.message).toBe('Config generators must take 1 argument')
       }
     })
 

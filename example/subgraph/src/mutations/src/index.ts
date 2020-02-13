@@ -104,7 +104,7 @@ async function sendTx(tx: Transaction, description: string, state: StateUpdater<
       from: tx.from,
       data: tx.data,
       amount: tx.value.toString(),
-      chainId: `ethereum-${tx.chainId}`,
+      network: `ethereum-${tx.network}`,
       description
     })
     tx = await tx
@@ -177,7 +177,7 @@ async function updateGravatarName(_, { displayName }: any, context: Context) {
   const state = context.graph.state;
   const gravity = await getGravityContract(context)
 
-  await state.dispatch('PROGRESS_UPDATE', { value: 50 })
+  await state.dispatch('PROGRESS_UPDATE', { value: 0.5 })
   await state.dispatch('CUSTOM_EVENT', { myValue: 'test' })
 
   await sleep(2000)

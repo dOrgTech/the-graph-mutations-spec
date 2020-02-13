@@ -12,7 +12,7 @@ import { CoreState } from '@graphprotocol/mutations'
 
 Enzyme.configure({ adapter: new Adapter() })
 
-describe('UseMutation', () => {
+describe('useMutation', () => {
 
    it('Correctly sets observer object inside context', async () => {
     let mutationFunction: Function

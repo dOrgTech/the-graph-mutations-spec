@@ -1,5 +1,5 @@
 import {
-  MutationComponentOptionsWithState,
+  BaseMutationOptionsWithState,
   MutationTupleWithState
 } from './types'
 import {
@@ -79,7 +79,7 @@ export const Mutation = <
   TData = any,
   TVariables = OperationVariables
 >(
-  props: MutationComponentOptionsWithState<TState, TEventMap, TData, TVariables>
+  props: BaseMutationOptionsWithState<TState, TEventMap, TData, TVariables>
 ) => {
   const [runMutation, result] = useMutation<TState, TEventMap>(props.mutation, props)
   return props.children ? props.children(runMutation, result) : null

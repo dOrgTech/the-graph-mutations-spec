@@ -25,7 +25,7 @@ export type MutationTupleWithState<
   MutationResultWithState<TState, TEventMap, TData>
 ]
 
-export interface MutationComponentOptionsWithState<
+export interface BaseMutationOptionsWithState<
   TState,
   TEventMap extends EventTypeMap,
   TData,

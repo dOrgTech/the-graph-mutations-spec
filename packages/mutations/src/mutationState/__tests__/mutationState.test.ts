@@ -19,7 +19,7 @@ const mockTransaction: TransactionCreatedEvent = {
   from: "0x0",
   data: "",
   amount: "0",
-  chainId: "",
+  network: "",
   description: "Test Description"
 }
 
@@ -46,41 +46,41 @@ describe("Core Mutation State", () => {
   })
 
   it("Correctly dispatches state update", async () => {
-    await state.dispatch("PROGRESS_UPDATE", { value: 5 })
+    await state.dispatch("PROGRESS_UPDATE", { value: 0.05 })
 
     expect(latestState.uuid).toEqual(uuid)
-    expect(latestState.progress).toEqual(5)
+    expect(latestState.progress).toEqual(0.05)
     expect(latestState.events).toHaveLength(1)
     expect(latestState.events[0].name).toEqual("PROGRESS_UPDATE")
-    expect(latestState.events[0].payload).toEqual({ value: 5 })
+    expect(latestState.events[0].payload).toEqual({ value: 0.05 })
 
   })
 
   it("State dispatched is immutable", async () => {
-    await state.dispatch("PROGRESS_UPDATE", { value: 5 })
+    await state.dispatch("PROGRESS_UPDATE", { value: 0.05 })
 
     latestState.progress = 100
 
     await state.dispatch("TRANSACTION_CREATED", mockTransaction)
 
-    expect(latestState.progress).toEqual(5)
+    expect(latestState.progress).toEqual(0.05)
   })
 
   it("Dispatches state updates in correct order", async () => {
-    await state.dispatch("PROGRESS_UPDATE", { value: 5 })
+    await state.dispatch("PROGRESS_UPDATE", { value: 0.05 })
     await state.dispatch("TRANSACTION_CREATED", mockTransaction)
 
     const currentState = state.current
 
     expect(currentState.events[0].name).toEqual("PROGRESS_UPDATE")
-    expect(currentState.events[0].payload).toEqual( { value: 5 })
+    expect(currentState.events[0].payload).toEqual( { value: 0.05 })
 
     expect(currentState.events[1].name).toEqual("TRANSACTION_CREATED")
     expect(currentState.events[1].payload).toEqual(mockTransaction)
 
   })
 
-  it("Fails if PROGRESS_UPDATE event receives number lower than 0 or higher than 100 or non integer", async () => {
+  it("Fails if PROGRESS_UPDATE event receives number lower than 0 or higher than 1", async () => {
     expect(state.dispatch("PROGRESS_UPDATE", { value: 105 } as any)).rejects.toThrow()
     expect(state.dispatch("PROGRESS_UPDATE", { value: -5 } as any)).rejects.toThrow()
     expect(state.dispatch("PROGRESS_UPDATE", { value: 10.5 } as any)).rejects.toThrow()
@@ -205,9 +205,9 @@ describe("Extended Mutation State", () => {
   })
 
   it("Executes both core reducer and catch-all reducer if a core event is supported in it", async () => {
-    await state.dispatch("PROGRESS_UPDATE", { value: 50 })
+    await state.dispatch("PROGRESS_UPDATE", { value: 0.5 })
 
-    expect(state.current.progress).toEqual(50)
+    expect(state.current.progress).toEqual(0.5)
     expect(state.current.catchAll).toEqual(true)
   })
 })

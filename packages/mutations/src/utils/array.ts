@@ -1,10 +1,12 @@
-export const makeRepeatedUnique = (array: string[]) => {
-  const map: any = {}
-  const count = array.map((val: string) =>
-    map[val] = (typeof map[val] === 'undefined') ? 1 : map[val] + 1
-  )
+export const makeRepeatedUnique = (names: string[]): string[] => {
+  let counts: { [key: string]: number } = {}
 
-  return array.map((val: string, index: number) =>
-    val + (map[val] != 1 ? '_' + count[index] : '')
-  )
+  return names.reduce((acc, name) => {
+    let count = counts[name] = (counts[name] || 0) + 1
+    let uniq = count > 1 ? `${name}_${count - 1}` : name
+
+    acc.push(uniq)
+    
+    return acc
+  }, [] as string[])
 }

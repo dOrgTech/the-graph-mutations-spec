@@ -8,9 +8,12 @@ import {
   MutationStateSubject
 } from './types'
 import { coreStateBuilder as core } from './core'
-import { execFunc } from '../utils'
+import { executeMaybeAsyncFunction } from '../utils'
 
 import { cloneDeep, merge } from 'lodash'
+
+export * from './core'
+export * from './types'
 
 class StateUpdater<
   TState,
@@ -63,18 +66,18 @@ class StateUpdater<
     const extReducer = this._ext?.reducer
 
     if (coreReducers && coreReducers[event.name] !== undefined) {
-      const coreStatePartial = await execFunc(coreReducers[event.name], cloneDeep(this._state), payload)
+      const coreStatePartial = await executeMaybeAsyncFunction(coreReducers[event.name], cloneDeep(this._state), payload)
       this._state = merge(this._state, coreStatePartial)
     } else if (coreReducer) {
-      const coreStatePartial = await execFunc(coreReducer, cloneDeep(this._state), event)
+      const coreStatePartial = await executeMaybeAsyncFunction(coreReducer, cloneDeep(this._state), event)
       this._state = merge(this._state, coreStatePartial)
     }
 
     if (extReducers && extReducers[event.name] !== undefined) {
-      const extStatePartial = await execFunc(extReducers[event.name], cloneDeep(this._state), payload)
+      const extStatePartial = await executeMaybeAsyncFunction(extReducers[event.name], cloneDeep(this._state), payload)
       this._state = merge(this._state, extStatePartial)
     } else if (extReducer) {
-      const extStatePartial = await execFunc(extReducer, cloneDeep(this._state), event)
+      const extStatePartial = await executeMaybeAsyncFunction(extReducer, cloneDeep(this._state), event)
       this._state = merge(this._state, extStatePartial)
     }
 
@@ -90,5 +93,4 @@ class StateUpdater<
 }
 
 export { StateUpdater }
-export * from './core'
-export * from './types'
+

@@ -2,7 +2,7 @@ import {
   CoreEvents,
   CoreState
 } from './core'
-import { OptionalAsync } from '../utils'
+import { MaybeAsync } from '../utils'
 
 import { BehaviorSubject } from 'rxjs'
 
@@ -38,13 +38,13 @@ export interface StateBuilder<TState, TEventMap extends EventTypeMap> {
     [TEvent in keyof MutationEvents<TEventMap>]?: (
       state: MutationState<TState>,
       payload: InferEventPayload<TEvent, TEventMap>
-    ) => OptionalAsync<Partial<MutationState<TState>>>
+    ) => MaybeAsync<Partial<MutationState<TState>>>
   },
   // Catch-All Reducer
   reducer?: (
     state: MutationState<TState>,
     event: Event<TEventMap>
-  ) => OptionalAsync<Partial<MutationState<TState>>>
+  ) => MaybeAsync<Partial<MutationState<TState>>>
 }
 
 export interface EventPayload { }

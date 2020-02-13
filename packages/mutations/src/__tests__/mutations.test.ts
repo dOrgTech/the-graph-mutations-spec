@@ -26,7 +26,7 @@ const resolvers = {
       return true
     },
     dispatchStateEvent: async (_, __, context: MutationContext<Config>) => {
-      await context.graph.state.dispatch('PROGRESS_UPDATE', { value: 50 })
+      await context.graph.state.dispatch('PROGRESS_UPDATE', { value: 0.5 })
       return true
     },
     testConfig: async (_, __, context: MutationContext<Config>) => {
@@ -40,7 +40,7 @@ const config = {
   value: (arg: string) => arg
 }
 
-describe('Mutations package - CreateMutations', () => {
+describe('Mutations', () => {
 
   let client: ApolloClient<NormalizedCacheObject>
   let mutations: Mutations<Config>
@@ -135,13 +135,13 @@ describe('Mutations package - CreateMutations', () => {
       }
     })
 
+    expect(latestState).toHaveProperty('testResolve')
+    expect(latestState.testResolve.events).toBeTruthy()
+
     expect(latestState).toHaveProperty('testResolve_1')
     expect(latestState.testResolve_1.events).toBeTruthy()
 
-    expect(latestState).toHaveProperty('testResolve_2')
-    expect(latestState.testResolve_2.events).toBeTruthy()
-
-    expect(latestState.testResolve_1).not.toEqual(latestState.testResolve_2)
+    expect(latestState.testResolve).not.toEqual(latestState.testResolve_1)
   })
 
   describe('mutations.execute(...)', () => {
@@ -197,7 +197,7 @@ describe('Mutations package - CreateMutations', () => {
         stateSubject: observer
       })
 
-      expect(progress).toEqual(50)
+      expect(progress).toEqual(0.5)
       subject.unsubscribe()
     })
   })

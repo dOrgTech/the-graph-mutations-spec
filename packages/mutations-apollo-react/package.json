@@ -1,7 +1,7 @@
 {
   "name": "@graphprotocol/mutations-apollo-react",
   "version": "0.0.0",
-  "description": "Wrappers for commonly used apollo-react hooks and components.",
+  "description": "Apollo/React support for Graph Protocol mutations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/graphprotocol/mutations",

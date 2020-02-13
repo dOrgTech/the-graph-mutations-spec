@@ -21,12 +21,12 @@ export type MutationStates<
 }
 
 // Mutation State Subscriptions
-export class MutationStatesSub<
+export class MutationStatesSubject<
   TState = CoreState,
   TEventMap extends EventTypeMap = CoreEvents
 > extends BehaviorSubject<MutationStates<TState, TEventMap>> { }
-export class MutationStateSub<TState, TEventMap extends EventTypeMap> extends BehaviorSubject<MutationState<TState, TEventMap>> { }
-export type MutationStateSubs<TState, TEventMap extends EventTypeMap> = MutationStateSub<TState, TEventMap>[]
+export class MutationStateSubject<TState, TEventMap extends EventTypeMap> extends BehaviorSubject<MutationState<TState, TEventMap>> { }
+export type MutationStateSubjects<TState, TEventMap extends EventTypeMap> = MutationStateSubject<TState, TEventMap>[]
 
 // An aggregate of all possible MutationEvents
 export type MutationEvents<TEventMap> = CoreEvents & TEventMap

@@ -4,7 +4,7 @@ import {
   Event,
   MutationContext,
   MutationStates,
-  MutationStatesSub
+  MutationStatesSubject
 } from '../src'
 import exampleMutations, {
   Config,
@@ -48,9 +48,9 @@ type Context = MutationContext<Config, State, EventMap>
 let context = { } as Context
 
 // Subscribe to mutation state updates
-const sub = new MutationStatesSub<State, EventMap>({ })
+const subject = new MutationStatesSubject<State, EventMap>({ })
 
-sub.subscribe((state: MutationStates<State, EventMap>) => {
+subject.subscribe((state: MutationStates<State, EventMap>) => {
   // Resolver defined state properties
   state.example.myValue
 
@@ -83,6 +83,6 @@ const main = async () => {
       return context
     },
     getContext: () => context,
-    stateSub: sub
+    stateSubject: subject
   })
 }

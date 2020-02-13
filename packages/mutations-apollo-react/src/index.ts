@@ -7,7 +7,7 @@ import {
   CoreState,
   EventTypeMap,
   MutationStates,
-  MutationStatesSub
+  MutationStatesSubject
 } from '@graphprotocol/mutations/dist/mutationState'
 
 import {
@@ -32,10 +32,10 @@ export const useMutation = <
 ): MutationTupleWithState<TState, TEventMap, TData, TVariables> => {
 
   const [state, setState] = useState({} as MutationStates<TState, TEventMap>)
-  const [observable] = useState(new MutationStatesSub<TState, TEventMap>({ }))
+  const [observable] = useState(new MutationStatesSubject<TState, TEventMap>({ }))
 
   const graphContext = {
-    _rootSub: observable
+    _rootSubject: observable
   }
 
   const updatedOptions = options ? {

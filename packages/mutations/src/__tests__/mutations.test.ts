@@ -15,7 +15,7 @@ import {
   MutationContext,
   MutationStates
 } from '../'
-import { MutationStatesSub } from '../mutationState'
+import { MutationStatesSubject } from '../mutationState'
 
 const resolvers = {
   Mutation: {
@@ -44,7 +44,7 @@ describe('Mutations package - CreateMutations', () => {
 
   let client: ApolloClient<NormalizedCacheObject>
   let mutations: Mutations<Config>
-  let observer = new MutationStatesSub({ } as MutationStates<CoreState>)
+  let observer = new MutationStatesSubject({ } as MutationStates<CoreState>)
   let latestState: MutationStates<CoreState> = {}
 
   beforeAll(() => {
@@ -92,7 +92,7 @@ describe('Mutations package - CreateMutations', () => {
         }
       `,
       context: {
-        _rootSub: observer
+        _rootSubject: observer
       }
     })
 
@@ -109,7 +109,7 @@ describe('Mutations package - CreateMutations', () => {
         }
       `,
       context: {
-        _rootSub: observer
+        _rootSubject: observer
       }
     })
 
@@ -131,7 +131,7 @@ describe('Mutations package - CreateMutations', () => {
         }
       `,
       context: {
-        _rootSub: observer
+        _rootSubject: observer
       }
     })
 
@@ -167,15 +167,15 @@ describe('Mutations package - CreateMutations', () => {
     })
 
     it('State is correctly updated', async () => {
-      const observer = new MutationStatesSub<CoreState, CoreEvents>({ })
+      const observer = new MutationStatesSubject<CoreState, CoreEvents>({ })
 
       let context = {
-        _rootSub: observer
+        _rootSubject: observer
       }
 
       let progress = 0
 
-      const sub = observer.subscribe((state: MutationStates<CoreState, CoreEvents>) => {
+      const subject = observer.subscribe((state: MutationStates<CoreState, CoreEvents>) => {
         if (state.dispatchStateEvent) {
           progress = state.dispatchStateEvent.progress
         }
@@ -194,11 +194,11 @@ describe('Mutations package - CreateMutations', () => {
           context = newContext
           return context
         },
-        stateSub: observer
+        stateSubject: observer
       })
 
       expect(progress).toEqual(50)
-      sub.unsubscribe()
+      subject.unsubscribe()
     })
   })
 

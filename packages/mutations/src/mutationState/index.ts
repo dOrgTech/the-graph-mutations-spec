@@ -5,7 +5,7 @@ import {
   MutationState,
   InferEventPayload,
   StateBuilder,
-  MutationStateSub
+  MutationStateSubject
 } from './types'
 import { coreStateBuilder as core } from './core'
 import { execFunc } from '../utils'
@@ -18,16 +18,16 @@ class StateUpdater<
 > {
 
   private _state: MutationState<TState, TEventMap>
-  private _sub?: MutationStateSub<TState, TEventMap>
+  private _subject?: MutationStateSubject<TState, TEventMap>
   private _ext?: StateBuilder<TState, TEventMap>
 
   constructor(
     uuid: string,
     ext?: StateBuilder<TState, TEventMap>,
-    subscriber?: MutationStateSub<TState, TEventMap>
+    subscriber?: MutationStateSubject<TState, TEventMap>
   ) {
     this._ext = ext
-    this._sub = subscriber
+    this._subject = subscriber
 
     this._state = {
       events: [],
@@ -83,8 +83,8 @@ class StateUpdater<
   }
 
   private publish() {
-    if (this._sub) {
-      this._sub.next(cloneDeep(this._state))
+    if (this._subject) {
+      this._subject.next(cloneDeep(this._state))
     }
   }
 }

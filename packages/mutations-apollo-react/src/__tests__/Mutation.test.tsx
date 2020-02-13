@@ -4,12 +4,9 @@ import Adapter from 'enzyme-adapter-react-16'
 import { act } from 'react-dom/test-utils'
 import { isEqual } from 'lodash'
 
-import {
-  TEST_RESOLVER,
-  client,
-  statesToPublish
-} from './utils'
-import { Mutation } from '../'
+import { TEST_RESOLVER } from './utils/queries'
+import { client, statesToPublish } from './utils/mockClient'
+import { Mutation } from '..'
 import { MutationStates } from '@graphprotocol/mutations/dist/mutationState'
 import { CoreState } from '@graphprotocol/mutations'
 

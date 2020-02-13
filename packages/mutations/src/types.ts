@@ -3,8 +3,8 @@ import {
   CoreState,
   EventTypeMap,
   MutationState,
-  MutationStatesSub,
-  MutationStateSubs,
+  MutationStatesSubject,
+  MutationStateSubjects,
   StateBuilder,
   StateUpdater
 } from './mutationState'
@@ -48,8 +48,8 @@ export interface InternalMutationContext<
   TEventMap extends EventTypeMap = CoreEvents
 > extends MutationContext<TConfig, TState, TEventMap> {
   _mutationsCalled: string[]
-  _rootSub?: MutationStatesSub<TState, TEventMap>
-  _mutationSubs: MutationStateSubs<TState, TEventMap>
+  _rootSubject?: MutationStatesSubject<TState, TEventMap>
+  _mutationSubs: MutationStateSubjects<TState, TEventMap>
 }
 
 export interface MutationResolvers<
@@ -75,7 +75,7 @@ export interface MutationQuery<
   extensions?: Record<string, any>
   setContext: (context: any) => any
   getContext: () => any,
-  stateSub?: MutationStatesSub<TState, TEventMap>
+  stateSubject?: MutationStatesSubject<TState, TEventMap>
 }
 
 export type MutationResult = ExecutionResult

@@ -8,7 +8,7 @@ import {
   Event,
   EventPayload,
   MutationState,
-  MutationStateSub,
+  MutationStateSubject,
   StateBuilder
 } from '../types'
 import { StateUpdater } from '../index'
@@ -27,14 +27,14 @@ describe("Core Mutation State", () => {
 
   let uuid: string
   let latestState: MutationState<CoreState>
-  let observer: MutationStateSub<CoreState, CoreEvents>
+  let observer: MutationStateSubject<CoreState, CoreEvents>
   let state: StateUpdater<CoreState, CoreEvents>
 
   beforeEach(() => {
 
     uuid = v4()
 
-    observer = new MutationStateSub<CoreState, CoreEvents>({} as MutationState<CoreState>)
+    observer = new MutationStateSubject<CoreState, CoreEvents>({} as MutationState<CoreState>)
 
     state = new StateUpdater<CoreState, CoreEvents>(
       uuid, undefined, observer
@@ -108,7 +108,7 @@ describe("Extended Mutation State", () => {
 
   let uuid: string
   let latestState: State
-  let observer: MutationStateSub<State, EventMap>
+  let observer: MutationStateSubject<State, EventMap>
   let state: StateUpdater<State, EventMap>
   
   const stateBuilder: StateBuilder<State, EventMap> = {
@@ -151,7 +151,7 @@ describe("Extended Mutation State", () => {
 
   beforeEach(() => {
     uuid = v4()
-    observer = new MutationStateSub<State, EventMap>({} as MutationState<State, EventMap>)
+    observer = new MutationStateSubject<State, EventMap>({} as MutationState<State, EventMap>)
     state = new StateUpdater<State, EventMap>(
       uuid, stateBuilder, observer
     )

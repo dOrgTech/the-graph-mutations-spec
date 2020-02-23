@@ -1,4 +1,5 @@
 # **The Graph - Mutation Support**
+**NOTE: This project has been moved to https://github.com/graphprotocol/mutations**
 ## Intro
 GraphQL mutations allow developers to add executable functions to their schema. Callers can invoke these functions using GraphQL queries.
 
